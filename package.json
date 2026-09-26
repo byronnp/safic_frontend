@@ -1,0 +1,53 @@
+{
+  "name": "safic-frontend",
+  "version": "0.1.0",
+  "description": "SAFIC · Sistema de Administración Financiera de Condominios — frontend (Quasar)",
+  "productName": "SAFIC",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "quasar dev",
+    "build": "quasar build",
+    "typecheck": "vue-tsc --noEmit",
+    "lint": "prettier --write \"**/*.{js,ts,vue,scss,html,md,json}\" --ignore-path .gitignore && eslint --fix -c ./eslint.config.js \"./src*/**/*.{ts,js,cjs,mjs,vue}\"",
+    "lint:check": "prettier --check \"**/*.{js,ts,vue,scss,html,md,json}\" --ignore-path .gitignore && eslint -c ./eslint.config.js \"./src*/**/*.{ts,js,cjs,mjs,vue}\"",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "postinstall": "quasar prepare --silent"
+  },
+  "dependencies": {
+    "@fontsource/manrope": "^5.2.0",
+    "@quasar/extras": "^2.1.0",
+    "@tanstack/vue-query": "^5.104.0",
+    "axios": "^1.20.0",
+    "pinia": "^4.0.3",
+    "quasar": "^2.33.2",
+    "vue": "^3.5.43",
+    "vue-i18n": "^11.4.12",
+    "vue-router": "^5.3.1",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@intlify/unplugin-vue-i18n": "^11.0.0",
+    "@quasar/app-vite": "^3.10.0",
+    "@types/node": "^22.19.11",
+    "@vue/eslint-config-prettier": "^10.2.0",
+    "@vue/eslint-config-typescript": "^14.9.0",
+    "autoprefixer": "^10.4.27",
+    "eslint": "^10.11.0",
+    "eslint-plugin-vue": "^10.11.1",
+    "globals": "^17.4.0",
+    "happy-dom": "^20.11.6",
+    "postcss": "^8.5.8",
+    "prettier": "^3.9.9",
+    "typescript": "^6.0.0",
+    "vite-plugin-checker": "^0.14.5",
+    "vitest": "^5.0.2",
+    "vue-eslint-parser": "^10.4.0",
+    "vue-tsc": "^3.3.11"
+  },
+  "engines": {
+    "node": ">= 26 || ^24 || ^22.12"
+  }
+}

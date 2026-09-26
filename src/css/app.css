@@ -1,0 +1,77 @@
+/*
+ * Estilos globales de SAFIC.
+ * Colores de marca: primario #0E5E5B (personalizable por condominio),
+ * tinta #12302F, acento #F0B35A, fondo #F5F4EF. Tipografía: Manrope.
+ * Los colores de estado (positive, negative, warning) NO se personalizan.
+ */
+:root {
+  --safic-tinta: #12302f;
+  --safic-fondo: #f5f4ef;
+  --safic-superficie: #ffffff;
+  --safic-borde: #e3e1d8;
+  --safic-texto-suave: #5b6b6a;
+  --safic-radio: 12px;
+}
+
+body {
+  font-family:
+    'Manrope',
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    sans-serif;
+  background: var(--safic-fondo);
+  color: var(--safic-tinta);
+  -webkit-font-smoothing: antialiased;
+}
+
+.text-suave {
+  color: var(--safic-texto-suave);
+}
+
+.safic-card {
+  background: var(--safic-superficie);
+  border: 1px solid var(--safic-borde);
+  border-radius: var(--safic-radio);
+  box-shadow: none;
+}
+
+.safic-page {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.safic-titulo {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+.safic-logo {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: #fff;
+  background: var(--q-primary);
+  flex-shrink: 0;
+}
+
+/* Ítem activo del menú lateral */
+.safic-menu .q-item.q-router-link--active,
+.safic-menu .q-item--active {
+  background: color-mix(in srgb, var(--q-primary) 12%, transparent);
+  color: var(--q-primary);
+  font-weight: 600;
+  border-radius: 10px;
+}
+
+.safic-menu .q-item {
+  border-radius: 10px;
+  margin: 2px 8px;
+}
