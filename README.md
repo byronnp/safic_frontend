@@ -23,6 +23,7 @@ Este esqueleto corresponde al **Sprint 0 (base técnica)**:
 cd ~/proyectos
 git clone https://github.com/byronnp/safic_frontend.git safic_front
 cd safic_front
+cp .env.example .env   # revisa API_PROXY_TARGET y SAFIC_WATCH_POLLING
 make up        # la primera vez instala dependencias dentro del contenedor (ver: make logs)
 ```
 
@@ -40,6 +41,7 @@ Abre http://localhost:9000 e ingresa con un usuario de demostración del backend
 Con Docker Desktop, desde PowerShell en la carpeta del proyecto (no hace falta `make`):
 
 ```powershell
+Copy-Item .env.example .env
 docker compose up -d --build
 docker compose logs -f web
 ```
@@ -48,9 +50,11 @@ El contenedor detecta los cambios de archivos por sondeo (`SAFIC_WATCH_POLLING`)
 
 ## Sin Docker
 
+En `.env` pon `API_PROXY_TARGET=http://localhost:8000` y luego:
+
 ```bash
 npm install
-API_PROXY_TARGET=http://localhost:8000 npm run dev
+npm run dev
 ```
 
 ## Cómo se conecta con la API

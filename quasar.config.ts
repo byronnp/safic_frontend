@@ -1,11 +1,26 @@
 // Configuración de Quasar · https://v2.quasar.dev/quasar-cli-vite/quasar-config-file
 import { defineConfig } from '#q-app';
 
-// La API (Laravel) se consume siempre en la misma ruta relativa /api/v1.
-// En desarrollo el servidor de Vite la reenvía al backend:
-//  - fuera de Docker: http://localhost:8000
+/**
+ * Variables del archivo .env (ver .env.example). Quasar las carga para este
+ * archivo como import.meta.env.*; una variable de entorno real (por ejemplo la
+ * que pasa docker compose) tiene prioridad.
+ */
+function variable(nombre: 'API_PROXY_TARGET' | 'SAFIC_WATCH_POLLING'): string | undefined {
+  const desdeArchivo: Record<string, unknown> = {
+    API_PROXY_TARGET: import.meta.env.API_PROXY_TARGET,
+    SAFIC_WATCH_POLLING: import.meta.env.SAFIC_WATCH_POLLING,
+  };
+  const valor = process.env[nombre] ?? desdeArchivo[nombre];
+  return valor === undefined ? undefined : String(valor);
+}
+
+// La API (Laravel) se consume siempre en la misma ruta relativa /api/v1 y el
+// servidor de desarrollo la reenvía al backend:
 //  - dentro de Docker (red "safic"): http://api:8080
-const apiProxyTarget = process.env.API_PROXY_TARGET ?? 'http://localhost:8000';
+//  - sin Docker: http://localhost:8000
+const apiProxyTarget = variable('API_PROXY_TARGET') ?? 'http://localhost:8000';
+const sondearCambios = variable('SAFIC_WATCH_POLLING') === 'true';
 
 export default defineConfig((ctx) => {
   return {
@@ -32,7 +47,7 @@ export default defineConfig((ctx) => {
       // En Docker con el código montado desde Windows los cambios no llegan por
       // eventos del sistema de archivos: se detectan revisando cada cierto tiempo.
       extendViteConf(viteConf) {
-        if (process.env.SAFIC_WATCH_POLLING === 'true') {
+        if (sondearCambios) {
           viteConf.server = {
             ...viteConf.server,
             watch: { ...viteConf.server?.watch, usePolling: true, interval: 300 },
