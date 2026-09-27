@@ -6,6 +6,7 @@
       color="primary"
       unelevated
       no-caps
+      class="safic-btn"
       :to="{ name: 'inicio' }"
       :label="t('errores.volverInicio')"
     />

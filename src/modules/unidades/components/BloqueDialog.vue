@@ -1,56 +1,71 @@
 <template>
   <q-dialog ref="dialogRef" persistent @hide="onDialogHide">
-    <q-card class="safic-card" style="width: 420px; max-width: 92vw">
-      <q-card-section>
-        <div class="text-h6 text-weight-bold">Nuevo bloque</div>
-        <div class="text-suave text-body2">Ej.: Torre A, Bloque 3, Etapa norte.</div>
-      </q-card-section>
-
+    <q-card class="safic-dialogo">
       <q-form novalidate @submit="guardar">
-        <q-card-section class="q-gutter-y-md">
-          <q-banner v-if="errorGeneral" dense rounded class="bg-red-1 text-negative" role="alert">
-            {{ errorGeneral }}
-          </q-banner>
+        <div class="q-pa-lg column" style="gap: 20px">
+          <div>
+            <div class="safic-dialogo__titulo">Nuevo bloque</div>
+            <div class="text-suave q-mt-xs" style="font-size: 14px">
+              Torre, bloque o etapa. Ej.: Torre A, Bloque 3, Etapa norte.
+            </div>
+          </div>
 
-          <q-input
-            v-model.trim="formulario.nombre"
-            outlined
-            label="Nombre *"
-            maxlength="60"
-            counter
-            autofocus
-            :error="!!errores.nombre"
-            :error-message="errores.nombre"
-          />
+          <div v-if="errorGeneral" class="safic-alerta" role="alert">{{ errorGeneral }}</div>
 
-          <q-input
-            v-model.number="formulario.orden"
-            outlined
-            type="number"
-            label="Orden en listas"
-            hint="Opcional. Los bloques se muestran de menor a mayor."
-            :error="!!errores.orden"
-            :error-message="errores.orden"
-          />
-        </q-card-section>
+          <div class="safic-campo">
+            <label for="bloque-nombre" class="safic-campo__etiqueta">Nombre</label>
+            <q-input
+              v-model.trim="formulario.nombre"
+              for="bloque-nombre"
+              class="safic-input"
+              outlined
+              maxlength="60"
+              autofocus
+              hide-bottom-space
+              :error="!!errores.nombre"
+              :error-message="errores.nombre"
+            />
+          </div>
 
-        <q-card-actions align="right" class="q-pa-md">
-          <q-btn
-            flat
-            no-caps
-            label="Cancelar"
-            :disable="crear.isPending.value"
-            @click="onDialogCancel"
-          />
-          <q-btn
-            type="submit"
-            color="primary"
-            unelevated
-            no-caps
-            label="Guardar"
-            :loading="crear.isPending.value"
-          />
-        </q-card-actions>
+          <div class="safic-campo">
+            <label for="bloque-orden" class="safic-campo__etiqueta"
+              >Orden en listas (opcional)</label
+            >
+            <q-input
+              v-model.number="formulario.orden"
+              for="bloque-orden"
+              class="safic-input"
+              outlined
+              type="number"
+              hide-bottom-space
+              :error="!!errores.orden"
+              :error-message="errores.orden"
+            />
+            <div class="text-suave" style="font-size: 12px">
+              Los bloques se muestran de menor a mayor.
+            </div>
+          </div>
+
+          <div class="row justify-end" style="gap: 10px">
+            <q-btn
+              unelevated
+              no-caps
+              class="safic-btn safic-btn--secundario"
+              label="Cancelar"
+              :disable="crear.isPending.value"
+              @click="onDialogCancel"
+            />
+            <q-btn
+              type="submit"
+              color="primary"
+              unelevated
+              no-caps
+              class="safic-btn"
+              label="Guardar bloque"
+              :loading="crear.isPending.value"
+            />
+          </div>
+        </div>
       </q-form>
     </q-card>
   </q-dialog>

@@ -1,27 +1,28 @@
 <template>
-  <q-page padding>
-    <div class="safic-page q-gutter-y-md">
-      <div>
+  <q-page class="safic-main">
+    <div class="safic-encabezado">
+      <div class="safic-encabezado__textos">
+        <div class="safic-miga">{{ session.condominioActivo?.nombre }}</div>
         <h1 class="safic-titulo">Hola, {{ primerNombre }}</h1>
-        <p class="text-suave q-mt-xs">{{ session.condominioActivo?.nombre }}</p>
       </div>
+    </div>
 
-      <div class="row q-col-gutter-md">
-        <div v-for="acceso in accesos" :key="acceso.id" class="col-12 col-sm-6 col-md-4">
-          <q-card flat class="safic-card cursor-pointer" @click="ir(acceso.ruta)">
-            <q-card-section class="row items-center no-wrap q-gutter-md">
-              <q-avatar color="primary" text-color="white" :icon="acceso.icono" />
-              <div class="text-subtitle1 text-weight-medium">{{ acceso.etiqueta }}</div>
-            </q-card-section>
-          </q-card>
-        </div>
-      </div>
+    <div v-if="accesos.length" class="safic-indicadores">
+      <button
+        v-for="acceso in accesos"
+        :key="acceso.id"
+        type="button"
+        class="safic-indicador acceso"
+        @click="ir(acceso.ruta)"
+      >
+        <span class="acceso__icono"><q-icon :name="acceso.icono" size="22px" /></span>
+        <span class="acceso__nombre">{{ acceso.etiqueta }}</span>
+        <q-icon name="sym_r_chevron_right" size="20px" class="text-suave" />
+      </button>
+    </div>
 
-      <q-card v-if="accesos.length === 0" flat class="safic-card">
-        <q-card-section class="text-suave">
-          Todavía no tienes secciones habilitadas en este condominio.
-        </q-card-section>
-      </q-card>
+    <div v-else class="safic-indicador text-suave">
+      Todavía no tienes secciones habilitadas en este condominio.
     </div>
   </q-page>
 </template>
@@ -53,3 +54,37 @@ function ir(ruta: string | undefined): void {
   }
 }
 </script>
+
+<style scoped>
+.acceso {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+
+.acceso:hover {
+  border-color: var(--safic-borde-2);
+}
+
+.acceso__icono {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: #e3efec;
+  color: var(--q-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.acceso__nombre {
+  flex-grow: 1;
+  font-size: 15px;
+  font-weight: 700;
+}
+</style>
