@@ -9,6 +9,8 @@ services:
     ports: ['9000:9000']
     environment:
       API_PROXY_TARGET: http://api:8080
+      # Necesario cuando el código está en una carpeta de Windows (no en WSL).
+      SAFIC_WATCH_POLLING: 'true'
     volumes:
       - .:/app
       - node_modules:/app/node_modules

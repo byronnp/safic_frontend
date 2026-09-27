@@ -35,6 +35,17 @@ Abre http://localhost:9000 e ingresa con un usuario de demostración del backend
 
 > El contenedor corre con el usuario `node` (UID 1000). Si tu usuario de WSL tiene otro UID (`id -u`), avísame y lo parametrizamos.
 
+## Código en una carpeta de Windows (sin WSL)
+
+Con Docker Desktop, desde PowerShell en la carpeta del proyecto (no hace falta `make`):
+
+```powershell
+docker compose up -d --build
+docker compose logs -f web
+```
+
+El contenedor detecta los cambios de archivos por sondeo (`SAFIC_WATCH_POLLING`), porque desde Windows no llegan los eventos del sistema de archivos.
+
 ## Sin Docker
 
 ```bash

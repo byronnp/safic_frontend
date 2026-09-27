@@ -1,0 +1,4 @@
+# Finales de línea LF también en Windows (Prettier y los contenedores Linux los esperan)
+* text=auto eol=lf
+*.png binary
+*.ico binary

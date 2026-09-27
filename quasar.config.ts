@@ -29,6 +29,17 @@ export default defineConfig((ctx) => {
 
       vueRouterMode: 'history',
 
+      // En Docker con el código montado desde Windows los cambios no llegan por
+      // eventos del sistema de archivos: se detectan revisando cada cierto tiempo.
+      extendViteConf(viteConf) {
+        if (process.env.SAFIC_WATCH_POLLING === 'true') {
+          viteConf.server = {
+            ...viteConf.server,
+            watch: { ...viteConf.server?.watch, usePolling: true, interval: 300 },
+          };
+        }
+      },
+
       vitePlugins: [
         [
           '@intlify/unplugin-vue-i18n/vite',
