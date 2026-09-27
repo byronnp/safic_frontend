@@ -1,0 +1,566 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>Incidencias</title>
+    <script src="./support.js"></script>
+  </head>
+  <body>
+    <x-dc>
+      <helmet>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap"
+          rel="stylesheet"
+        />
+        <style>
+          .ms {
+            font-family: 'Material Symbols Rounded';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 20px;
+            line-height: 1;
+            width: 20px;
+            height: 20px;
+            overflow: hidden;
+            flex-shrink: 0;
+            display: inline-block;
+            white-space: nowrap;
+            direction: ltr;
+            font-feature-settings: 'liga';
+            -webkit-font-smoothing: antialiased;
+            font-variation-settings:
+              'FILL' 0,
+              'wght' 400,
+              'GRAD' 0,
+              'opsz' 20;
+          }
+          .ms.on {
+            font-variation-settings:
+              'FILL' 1,
+              'wght' 500,
+              'GRAD' 0,
+              'opsz' 20;
+          }
+          body {
+            margin: 0;
+            font-family: Manrope, system-ui, sans-serif;
+            background: #f5f4ef;
+            color: #1c1b18;
+          }
+          a {
+            color: #0e5e5b;
+          }
+          a:hover {
+            color: #08403e;
+          }
+          button,
+          textarea {
+            font-family: inherit;
+          }
+        </style>
+        <link
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,300..500,0..1,0"
+          rel="stylesheet"
+        />
+      </helmet>
+      <div
+        style="width: 1440px; height: 900px; display: flex; background: #f5f4ef; overflow: hidden"
+      >
+        <nav
+          aria-label="Menú principal"
+          style="
+            width: 248px;
+            flex-shrink: 0;
+            background: #12302f;
+            color: #e8f0ee;
+            display: flex;
+            flex-direction: column;
+            padding: 20px 14px;
+            gap: 2px;
+            box-sizing: border-box;
+          "
+        >
+          <div style="display: flex; align-items: center; gap: 10px; padding: 4px 10px 20px 10px">
+            <div
+              style="
+                width: 34px;
+                height: 34px;
+                border-radius: 9px;
+                background: #f0b35a;
+                color: #12302f;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 800;
+                font-size: 16px;
+              "
+            >
+              S
+            </div>
+            <div style="font-weight: 800; font-size: 18px">SAFIC</div>
+          </div>
+          <a
+            href="#"
+            style="
+              display: flex;
+              align-items: center;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #c6d6d3;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+              gap: 12px;
+            "
+            ><span class="ms" aria-hidden="true">home</span>Inicio</a
+          >
+          <a
+            href="Main.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #c6d6d3;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+              gap: 12px;
+            "
+            ><span class="ms" aria-hidden="true">apartment</span>Unidades</a
+          >
+          <a
+            href="F2Resumen.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #c6d6d3;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+              gap: 12px;
+            "
+            ><span class="ms" aria-hidden="true">account_balance_wallet</span>Finanzas</a
+          >
+          <a
+            href="F3Agenda.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #c6d6d3;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+              gap: 12px;
+            "
+            ><span class="ms" aria-hidden="true">event_available</span>Áreas comunes</a
+          >
+          <div
+            style="
+              padding: 14px 12px 6px 12px;
+              font-size: 11px;
+              font-weight: 800;
+              letter-spacing: 1px;
+              color: #8fb0ab;
+            "
+          >
+            SEGURIDAD Y COMUNICACIÓN
+          </div>
+          <a
+            href="#"
+            style="
+              display: flex;
+              align-items: center;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #c6d6d3;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+              gap: 12px;
+            "
+            ><span class="ms" aria-hidden="true">badge</span>Bitácora de garita</a
+          >
+          <a
+            href="F4Anuncios.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #c6d6d3;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+              gap: 12px;
+            "
+            ><span class="ms" aria-hidden="true">campaign</span>Anuncios</a
+          >
+          <a
+            href="F4Tickets.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #ffffff;
+              background: #1e4a48;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 700;
+              gap: 12px;
+            "
+            ><span class="ms on" aria-hidden="true">report</span
+            ><span style="flex-grow: 1">Incidencias</span
+            ><span
+              style="
+                min-width: 22px;
+                height: 22px;
+                border-radius: 11px;
+                background: #f0b35a;
+                color: #12302f;
+                font-size: 12px;
+                font-weight: 800;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+              "
+              >{{abiertos}}</span
+            ></a
+          >
+          <a
+            href="#"
+            style="
+              display: flex;
+              align-items: center;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #c6d6d3;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+              gap: 12px;
+            "
+            ><span class="ms" aria-hidden="true">inventory_2</span>Paquetería</a
+          >
+        </nav>
+
+        <div style="flex-grow: 1; display: flex; flex-direction: column; min-width: 0">
+          <header
+            style="
+              height: 68px;
+              flex-shrink: 0;
+              background: #ffffff;
+              border-bottom: 1px solid #e4e1d8;
+              display: flex;
+              align-items: center;
+              padding: 0 32px;
+              gap: 12px;
+              box-sizing: border-box;
+            "
+          >
+            <div
+              style="
+                width: 28px;
+                height: 28px;
+                border-radius: 7px;
+                background: #e3efec;
+                color: #0b4a47;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 800;
+                font-size: 12px;
+              "
+            >
+              JV
+            </div>
+            <div style="font-size: 15px; font-weight: 700; flex-grow: 1">
+              Conjunto Jardines del Valle
+            </div>
+            <div
+              style="
+                width: 38px;
+                height: 38px;
+                border-radius: 50%;
+                background: #f0b35a;
+                color: #12302f;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 800;
+                font-size: 14px;
+              "
+            >
+              MR
+            </div>
+          </header>
+
+          <main
+            style="
+              flex-grow: 1;
+              padding: 24px 32px;
+              display: flex;
+              flex-direction: column;
+              gap: 16px;
+              box-sizing: border-box;
+              min-height: 0;
+            "
+          >
+            <div style="display: flex; align-items: flex-end; gap: 16px">
+              <div style="flex-grow: 1">
+                <div style="font-size: 13px; color: #5f5b52; font-weight: 600">
+                  Seguridad y comunicación / Incidencias
+                </div>
+                <h1
+                  style="
+                    margin: 4px 0 0 0;
+                    font-size: 28px;
+                    font-weight: 800;
+                    letter-spacing: -0.4px;
+                  "
+                >
+                  Incidencias
+                </h1>
+              </div>
+              <div style="font-size: 13px; color: #5f5b52">
+                Tiempo promedio de respuesta: <strong style="color: #1c1b18">6 h</strong>
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 16px; flex-grow: 1; min-height: 0">
+              <div
+                style="
+                  flex-grow: 1;
+                  display: grid;
+                  grid-template-columns: repeat(4, minmax(0, 1fr));
+                  gap: 12px;
+                  min-width: 0;
+                "
+              >
+                <sc-for list="{{cols}}" as="col" hint-placeholder-count="4">
+                  <div
+                    style="
+                      background: #ece9e0;
+                      border-radius: 14px;
+                      padding: 10px;
+                      display: flex;
+                      flex-direction: column;
+                      gap: 8px;
+                      min-width: 0;
+                    "
+                  >
+                    <div style="display: flex; align-items: center; padding: 4px 4px 2px 4px">
+                      <div style="font-size: 13px; font-weight: 800; flex-grow: 1">
+                        {{col.nombre}}
+                      </div>
+                      <div style="font-size: 12px; font-weight: 700; color: #5f5b52">{{col.n}}</div>
+                    </div>
+                    <sc-for list="{{col.items}}" as="t" hint-placeholder-count="2">
+                      <button onClick="{{t.pick}}" style="{{t.style}}">
+                        <span
+                          style="display: flex; gap: 6px; align-items: center; margin-bottom: 6px"
+                          ><span style="{{t.prioStyle}}">{{t.prio}}</span
+                          ><span style="font-size: 11px; color: #5f5b52; font-weight: 600"
+                            >{{t.cat}}</span
+                          ></span
+                        >
+                        <span
+                          style="
+                            display: block;
+                            font-size: 14px;
+                            font-weight: 800;
+                            line-height: 1.3;
+                          "
+                          >{{t.titulo}}</span
+                        >
+                        <span
+                          style="display: block; font-size: 12px; color: #5f5b52; margin-top: 6px"
+                          >{{t.unidad}} · {{t.hace}}</span
+                        >
+                      </button>
+                    </sc-for>
+                  </div>
+                </sc-for>
+              </div>
+
+              <aside
+                style="
+                  width: 380px;
+                  flex-shrink: 0;
+                  background: #ffffff;
+                  border: 1px solid #e4e1d8;
+                  border-radius: 14px;
+                  padding: 18px 20px;
+                  display: flex;
+                  flex-direction: column;
+                  gap: 12px;
+                  box-sizing: border-box;
+                "
+              >
+                <div style="display: flex; gap: 6px; align-items: center">
+                  <span style="{{sel.prioStyle}}">{{sel.prio}}</span
+                  ><span style="font-size: 12px; color: #5f5b52; font-weight: 600"
+                    >{{sel.cat}} · #{{sel.num}}</span
+                  >
+                </div>
+                <h2 style="margin: 0; font-size: 19px; font-weight: 800; line-height: 1.3">
+                  {{sel.titulo}}
+                </h2>
+                <div style="font-size: 13px; color: #3d3a33">
+                  Reportado por {{sel.autor}} · {{sel.unidad}} · {{sel.hace}}
+                </div>
+                <div style="font-size: 14px; color: #1c1b18; line-height: 1.5">{{sel.desc}}</div>
+                <div
+                  style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px"
+                >
+                  <div
+                    style="
+                      height: 70px;
+                      border-radius: 10px;
+                      background: #e4e1d8;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      font-size: 11px;
+                      color: #5f5b52;
+                      font-weight: 700;
+                    "
+                  >
+                    Foto 1
+                  </div>
+                  <div
+                    style="
+                      height: 70px;
+                      border-radius: 10px;
+                      background: #e4e1d8;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      font-size: 11px;
+                      color: #5f5b52;
+                      font-weight: 700;
+                    "
+                  >
+                    Foto 2
+                  </div>
+                </div>
+                <div
+                  style="
+                    font-size: 12px;
+                    font-weight: 800;
+                    color: #5f5b52;
+                    letter-spacing: 0.4px;
+                    margin-top: 4px;
+                  "
+                >
+                  COMENTARIOS
+                </div>
+                <div
+                  style="
+                    background: #f7f6f2;
+                    border-radius: 10px;
+                    padding: 10px 12px;
+                    font-size: 13px;
+                    line-height: 1.45;
+                  "
+                >
+                  <strong>Administración</strong> · Ya coordinamos con el técnico, viene mañana a
+                  las 09:00.
+                </div>
+                <div
+                  style="
+                    background: #fff7ec;
+                    border: 1px dashed #e8b874;
+                    border-radius: 10px;
+                    padding: 10px 12px;
+                    font-size: 13px;
+                    line-height: 1.45;
+                    color: #7a3808;
+                  "
+                >
+                  <strong>Nota interna</strong> · Cotización $ 85,00. No visible para el residente.
+                </div>
+                <div style="flex-grow: 1"></div>
+                <textarea
+                  rows="2"
+                  aria-label="Escribe un comentario"
+                  placeholder="Escribe un comentario para el residente"
+                  style="
+                    border: 1px solid #cfcbbf;
+                    border-radius: 10px;
+                    padding: 10px 12px;
+                    font-size: 14px;
+                    resize: none;
+                  "
+                ></textarea>
+                <div style="display: flex; gap: 8px">
+                  <button
+                    style="
+                      flex-grow: 1;
+                      height: 44px;
+                      border-radius: 10px;
+                      border: 1px solid #d8d4c8;
+                      background: #ffffff;
+                      font-size: 13px;
+                      font-weight: 700;
+                      cursor: pointer;
+                    "
+                  >
+                    Nota interna
+                  </button>
+                  <button onClick="{{advance}}" style="{{advStyle}}">{{advLabel}}</button>
+                </div>
+              </aside>
+            </div>
+          </main>
+        </div>
+      </div>
+    </x-dc>
+    <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+      class Component extends DCLogic {
+        constructor(props) {
+          super(props);
+          this.state = { sel: 't1', st: { t1: 0, t2: 0, t3: 1, t4: 1, t5: 2, t6: 3 } };
+        }
+        renderVals() {
+          var self = this, S = this.state;
+          var pr = function (p) { var m = { Alta: ['#FDE8E6', '#9B1C12'], Media: ['#FFF1DC', '#8A3F0A'], Baja: ['#E6ECF7', '#23407A'] }[p]; return 'padding:3px 8px;border-radius:999px;font-size:11px;font-weight:800;background:' + m[0] + ';color:' + m[1]; };
+          var T = [
+            { id: 't1', num: 214, titulo: 'Luz dañada en el parqueadero subterráneo', cat: 'Mantenimiento', prio: 'Alta', unidad: 'Guardia', autor: 'J. Pazmiño (guardia)', hace: 'hace 2 h', desc: 'Tres lámparas apagadas en la zona de visitas del subsuelo 1. Queda muy oscuro de noche.' },
+            { id: 't2', num: 213, titulo: 'Ruido después de las 23:00', cat: 'Convivencia', prio: 'Media', unidad: 'B-306', autor: 'Jorge Cevallos', hace: 'hace 5 h', desc: 'Música alta en el piso de arriba varias noches seguidas.' },
+            { id: 't3', num: 209, titulo: 'Filtración en el techo del ascensor 2', cat: 'Mantenimiento', prio: 'Alta', unidad: 'C-110', autor: 'Paola Ruiz', hace: 'hace 1 día', desc: 'Cae agua dentro del ascensor cuando llueve.' },
+            { id: 't4', num: 207, titulo: 'Puerta peatonal no cierra sola', cat: 'Seguridad', prio: 'Media', unidad: 'A-201', autor: 'Fernando Salazar', hace: 'hace 2 días', desc: 'La puerta de la entrada peatonal queda abierta.' },
+            { id: 't5', num: 201, titulo: 'Césped del parque infantil sin cortar', cat: 'Áreas verdes', prio: 'Baja', unidad: 'CS-04', autor: 'Gabriela Torres', hace: 'hace 4 días', desc: 'El césped está muy alto.' },
+            { id: 't6', num: 198, titulo: 'Timbre del intercomunicador A-102', cat: 'Mantenimiento', prio: 'Baja', unidad: 'A-102', autor: 'Diego Mora', hace: 'hace 6 días', desc: 'No suena el intercomunicador.' }
+          ];
+          var names = ['Abierto', 'En proceso', 'Resuelto', 'Cerrado'];
+          var cols = names.map(function (n, ci) {
+            var items = T.filter(function (t) { return S.st[t.id] === ci; }).map(function (t) {
+              var on = t.id === S.sel;
+              return Object.assign({}, t, { prioStyle: pr(t.prio), pick: function () { self.setState({ sel: t.id }); },
+                style: 'text-align:left;cursor:pointer;border-radius:12px;padding:12px;background:#FFFFFF;color:#1C1B18;' + (on ? 'border:2px solid #0E5E5B' : 'border:1px solid #E4E1D8') });
+            });
+            return { nombre: n, n: items.length, items: items };
+          });
+          var s = T.filter(function (t) { return t.id === S.sel; })[0];
+          var cur = S.st[s.id];
+          var labels = ['Pasar a En proceso', 'Marcar resuelto', 'Esperando al residente', 'Cerrado'];
+          return {
+            cols: cols,
+            abiertos: T.filter(function (t) { return S.st[t.id] === 0; }).length,
+            sel: Object.assign({}, s, { prioStyle: pr(s.prio) }),
+            advLabel: labels[cur],
+            advance: function () { if (cur < 2) { var n = Object.assign({}, self.state.st); n[s.id] = cur + 1; self.setState({ st: n }); } },
+            advStyle: 'flex-grow:2;height:44px;border-radius:10px;border:none;font-size:14px;font-weight:700;cursor:pointer;' + (cur < 2 ? 'background:#0E5E5B;color:#FFFFFF' : 'background:#E4E1D8;color:#6B675D')
+          };
+        }
+      }
+    </script>
+  </body>
+</html>

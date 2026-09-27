@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>Reservar área común</title>
+    <script src="./support.js"></script>
+  </head>
+  <body>
+    <x-dc>
+      <helmet>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap"
+          rel="stylesheet"
+        />
+        <style>
+          body {
+            margin: 0;
+            font-family: Manrope, system-ui, sans-serif;
+            background: #f5f4ef;
+            color: #1c1b18;
+          }
+          a {
+            color: #0e5e5b;
+          }
+          a:hover {
+            color: #08403e;
+          }
+          button,
+          input {
+            font-family: inherit;
+          }
+        </style>
+      </helmet>
+      <div
+        style="
+          width: 390px;
+          height: 844px;
+          display: flex;
+          flex-direction: column;
+          background: #f5f4ef;
+          overflow: hidden;
+        "
+      >
+        <div
+          style="
+            height: 60px;
+            flex-shrink: 0;
+            background: #ffffff;
+            border-bottom: 1px solid #e4e1d8;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 0 8px;
+          "
+        >
+          <a
+            href="#"
+            aria-label="Volver"
+            style="
+              width: 44px;
+              height: 44px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              color: #1c1b18;
+            "
+          >
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            >
+              <path d="M15 6l-6 6 6 6"></path></svg
+          ></a>
+          <div style="font-size: 17px; font-weight: 800">Reservar</div>
+        </div>
+
+        <sc-if value="{{form}}" hint-placeholder-val="{{ true }}">
+          <div
+            style="
+              flex-grow: 1;
+              padding: 14px 16px;
+              display: flex;
+              flex-direction: column;
+              gap: 12px;
+              overflow: hidden;
+            "
+          >
+            <sc-if value="{{mora}}" hint-placeholder-val="{{ false }}">
+              <div
+                style="
+                  background: #fde8e6;
+                  border: 1px solid #f3b8b2;
+                  border-radius: 12px;
+                  padding: 12px 14px;
+                  font-size: 13px;
+                  color: #7f1810;
+                  line-height: 1.45;
+                "
+              >
+                <strong>Reservas restringidas por cuotas vencidas.</strong> Paga o solicita un
+                convenio y se habilitan en máximo 24 horas.
+                <a href="F2MiCuenta.dc.html" style="color: #7f1810; font-weight: 800"
+                  >Ver mi cuenta</a
+                >
+              </div>
+            </sc-if>
+            <div style="display: flex; gap: 8px; overflow: hidden">
+              <sc-for list="{{areas}}" as="a" hint-placeholder-count="4">
+                <button onClick="{{a.pick}}" style="{{a.style}}">{{a.nombre}}</button>
+              </sc-for>
+            </div>
+            <div
+              style="
+                background: #ffffff;
+                border: 1px solid #e4e1d8;
+                border-radius: 14px;
+                padding: 12px 14px;
+                font-size: 13px;
+                color: #3d3a33;
+                display: flex;
+                gap: 14px;
+              "
+            >
+              <span>{{area.cap}}</span><span>{{area.costoTxt}}</span><span>{{area.aprobTxt}}</span>
+            </div>
+            <div style="font-size: 14px; font-weight: 800">Fecha</div>
+            <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px">
+              <sc-for list="{{days}}" as="d" hint-placeholder-count="7">
+                <button onClick="{{d.pick}}" style="{{d.style}}">
+                  <span style="display: block; font-size: 11px; font-weight: 700">{{d.dow}}</span
+                  ><span style="display: block; font-size: 17px; font-weight: 800">{{d.num}}</span>
+                </button>
+              </sc-for>
+            </div>
+            <div style="font-size: 14px; font-weight: 800">Horario</div>
+            <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+              <sc-for list="{{slots}}" as="s" hint-placeholder-count="4">
+                <button onClick="{{s.pick}}" disabled="{{s.busy}}" style="{{s.style}}">
+                  {{s.label}}<span style="display: block; font-size: 11px; font-weight: 600"
+                    >{{s.sub}}</span
+                  >
+                </button>
+              </sc-for>
+            </div>
+            <div style="flex-grow: 1"></div>
+            <div
+              style="
+                background: #ffffff;
+                border: 1px solid #e4e1d8;
+                border-radius: 14px;
+                padding: 12px 14px;
+                font-size: 14px;
+                display: flex;
+                flex-direction: column;
+                gap: 6px;
+              "
+            >
+              <div style="display: flex">
+                <span style="flex-grow: 1; color: #5f5b52">Costo de uso</span
+                ><strong>{{area.costo}}</strong>
+              </div>
+              <sc-if value="{{area.hasGar}}" hint-placeholder-val="{{ false }}"
+                ><div style="display: flex">
+                  <span style="flex-grow: 1; color: #5f5b52">Garantía (se devuelve)</span
+                  ><strong>$ 100,00</strong>
+                </div></sc-if
+              >
+              <div style="font-size: 12px; color: #5f5b52">
+                Paga hasta 24 h antes o la reserva se cancela sola.
+              </div>
+            </div>
+            <label
+              style="
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                min-height: 44px;
+                font-size: 13px;
+                color: #3d3a33;
+              "
+            >
+              <input
+                type="checkbox"
+                checked="{{acepta}}"
+                onChange="{{toggleAcepta}}"
+                style="width: 20px; height: 20px; accent-color: #0e5e5b"
+              />Acepto el <a href="#" style="font-weight: 700">reglamento del área</a></label
+            >
+          </div>
+          <div style="padding: 0 16px 16px 16px; flex-shrink: 0">
+            <button onClick="{{book}}" style="{{bookStyle}}">{{bookLabel}}</button>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{done}}" hint-placeholder-val="{{ false }}">
+          <div
+            style="
+              flex-grow: 1;
+              padding: 40px 24px;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              text-align: center;
+              gap: 14px;
+            "
+          >
+            <div style="{{doneIcon}}">
+              <svg
+                width="34"
+                height="34"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.4"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M5 12l5 5 9-10"></path>
+              </svg>
+            </div>
+            <div style="font-size: 22px; font-weight: 800">{{doneTitle}}</div>
+            <div style="font-size: 15px; color: #3d3a33; line-height: 1.5">{{doneText}}</div>
+            <div
+              style="
+                width: 100%;
+                background: #ffffff;
+                border: 1px solid #e4e1d8;
+                border-radius: 14px;
+                padding: 14px;
+                font-size: 14px;
+                text-align: left;
+                display: flex;
+                flex-direction: column;
+                gap: 6px;
+                box-sizing: border-box;
+              "
+            >
+              <div style="display: flex">
+                <span style="flex-grow: 1; color: #5f5b52">Área</span
+                ><strong>{{area.nombre}}</strong>
+              </div>
+              <div style="display: flex">
+                <span style="flex-grow: 1; color: #5f5b52">Fecha</span><strong>{{fechaTxt}}</strong>
+              </div>
+              <div style="display: flex">
+                <span style="flex-grow: 1; color: #5f5b52">Horario</span
+                ><strong>{{slotTxt}}</strong>
+              </div>
+            </div>
+            <sc-if value="{{needPay}}" hint-placeholder-val="{{ true }}"
+              ><a
+                href="F2MiCuenta.dc.html"
+                style="
+                  width: 100%;
+                  height: 50px;
+                  border-radius: 12px;
+                  background: #0e5e5b;
+                  color: #ffffff;
+                  font-size: 16px;
+                  font-weight: 700;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  text-decoration: none;
+                "
+                >Ir a pagar</a
+              ></sc-if
+            >
+            <button
+              onClick="{{again}}"
+              style="
+                height: 44px;
+                border: none;
+                background: transparent;
+                color: #0e5e5b;
+                font-size: 14px;
+                font-weight: 700;
+                cursor: pointer;
+              "
+            >
+              Hacer otra reserva
+            </button>
+          </div>
+        </sc-if>
+      </div>
+    </x-dc>
+    <script
+      type="text/x-dc"
+      data-dc-script
+      data-props='{"enMora":{"editor":"boolean","default":false},"$preview":{"width":390,"height":844}}'
+    >
+      class Component extends DCLogic {
+        constructor(props) { super(props); this.state = { a: 1, d: 1, s: -1, acepta: false, done: false }; }
+        renderVals() {
+          var self = this, st = this.state;
+          var mora = this.props.enMora ?? false;
+          var A = [
+            { nombre: 'Salón', full: 'Salón comunal', cap: '60 pers.', costo: '$ 50,00', costoTxt: '$ 50 + garantía', aprobTxt: 'Con aprobación', hasGar: true, slots: ['10:00–14:00', '14:00–18:00', '18:00–23:00'] },
+            { nombre: 'BBQ 1', full: 'Área BBQ 1', cap: '15 pers.', costo: '$ 15,00', costoTxt: '$ 15', aprobTxt: 'Confirmación inmediata', hasGar: false, slots: ['10:00–13:00', '13:00–16:00', '16:00–19:00', '19:00–22:00'] },
+            { nombre: 'BBQ 2', full: 'Área BBQ 2', cap: '15 pers.', costo: '$ 15,00', costoTxt: '$ 15', aprobTxt: 'Confirmación inmediata', hasGar: false, slots: ['10:00–13:00', '13:00–16:00', '16:00–19:00', '19:00–22:00'] },
+            { nombre: 'Cancha', full: 'Cancha múltiple', cap: 'Máx. 2 h', costo: 'Gratis', costoTxt: 'Gratis', aprobTxt: 'Confirmación inmediata', hasGar: false, slots: ['08:00–10:00', '10:00–12:00', '16:00–18:00', '18:00–20:00'] }
+          ];
+          var D = [['VIE', 2], ['SÁB', 3], ['DOM', 4], ['LUN', 5], ['MAR', 6], ['MIÉ', 7], ['JUE', 8]];
+          var area = A[st.a];
+          var busy = function (ai, di, si) { return (ai * 3 + di * 2 + si) % 5 === 0 || (ai === 1 && di === 1 && si === 1); };
+          var chip = function (on) { return 'flex-shrink:0;height:40px;padding:0 14px;border-radius:999px;font-size:14px;font-weight:700;cursor:pointer;' + (on ? 'background:#0E5E5B;color:#FFFFFF;border:1px solid #0E5E5B' : 'background:#FFFFFF;color:#1C1B18;border:1px solid #D8D4C8'); };
+          var areas = A.map(function (x, i) { return { nombre: x.nombre, style: chip(i === st.a), pick: function () { self.setState({ a: i, s: -1 }); } }; });
+          var days = D.map(function (d, i) {
+            var on = i === st.d;
+            return { dow: d[0], num: d[1], pick: function () { self.setState({ d: i, s: -1 }); },
+              style: 'height:56px;border-radius:12px;cursor:pointer;padding:0;' + (on ? 'background:#0E5E5B;color:#FFFFFF;border:1px solid #0E5E5B' : 'background:#FFFFFF;color:#1C1B18;border:1px solid #E4E1D8') };
+          });
+          var slots = area.slots.map(function (label, i) {
+            var b = busy(st.a, st.d, i), on = i === st.s;
+            return { label: label, busy: b, sub: b ? 'Ocupado' : (on ? 'Elegido' : 'Libre'),
+              pick: function () { if (!b) self.setState({ s: i }); },
+              style: 'height:54px;border-radius:12px;font-size:14px;font-weight:800;' + (b ? 'background:#ECEAE4;color:#8A857A;border:1px solid #E4E1D8;cursor:not-allowed' : (on ? 'background:#E3EFEC;color:#0B4A47;border:2px solid #0E5E5B;cursor:pointer' : 'background:#FFFFFF;color:#1C1B18;border:1px solid #D8D4C8;cursor:pointer')) };
+          });
+          var ready = !mora && st.s >= 0 && st.acepta;
+          var fechaTxt = D[st.d][0].charAt(0) + D[st.d][0].slice(1).toLowerCase() + ' ' + D[st.d][1] + ' oct';
+          return {
+            mora: mora, form: !st.done, done: st.done,
+            areas: areas, days: days, slots: slots,
+            area: Object.assign({}, area, { nombre: area.full }),
+            acepta: st.acepta,
+            toggleAcepta: function () { self.setState({ acepta: !self.state.acepta }); },
+            book: function () { if (ready) self.setState({ done: true }); },
+            again: function () { self.setState({ done: false, s: -1, acepta: false }); },
+            bookLabel: mora ? 'Reservas restringidas' : (area.hasGar ? 'Solicitar reserva' : 'Reservar'),
+            bookStyle: 'width:100%;height:52px;border-radius:12px;border:none;font-size:16px;font-weight:700;cursor:pointer;' + (ready ? 'background:#0E5E5B;color:#FFFFFF' : 'background:#E4E1D8;color:#6B675D'),
+            fechaTxt: fechaTxt,
+            slotTxt: st.s >= 0 ? area.slots[st.s] : '',
+            needPay: area.costo !== 'Gratis' && !area.hasGar,
+            doneTitle: area.hasGar ? 'Solicitud enviada' : 'Reserva confirmada',
+            doneText: area.hasGar ? 'La administración revisará tu solicitud en máximo 48 horas. Al aprobarla se generan el costo de uso y la garantía.' : (area.costo === 'Gratis' ? 'Tu horario quedó reservado. El guardia registrará tu ingreso.' : ('Paga ' + area.costo + ' hasta 24 horas antes; si no, la reserva se cancela sola.')),
+            doneIcon: 'width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;' + (area.hasGar ? 'background:#FFF1DC;color:#8A3F0A' : 'background:#E3EFEC;color:#0B4A47')
+          };
+        }
+      }
+    </script>
+  </body>
+</html>

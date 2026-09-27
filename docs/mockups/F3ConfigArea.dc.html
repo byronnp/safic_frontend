@@ -1,0 +1,846 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>Configurar área común</title>
+    <script src="./support.js"></script>
+  </head>
+  <body>
+    <x-dc>
+      <helmet>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap"
+          rel="stylesheet"
+        />
+        <style>
+          .ms {
+            font-family: 'Material Symbols Rounded';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 20px;
+            line-height: 1;
+            width: 20px;
+            height: 20px;
+            overflow: hidden;
+            flex-shrink: 0;
+            display: inline-block;
+            white-space: nowrap;
+            direction: ltr;
+            font-feature-settings: 'liga';
+            -webkit-font-smoothing: antialiased;
+            font-variation-settings:
+              'FILL' 0,
+              'wght' 400,
+              'GRAD' 0,
+              'opsz' 20;
+          }
+          .ms.on {
+            font-variation-settings:
+              'FILL' 1,
+              'wght' 500,
+              'GRAD' 0,
+              'opsz' 20;
+          }
+          body {
+            margin: 0;
+            font-family: Manrope, system-ui, sans-serif;
+            background: #f5f4ef;
+            color: #1c1b18;
+          }
+          a {
+            color: #0e5e5b;
+          }
+          a:hover {
+            color: #08403e;
+          }
+          button,
+          input,
+          textarea {
+            font-family: inherit;
+          }
+        </style>
+        <link
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,300..500,0..1,0"
+          rel="stylesheet"
+        />
+      </helmet>
+      <div
+        style="width: 1440px; height: 900px; display: flex; background: #f5f4ef; overflow: hidden"
+      >
+        <nav
+          aria-label="Menú principal"
+          style="
+            width: 248px;
+            flex-shrink: 0;
+            background: #12302f;
+            color: #e8f0ee;
+            display: flex;
+            flex-direction: column;
+            padding: 20px 14px;
+            gap: 2px;
+            box-sizing: border-box;
+          "
+        >
+          <div style="display: flex; align-items: center; gap: 10px; padding: 4px 10px 20px 10px">
+            <div
+              style="
+                width: 34px;
+                height: 34px;
+                border-radius: 9px;
+                background: #f0b35a;
+                color: #12302f;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 800;
+                font-size: 16px;
+              "
+            >
+              S
+            </div>
+            <div style="font-weight: 800; font-size: 18px">SAFIC</div>
+          </div>
+          <a
+            href="#"
+            style="
+              display: flex;
+              align-items: center;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #c6d6d3;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+              gap: 12px;
+            "
+            ><span class="ms" aria-hidden="true">home</span>Inicio</a
+          >
+          <a
+            href="Main.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #c6d6d3;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+              gap: 12px;
+            "
+            ><span class="ms" aria-hidden="true">apartment</span>Unidades</a
+          >
+          <a
+            href="F2Resumen.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #c6d6d3;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+              gap: 12px;
+            "
+            ><span class="ms" aria-hidden="true">account_balance_wallet</span>Finanzas</a
+          >
+          <div
+            style="
+              padding: 14px 12px 6px 12px;
+              font-size: 11px;
+              font-weight: 800;
+              letter-spacing: 1px;
+              color: #8fb0ab;
+            "
+          >
+            ÁREAS COMUNES
+          </div>
+          <a
+            href="F3Agenda.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #c6d6d3;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+              gap: 12px;
+            "
+            ><span class="ms" aria-hidden="true">calendar_month</span>Agenda</a
+          >
+          <a
+            href="F3ConfigArea.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #ffffff;
+              background: #1e4a48;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 700;
+              gap: 12px;
+            "
+            ><span class="ms on" aria-hidden="true">rule</span>Áreas y reglas</a
+          >
+          <a
+            href="#"
+            style="
+              display: flex;
+              align-items: center;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #c6d6d3;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+              gap: 12px;
+            "
+            ><span class="ms" aria-hidden="true">build</span>Bloqueos y mantenimiento</a
+          >
+          <a
+            href="#"
+            style="
+              display: flex;
+              align-items: center;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #c6d6d3;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+              gap: 12px;
+            "
+            ><span class="ms" aria-hidden="true">block</span>Restricción por mora</a
+          >
+        </nav>
+
+        <div style="flex-grow: 1; display: flex; flex-direction: column; min-width: 0">
+          <header
+            style="
+              height: 68px;
+              flex-shrink: 0;
+              background: #ffffff;
+              border-bottom: 1px solid #e4e1d8;
+              display: flex;
+              align-items: center;
+              padding: 0 32px;
+              gap: 12px;
+              box-sizing: border-box;
+            "
+          >
+            <div
+              style="
+                width: 28px;
+                height: 28px;
+                border-radius: 7px;
+                background: #e3efec;
+                color: #0b4a47;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 800;
+                font-size: 12px;
+              "
+            >
+              JV
+            </div>
+            <div style="font-size: 15px; font-weight: 700; flex-grow: 1">
+              Conjunto Jardines del Valle
+            </div>
+            <div
+              style="
+                width: 38px;
+                height: 38px;
+                border-radius: 50%;
+                background: #f0b35a;
+                color: #12302f;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 800;
+                font-size: 14px;
+              "
+            >
+              MR
+            </div>
+          </header>
+
+          <main
+            style="
+              flex-grow: 1;
+              padding: 24px 32px;
+              display: flex;
+              gap: 20px;
+              box-sizing: border-box;
+              min-height: 0;
+            "
+          >
+            <aside
+              style="width: 280px; flex-shrink: 0; display: flex; flex-direction: column; gap: 10px"
+            >
+              <div style="font-size: 13px; color: #5f5b52; font-weight: 600">
+                Áreas comunes / Áreas y reglas
+              </div>
+              <h1
+                style="margin: 0 0 6px 0; font-size: 26px; font-weight: 800; letter-spacing: -0.4px"
+              >
+                Áreas
+              </h1>
+              <div style="font-size: 12px; color: #5f5b52; line-height: 1.5">
+                Salen de las amenidades reservables del condominio.
+              </div>
+              <a
+                href="#"
+                style="
+                  display: block;
+                  background: #ffffff;
+                  border: 2px solid #0e5e5b;
+                  border-radius: 12px;
+                  padding: 12px 14px;
+                  text-decoration: none;
+                  color: #1c1b18;
+                "
+                ><div style="font-size: 15px; font-weight: 800">Salón comunal</div>
+                <div style="font-size: 12px; color: #5f5b52">
+                  $ 50 + $ 100 garantía · con aprobación
+                </div></a
+              >
+              <a
+                href="#"
+                style="
+                  display: block;
+                  background: #ffffff;
+                  border: 1px solid #e4e1d8;
+                  border-radius: 12px;
+                  padding: 12px 14px;
+                  text-decoration: none;
+                  color: #1c1b18;
+                "
+                ><div style="font-size: 15px; font-weight: 800">Área BBQ 1</div>
+                <div style="font-size: 12px; color: #5f5b52">
+                  $ 15 · sin garantía · automática
+                </div></a
+              >
+              <a
+                href="#"
+                style="
+                  display: block;
+                  background: #ffffff;
+                  border: 1px solid #e4e1d8;
+                  border-radius: 12px;
+                  padding: 12px 14px;
+                  text-decoration: none;
+                  color: #1c1b18;
+                "
+                ><div style="font-size: 15px; font-weight: 800">Área BBQ 2</div>
+                <div style="font-size: 12px; color: #5f5b52">
+                  $ 15 · sin garantía · automática
+                </div></a
+              >
+              <a
+                href="#"
+                style="
+                  display: block;
+                  background: #ffffff;
+                  border: 1px solid #e4e1d8;
+                  border-radius: 12px;
+                  padding: 12px 14px;
+                  text-decoration: none;
+                  color: #1c1b18;
+                "
+                ><div style="font-size: 15px; font-weight: 800">Cancha múltiple</div>
+                <div style="font-size: 12px; color: #5f5b52">Gratis · máx. 2 h · automática</div></a
+              >
+            </aside>
+
+            <section
+              style="
+                flex-grow: 1;
+                background: #ffffff;
+                border: 1px solid #e4e1d8;
+                border-radius: 14px;
+                display: flex;
+                flex-direction: column;
+                min-width: 0;
+                overflow: hidden;
+              "
+            >
+              <div
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: 12px;
+                  padding: 18px 24px;
+                  border-bottom: 1px solid #ece9e0;
+                "
+              >
+                <div style="flex-grow: 1">
+                  <h2 style="margin: 0; font-size: 22px; font-weight: 800">Salón comunal</h2>
+                  <div style="font-size: 13px; color: #5f5b52">
+                    Amenidad: Salón comunal · Torre A, planta baja
+                  </div>
+                </div>
+                <button
+                  style="
+                    height: 44px;
+                    padding: 0 16px;
+                    border-radius: 10px;
+                    border: 1px solid #d8d4c8;
+                    background: #ffffff;
+                    font-size: 14px;
+                    font-weight: 700;
+                    cursor: pointer;
+                  "
+                >
+                  Cancelar
+                </button>
+                <button
+                  style="
+                    height: 44px;
+                    padding: 0 18px;
+                    border-radius: 10px;
+                    border: none;
+                    background: #0e5e5b;
+                    color: #ffffff;
+                    font-size: 14px;
+                    font-weight: 700;
+                    cursor: pointer;
+                  "
+                >
+                  Guardar cambios
+                </button>
+              </div>
+
+              <div
+                style="
+                  display: grid;
+                  grid-template-columns: repeat(2, minmax(0, 1fr));
+                  gap: 0;
+                  flex-grow: 1;
+                  min-height: 0;
+                "
+              >
+                <div
+                  style="
+                    padding: 20px 24px;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 16px;
+                    border-right: 1px solid #ece9e0;
+                  "
+                >
+                  <div
+                    style="font-size: 13px; font-weight: 800; color: #5f5b52; letter-spacing: 0.4px"
+                  >
+                    HORARIO Y REGLAS
+                  </div>
+                  <div
+                    style="
+                      display: grid;
+                      grid-template-columns: repeat(2, minmax(0, 1fr));
+                      gap: 12px;
+                    "
+                  >
+                    <label
+                      style="
+                        display: flex;
+                        flex-direction: column;
+                        gap: 6px;
+                        font-size: 13px;
+                        font-weight: 700;
+                        color: #3d3a33;
+                      "
+                      >Abre<input
+                        value="08:00"
+                        style="
+                          height: 44px;
+                          border: 1px solid #cfcbbf;
+                          border-radius: 9px;
+                          padding: 0 12px;
+                          font-size: 15px;
+                        "
+                    /></label>
+                    <label
+                      style="
+                        display: flex;
+                        flex-direction: column;
+                        gap: 6px;
+                        font-size: 13px;
+                        font-weight: 700;
+                        color: #3d3a33;
+                      "
+                      >Cierra<input
+                        value="23:00"
+                        style="
+                          height: 44px;
+                          border: 1px solid #cfcbbf;
+                          border-radius: 9px;
+                          padding: 0 12px;
+                          font-size: 15px;
+                        "
+                    /></label>
+                    <label
+                      style="
+                        display: flex;
+                        flex-direction: column;
+                        gap: 6px;
+                        font-size: 13px;
+                        font-weight: 700;
+                        color: #3d3a33;
+                      "
+                      >Duración mínima<input
+                        value="2 horas"
+                        style="
+                          height: 44px;
+                          border: 1px solid #cfcbbf;
+                          border-radius: 9px;
+                          padding: 0 12px;
+                          font-size: 15px;
+                        "
+                    /></label>
+                    <label
+                      style="
+                        display: flex;
+                        flex-direction: column;
+                        gap: 6px;
+                        font-size: 13px;
+                        font-weight: 700;
+                        color: #3d3a33;
+                      "
+                      >Duración máxima<input
+                        value="6 horas"
+                        style="
+                          height: 44px;
+                          border: 1px solid #cfcbbf;
+                          border-radius: 9px;
+                          padding: 0 12px;
+                          font-size: 15px;
+                        "
+                    /></label>
+                    <label
+                      style="
+                        display: flex;
+                        flex-direction: column;
+                        gap: 6px;
+                        font-size: 13px;
+                        font-weight: 700;
+                        color: #3d3a33;
+                      "
+                      >Reservar con al menos<input
+                        value="48 horas"
+                        style="
+                          height: 44px;
+                          border: 1px solid #cfcbbf;
+                          border-radius: 9px;
+                          padding: 0 12px;
+                          font-size: 15px;
+                        "
+                    /></label>
+                    <label
+                      style="
+                        display: flex;
+                        flex-direction: column;
+                        gap: 6px;
+                        font-size: 13px;
+                        font-weight: 700;
+                        color: #3d3a33;
+                      "
+                      >Hasta con<input
+                        value="60 días"
+                        style="
+                          height: 44px;
+                          border: 1px solid #cfcbbf;
+                          border-radius: 9px;
+                          padding: 0 12px;
+                          font-size: 15px;
+                        "
+                    /></label>
+                    <label
+                      style="
+                        display: flex;
+                        flex-direction: column;
+                        gap: 6px;
+                        font-size: 13px;
+                        font-weight: 700;
+                        color: #3d3a33;
+                      "
+                      >Capacidad<input
+                        value="60 personas"
+                        style="
+                          height: 44px;
+                          border: 1px solid #cfcbbf;
+                          border-radius: 9px;
+                          padding: 0 12px;
+                          font-size: 15px;
+                        "
+                    /></label>
+                    <label
+                      style="
+                        display: flex;
+                        flex-direction: column;
+                        gap: 6px;
+                        font-size: 13px;
+                        font-weight: 700;
+                        color: #3d3a33;
+                      "
+                      >Reservas por unidad al mes<input
+                        value="1"
+                        style="
+                          height: 44px;
+                          border: 1px solid #cfcbbf;
+                          border-radius: 9px;
+                          padding: 0 12px;
+                          font-size: 15px;
+                        "
+                    /></label>
+                  </div>
+                  <div style="display: flex; gap: 6px; flex-wrap: wrap">
+                    <span
+                      style="
+                        padding: 8px 12px;
+                        border-radius: 999px;
+                        background: #e3efec;
+                        color: #0b4a47;
+                        font-size: 13px;
+                        font-weight: 700;
+                      "
+                      >Lun</span
+                    >
+                    <span
+                      style="
+                        padding: 8px 12px;
+                        border-radius: 999px;
+                        background: #e3efec;
+                        color: #0b4a47;
+                        font-size: 13px;
+                        font-weight: 700;
+                      "
+                      >Mar</span
+                    >
+                    <span
+                      style="
+                        padding: 8px 12px;
+                        border-radius: 999px;
+                        background: #e3efec;
+                        color: #0b4a47;
+                        font-size: 13px;
+                        font-weight: 700;
+                      "
+                      >Mié</span
+                    >
+                    <span
+                      style="
+                        padding: 8px 12px;
+                        border-radius: 999px;
+                        background: #e3efec;
+                        color: #0b4a47;
+                        font-size: 13px;
+                        font-weight: 700;
+                      "
+                      >Jue</span
+                    >
+                    <span
+                      style="
+                        padding: 8px 12px;
+                        border-radius: 999px;
+                        background: #e3efec;
+                        color: #0b4a47;
+                        font-size: 13px;
+                        font-weight: 700;
+                      "
+                      >Vie</span
+                    >
+                    <span
+                      style="
+                        padding: 8px 12px;
+                        border-radius: 999px;
+                        background: #e3efec;
+                        color: #0b4a47;
+                        font-size: 13px;
+                        font-weight: 700;
+                      "
+                      >Sáb</span
+                    >
+                    <span
+                      style="
+                        padding: 8px 12px;
+                        border-radius: 999px;
+                        background: #e3efec;
+                        color: #0b4a47;
+                        font-size: 13px;
+                        font-weight: 700;
+                      "
+                      >Dom</span
+                    >
+                  </div>
+                  <label
+                    style="
+                      display: flex;
+                      flex-direction: column;
+                      gap: 6px;
+                      font-size: 13px;
+                      font-weight: 700;
+                      color: #3d3a33;
+                    "
+                    >Reglamento que el residente acepta al reservar
+                    <textarea
+                      rows="4"
+                      style="
+                        border: 1px solid #cfcbbf;
+                        border-radius: 9px;
+                        padding: 10px 12px;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        resize: none;
+                      "
+                    >
+Música hasta las 22:00. Entregar el salón limpio y con el mobiliario en su lugar. Máximo 60 personas. Prohibido fumar en el interior.</textarea>
+                  </label>
+                </div>
+
+                <div style="padding: 20px 24px; display: flex; flex-direction: column; gap: 16px">
+                  <div
+                    style="font-size: 13px; font-weight: 800; color: #5f5b52; letter-spacing: 0.4px"
+                  >
+                    COSTOS Y APROBACIÓN
+                  </div>
+                  <div
+                    style="
+                      display: grid;
+                      grid-template-columns: repeat(2, minmax(0, 1fr));
+                      gap: 12px;
+                    "
+                  >
+                    <label
+                      style="
+                        display: flex;
+                        flex-direction: column;
+                        gap: 6px;
+                        font-size: 13px;
+                        font-weight: 700;
+                        color: #3d3a33;
+                      "
+                      >Costo de uso<input
+                        value="$ 50,00"
+                        style="
+                          height: 44px;
+                          border: 1px solid #cfcbbf;
+                          border-radius: 9px;
+                          padding: 0 12px;
+                          font-size: 15px;
+                        "
+                    /></label>
+                    <label
+                      style="
+                        display: flex;
+                        flex-direction: column;
+                        gap: 6px;
+                        font-size: 13px;
+                        font-weight: 700;
+                        color: #3d3a33;
+                      "
+                      >Garantía (opcional)<input
+                        value="$ 100,00"
+                        style="
+                          height: 44px;
+                          border: 1px solid #cfcbbf;
+                          border-radius: 9px;
+                          padding: 0 12px;
+                          font-size: 15px;
+                        "
+                    /></label>
+                  </div>
+                  <div style="font-size: 12px; color: #5f5b52; line-height: 1.5; margin-top: -6px">
+                    Con garantía en $ 0, los daños se cobran como cargo a la cuenta de la unidad.
+                  </div>
+
+                  <label style="display: flex; align-items: center; gap: 14px; min-height: 48px">
+                    <span style="flex-grow: 1"
+                      ><span style="display: block; font-size: 14px; font-weight: 700"
+                        >Requiere aprobación del administrador</span
+                      ><span style="display: block; font-size: 12px; color: #5f5b52"
+                        >Sin respuesta en 48 h, la solicitud vence y libera el horario</span
+                      ></span
+                    >
+                    <input
+                      type="checkbox"
+                      role="switch"
+                      checked
+                      style="width: 44px; height: 24px; accent-color: #0e5e5b"
+                    />
+                  </label>
+                  <div
+                    style="
+                      background: #f7f6f2;
+                      border-radius: 12px;
+                      padding: 12px 14px;
+                      font-size: 13px;
+                      color: #3d3a33;
+                      line-height: 1.5;
+                    "
+                  >
+                    <strong>Pago:</strong> por transferencia o efectivo registrado por el
+                    administrador. Si el costo y la garantía no están pagados
+                    <strong>24 horas antes</strong>, la reserva se cancela sola.
+                  </div>
+
+                  <div
+                    style="
+                      font-size: 13px;
+                      font-weight: 800;
+                      color: #5f5b52;
+                      letter-spacing: 0.4px;
+                      margin-top: 4px;
+                    "
+                  >
+                    MOROSIDAD
+                  </div>
+                  <label style="display: flex; align-items: center; gap: 14px; min-height: 48px">
+                    <span style="flex-grow: 1"
+                      ><span style="display: block; font-size: 14px; font-weight: 700"
+                        >Restringible por mora</span
+                      ><span style="display: block; font-size: 12px; color: #5f5b52"
+                        >Área no esencial · Decreto Ejecutivo 462</span
+                      ></span
+                    >
+                    <input
+                      type="checkbox"
+                      role="switch"
+                      checked
+                      style="width: 44px; height: 24px; accent-color: #0e5e5b"
+                    />
+                  </label>
+                  <div
+                    style="
+                      background: #fff7ec;
+                      border: 1px solid #f1d6ae;
+                      border-radius: 12px;
+                      padding: 12px 14px;
+                      font-size: 13px;
+                      color: #7a3808;
+                      line-height: 1.5;
+                    "
+                  >
+                    Las unidades en mora reciben aviso con el detalle de la deuda; la restricción
+                    aplica pasados 5 días y se levanta en máximo 24 horas tras el pago o convenio.
+                  </div>
+                </div>
+              </div>
+            </section>
+          </main>
+        </div>
+      </div>
+    </x-dc>
+    <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+      class Component extends DCLogic {
+        renderVals() { return {}; }
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,597 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>Cuenta del condominio</title>
+    <script src="./support.js"></script>
+  </head>
+  <body>
+    <x-dc>
+      <helmet>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap"
+          rel="stylesheet"
+        />
+        <style>
+          .ms {
+            font-family: 'Material Symbols Rounded';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 20px;
+            line-height: 1;
+            width: 20px;
+            height: 20px;
+            overflow: hidden;
+            flex-shrink: 0;
+            display: inline-block;
+            white-space: nowrap;
+            direction: ltr;
+            font-feature-settings: 'liga';
+            -webkit-font-smoothing: antialiased;
+            font-variation-settings:
+              'FILL' 0,
+              'wght' 400,
+              'GRAD' 0,
+              'opsz' 20;
+          }
+          .ms.on {
+            font-variation-settings:
+              'FILL' 1,
+              'wght' 500,
+              'GRAD' 0,
+              'opsz' 20;
+          }
+          body {
+            margin: 0;
+            font-family: Manrope, system-ui, sans-serif;
+            background: #f5f4ef;
+            color: #1c1b18;
+          }
+          a {
+            color: #0e5e5b;
+          }
+          a:hover {
+            color: #08403e;
+          }
+          button,
+          input {
+            font-family: inherit;
+          }
+        </style>
+        <link
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,300..500,0..1,0"
+          rel="stylesheet"
+        />
+      </helmet>
+      <div
+        style="width: 1440px; height: 900px; display: flex; background: #f5f4ef; overflow: hidden"
+      >
+        <nav
+          aria-label="Menú de plataforma"
+          style="
+            width: 248px;
+            flex-shrink: 0;
+            background: #1c1b18;
+            color: #edeae2;
+            display: flex;
+            flex-direction: column;
+            padding: 20px 14px;
+            gap: 2px;
+            box-sizing: border-box;
+          "
+        >
+          <div style="display: flex; align-items: center; gap: 10px; padding: 4px 10px 6px 10px">
+            <div
+              style="
+                width: 34px;
+                height: 34px;
+                border-radius: 9px;
+                background: #f0b35a;
+                color: #1c1b18;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 800;
+                font-size: 16px;
+              "
+            >
+              S
+            </div>
+            <div style="font-weight: 800; font-size: 18px">SAFIC</div>
+          </div>
+          <div
+            style="
+              margin: 0 10px 18px 10px;
+              font-size: 11px;
+              font-weight: 800;
+              letter-spacing: 1px;
+              color: #f0b35a;
+            "
+          >
+            PLATAFORMA
+          </div>
+          <a
+            href="F6Cobranza.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #ffffff;
+              background: #34322d;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 700;
+              gap: 12px;
+            "
+            ><span class="ms on" aria-hidden="true">paid</span
+            ><span style="flex-grow: 1">Cobranza</span
+            ><span
+              style="
+                min-width: 22px;
+                height: 22px;
+                border-radius: 11px;
+                background: #f0b35a;
+                color: #1c1b18;
+                font-size: 12px;
+                font-weight: 800;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+              "
+              >1</span
+            ></a
+          >
+          <a
+            href="Platform.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #bdb8ac;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+              gap: 12px;
+            "
+            ><span class="ms" aria-hidden="true">location_city</span>Condominios</a
+          >
+          <a
+            href="F6Planes.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #bdb8ac;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+              gap: 12px;
+            "
+            ><span class="ms" aria-hidden="true">view_module</span>Planes y módulos</a
+          >
+          <a
+            href="F1CatalogoAmenidades.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #bdb8ac;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+              gap: 12px;
+            "
+            ><span class="ms" aria-hidden="true">category</span>Catálogo de amenidades</a
+          >
+          <div
+            style="
+              padding: 14px 12px 6px 12px;
+              font-size: 11px;
+              font-weight: 800;
+              letter-spacing: 1px;
+              color: #8a857a;
+            "
+          >
+            ACCESO
+          </div>
+          <a
+            href="F1PlataformaRoles.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              gap: 12px;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #bdb8ac;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+            "
+            ><span class="ms" aria-hidden="true">admin_panel_settings</span>Roles y permisos</a
+          >
+          <a
+            href="F1PlataformaMenu.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              gap: 12px;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #bdb8ac;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+            "
+            ><span class="ms" aria-hidden="true">menu_open</span>Menú del sistema</a
+          >
+          <a
+            href="F6Configuracion.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #bdb8ac;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+              gap: 12px;
+            "
+            ><span class="ms" aria-hidden="true">settings</span>Configuración</a
+          >
+        </nav>
+
+        <main
+          style="
+            flex-grow: 1;
+            padding: 28px 36px;
+            display: flex;
+            gap: 20px;
+            box-sizing: border-box;
+            min-width: 0;
+          "
+        >
+          <section
+            style="flex-grow: 1; display: flex; flex-direction: column; gap: 16px; min-width: 0"
+          >
+            <div>
+              <div style="font-size: 13px; color: #5f5b52; font-weight: 600">
+                <a href="F6Cobranza.dc.html" style="text-decoration: none">Cobranza</a> / CA-0002
+              </div>
+              <div style="display: flex; align-items: center; gap: 12px; margin-top: 4px">
+                <h1 style="margin: 0; font-size: 28px; font-weight: 800; letter-spacing: -0.4px">
+                  Torres del Mirador
+                </h1>
+                <span
+                  style="
+                    padding: 5px 12px;
+                    border-radius: 999px;
+                    background: #e3efec;
+                    color: #0b4a47;
+                    font-size: 12px;
+                    font-weight: 800;
+                  "
+                  >Suscripción activa</span
+                >
+                <span
+                  style="
+                    padding: 5px 12px;
+                    border-radius: 999px;
+                    background: #e6ecf7;
+                    color: #23407a;
+                    font-size: 12px;
+                    font-weight: 800;
+                  "
+                  >Pendiente · vence 11 oct</span
+                >
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px">
+              <div
+                style="
+                  background: #ffffff;
+                  border: 1px solid #e4e1d8;
+                  border-radius: 14px;
+                  padding: 16px 18px;
+                "
+              >
+                <div style="font-size: 12px; color: #5f5b52; font-weight: 700">Plan</div>
+                <div style="font-size: 22px; font-weight: 800; margin-top: 6px">Profesional</div>
+                <div style="font-size: 12px; color: #5f5b52">Desde 01 mar 2026</div>
+              </div>
+              <div
+                style="
+                  background: #ffffff;
+                  border: 1px solid #e4e1d8;
+                  border-radius: 14px;
+                  padding: 16px 18px;
+                "
+              >
+                <div style="font-size: 12px; color: #5f5b52; font-weight: 700">Cálculo mensual</div>
+                <div style="font-size: 22px; font-weight: 800; margin-top: 6px">96 × $ 2,50</div>
+                <div style="font-size: 12px; color: #5f5b52">$ 240,00 + IVA 15 % $ 36,00</div>
+              </div>
+              <div
+                style="
+                  background: #ffffff;
+                  border: 1px solid #e4e1d8;
+                  border-radius: 14px;
+                  padding: 16px 18px;
+                "
+              >
+                <div style="font-size: 12px; color: #5f5b52; font-weight: 700">Mensualidad</div>
+                <div style="font-size: 22px; font-weight: 800; margin-top: 6px">$ 276,00</div>
+                <div style="font-size: 12px; color: #5f5b52">Se factura el día 1</div>
+              </div>
+              <div
+                style="
+                  background: #fff7ec;
+                  border: 1px solid #f1d6ae;
+                  border-radius: 14px;
+                  padding: 16px 18px;
+                  color: #8a3f0a;
+                "
+              >
+                <div style="font-size: 12px; font-weight: 700">Saldo pendiente</div>
+                <div style="font-size: 22px; font-weight: 800; margin-top: 6px">$ 276,00</div>
+                <div style="font-size: 12px; font-weight: 600">Factura de octubre</div>
+              </div>
+            </div>
+
+            <div
+              style="
+                flex-grow: 1;
+                background: #ffffff;
+                border: 1px solid #e4e1d8;
+                border-radius: 14px;
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
+                min-height: 0;
+              "
+            >
+              <div
+                style="display: flex; gap: 4px; padding: 0 14px; border-bottom: 1px solid #ece9e0"
+              >
+                <sc-for list="{{tabs}}" as="t" hint-placeholder-count="3">
+                  <button onClick="{{t.pick}}" style="{{t.style}}">{{t.label}}</button>
+                </sc-for>
+              </div>
+              <div style="{{headStyle}}">
+                <sc-for list="{{cols}}" as="c" hint-placeholder-count="6">
+                  <div style="{{c.style}}">{{c.label}}</div>
+                </sc-for>
+              </div>
+              <sc-for list="{{rows}}" as="r" hint-placeholder-count="5">
+                <div style="{{r.rowStyle}}">
+                  <sc-for list="{{r.cells}}" as="c" hint-placeholder-count="6">
+                    <div style="{{c.style}}">{{c.v}}</div>
+                  </sc-for>
+                </div>
+              </sc-for>
+              <div style="flex-grow: 1"></div>
+              <div
+                style="
+                  padding: 12px 18px;
+                  background: #faf9f5;
+                  border-top: 1px solid #ece9e0;
+                  font-size: 12px;
+                  color: #5f5b52;
+                "
+              >
+                Cada movimiento queda auditado. Las facturas se anulan solo con nota de crédito;
+                nunca se editan.
+              </div>
+            </div>
+          </section>
+
+          <aside
+            style="width: 300px; flex-shrink: 0; display: flex; flex-direction: column; gap: 14px"
+          >
+            <div
+              style="
+                background: #ffffff;
+                border: 1px solid #e4e1d8;
+                border-radius: 14px;
+                padding: 18px 20px;
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+              "
+            >
+              <h2 style="margin: 0; font-size: 16px; font-weight: 800">Acciones</h2>
+              <button
+                style="
+                  height: 46px;
+                  border-radius: 10px;
+                  border: none;
+                  background: #0e5e5b;
+                  color: #ffffff;
+                  font-size: 14px;
+                  font-weight: 700;
+                  cursor: pointer;
+                "
+              >
+                Registrar pago
+              </button>
+              <button
+                style="
+                  height: 42px;
+                  border-radius: 10px;
+                  border: 1px solid #d8d4c8;
+                  background: #ffffff;
+                  font-size: 14px;
+                  font-weight: 700;
+                  cursor: pointer;
+                "
+              >
+                Emitir nota de crédito
+              </button>
+              <button
+                style="
+                  height: 42px;
+                  border-radius: 10px;
+                  border: 1px solid #d8d4c8;
+                  background: #ffffff;
+                  font-size: 14px;
+                  font-weight: 700;
+                  cursor: pointer;
+                "
+              >
+                Cambiar valor por unidad
+              </button>
+              <button
+                style="
+                  height: 42px;
+                  border-radius: 10px;
+                  border: 1px solid #d8d4c8;
+                  background: #ffffff;
+                  font-size: 14px;
+                  font-weight: 700;
+                  cursor: pointer;
+                "
+              >
+                Cambiar total de unidades
+              </button>
+              <button
+                style="
+                  height: 42px;
+                  border-radius: 10px;
+                  border: 1px solid #d8d4c8;
+                  background: #ffffff;
+                  font-size: 14px;
+                  font-weight: 700;
+                  cursor: pointer;
+                "
+              >
+                Cambiar plan
+              </button>
+              <div style="font-size: 12px; color: #5f5b52; line-height: 1.5">
+                Los cambios de valor, unidades o plan se aplican desde la siguiente factura y
+                guardan historial.
+              </div>
+            </div>
+            <div
+              style="
+                background: #ffffff;
+                border: 1px solid #e4e1d8;
+                border-radius: 14px;
+                padding: 18px 20px;
+                font-size: 13px;
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+              "
+            >
+              <h2 style="margin: 0 0 4px 0; font-size: 16px; font-weight: 800">
+                Datos de facturación
+              </h2>
+              <div>
+                <span style="color: #5f5b52">Razón social</span><br /><strong
+                  >Condominio Torres del Mirador</strong
+                >
+              </div>
+              <div><span style="color: #5f5b52">RUC</span><br /><strong>0992345678001</strong></div>
+              <div>
+                <span style="color: #5f5b52">Correo de facturas</span><br /><strong
+                  >administracion@torresmirador.ec</strong
+                >
+              </div>
+              <div>
+                <span style="color: #5f5b52">Unidades registradas</span><br /><strong
+                  >91 de 96</strong
+                >
+              </div>
+            </div>
+            <div
+              style="
+                background: #f1efe8;
+                border-radius: 14px;
+                padding: 14px 16px;
+                font-size: 12px;
+                color: #3d3a33;
+                line-height: 1.5;
+              "
+            >
+              <strong>Suspensión:</strong> día 15 de vencido pasa a solo lectura; día 30,
+              suspendida. Se reactiva al registrar el pago.
+            </div>
+          </aside>
+        </main>
+      </div>
+    </x-dc>
+    <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+      class Component extends DCLogic {
+        constructor(props) { super(props); this.state = { tab: 'cc' }; }
+        renderVals() {
+          var self = this, tab = this.state.tab;
+          var chip = function (bg, fg) { return 'display:inline-block;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:700;background:' + bg + ';color:' + fg; };
+          var base = 'padding:0 8px;';
+          var R = function (s) { return base + 'text-align:right;' + (s || ''); };
+          var L = function (s) { return base + (s || ''); };
+          var CFG = {
+            cc: {
+              grid: '110px 1.6fr 150px 120px 120px 120px',
+              cols: [['FECHA', L()], ['CONCEPTO', L()], ['DOCUMENTO', L()], ['DEBE', R()], ['HABER', R()], ['SALDO', R()]],
+              data: [
+                ['01 ago 2026', 'Mensualidad agosto · 96 × $ 2,50 + IVA', 'FAC 001-001-000231', '$ 276,00', '', '$ 276,00'],
+                ['08 ago 2026', 'Pago · transferencia Banco Pichincha', 'PAG-0412', '', '$ 276,00', '$ 0,00'],
+                ['01 sep 2026', 'Mensualidad septiembre · 96 × $ 2,50 + IVA', 'FAC 001-001-000268', '$ 276,00', '', '$ 276,00'],
+                ['06 sep 2026', 'Pago · transferencia Produbanco', 'PAG-0447', '', '$ 276,00', '$ 0,00'],
+                ['01 oct 2026', 'Mensualidad octubre · 96 × $ 2,50 + IVA', 'FAC 001-001-000302', '$ 276,00', '', '$ 276,00']
+              ],
+              styles: [L('color:#3D3A33'), L('font-weight:600'), L('color:#0E5E5B;font-weight:700;font-size:13px'), R(), R('color:#0B4A47'), R('font-weight:800')]
+            },
+            fac: {
+              grid: '170px 1fr 110px 120px 120px 150px',
+              cols: [['NÚMERO', L()], ['PERÍODO', L()], ['EMISIÓN', L()], ['VENCE', L()], ['TOTAL', R()], ['ESTADO', L('padding-left:24px')]],
+              data: [
+                ['001-001-000302', 'Octubre 2026', '01 oct', '11 oct', '$ 276,00', ['Pendiente', chip('#E6ECF7', '#23407A')]],
+                ['001-001-000268', 'Septiembre 2026', '01 sep', '11 sep', '$ 276,00', ['Pagada', chip('#E3EFEC', '#0B4A47')]],
+                ['001-001-000231', 'Agosto 2026', '01 ago', '11 ago', '$ 276,00', ['Pagada', chip('#E3EFEC', '#0B4A47')]],
+                ['001-001-000197', 'Julio 2026', '01 jul', '11 jul', '$ 276,00', ['Pagada', chip('#E3EFEC', '#0B4A47')]]
+              ],
+              styles: [L('color:#0E5E5B;font-weight:700'), L('font-weight:600'), L(), L(), R('font-weight:700'), L('padding-left:24px')]
+            },
+            pag: {
+              grid: '110px 120px 1fr 150px 120px 150px',
+              cols: [['FECHA', L()], ['NÚMERO', L()], ['ORIGEN', L()], ['REFERENCIA', L()], ['MONTO', R()], ['ESTADO', L('padding-left:24px')]],
+              data: [
+                ['06 sep 2026', 'PAG-0447', 'Transferencia Produbanco · conciliado', '88120394', '$ 276,00', ['Aprobado', chip('#E3EFEC', '#0B4A47')]],
+                ['08 ago 2026', 'PAG-0412', 'Transferencia Pichincha · conciliado', '10293847', '$ 276,00', ['Aprobado', chip('#E3EFEC', '#0B4A47')]],
+                ['09 jul 2026', 'PAG-0381', 'Comprobante subido por el administrador', '77201934', '$ 276,00', ['Aprobado', chip('#E3EFEC', '#0B4A47')]]
+              ],
+              styles: [L(), L('color:#0E5E5B;font-weight:700'), L('font-weight:600'), L('color:#3D3A33'), R('font-weight:700'), L('padding-left:24px')]
+            }
+          };
+          var c = CFG[tab];
+          var T = [['cc', 'Cuenta corriente'], ['fac', 'Facturas'], ['pag', 'Pagos']];
+          return {
+            tabs: T.map(function (t) {
+              var on = t[0] === tab;
+              return { label: t[1], pick: function () { self.setState({ tab: t[0] }); },
+                style: 'height:48px;padding:0 14px;border:none;background:none;cursor:pointer;font-size:14px;font-weight:700;margin-bottom:-1px;' + (on ? 'color:#1C1B18;border-bottom:3px solid #0E5E5B' : 'color:#6B675D;border-bottom:3px solid transparent') };
+            }),
+            headStyle: 'display:grid;grid-template-columns:' + c.grid + ';padding:10px 10px;background:#FAF9F5;font-size:12px;font-weight:700;color:#5F5B52;letter-spacing:0.3px',
+            cols: c.cols.map(function (x) { return { label: x[0], style: x[1] }; }),
+            rows: c.data.map(function (d) {
+              return {
+                rowStyle: 'display:grid;grid-template-columns:' + c.grid + ';align-items:center;padding:0 10px;height:52px;border-top:1px solid #F0EDE5;font-size:14px',
+                cells: d.map(function (v, i) {
+                  if (Array.isArray(v)) return { v: v[0], style: c.styles[i] + ';' + v[1] + ';justify-self:start;margin-left:16px' };
+                  return { v: v, style: c.styles[i] };
+                })
+              };
+            })
+          };
+        }
+      }
+    </script>
+  </body>
+</html>

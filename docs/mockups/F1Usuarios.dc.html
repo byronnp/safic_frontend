@@ -1,0 +1,1021 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>Usuarios y bitácora</title>
+    <script src="./support.js"></script>
+  </head>
+  <body>
+    <x-dc>
+      <helmet>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap"
+          rel="stylesheet"
+        />
+        <style>
+          .ms {
+            font-family: 'Material Symbols Rounded';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 20px;
+            line-height: 1;
+            width: 20px;
+            height: 20px;
+            overflow: hidden;
+            flex-shrink: 0;
+            display: inline-block;
+            white-space: nowrap;
+            direction: ltr;
+            font-feature-settings: 'liga';
+            -webkit-font-smoothing: antialiased;
+            font-variation-settings:
+              'FILL' 0,
+              'wght' 400,
+              'GRAD' 0,
+              'opsz' 20;
+          }
+          .ms.on {
+            font-variation-settings:
+              'FILL' 1,
+              'wght' 500,
+              'GRAD' 0,
+              'opsz' 20;
+          }
+          body {
+            margin: 0;
+            font-family: Manrope, system-ui, sans-serif;
+            background: #f5f4ef;
+            color: #1c1b18;
+          }
+          a {
+            color: #0e5e5b;
+          }
+          a:hover {
+            color: #08403e;
+          }
+          button,
+          input {
+            font-family: inherit;
+          }
+        </style>
+        <link
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,300..500,0..1,0"
+          rel="stylesheet"
+        />
+      </helmet>
+      <div
+        style="width: 1440px; height: 900px; display: flex; background: #f5f4ef; overflow: hidden"
+      >
+        <nav
+          aria-label="Menú principal"
+          style="
+            width: 248px;
+            flex-shrink: 0;
+            background: #12302f;
+            color: #e8f0ee;
+            display: flex;
+            flex-direction: column;
+            padding: 20px 14px;
+            gap: 2px;
+            box-sizing: border-box;
+          "
+        >
+          <div style="display: flex; align-items: center; gap: 10px; padding: 4px 10px 20px 10px">
+            <div
+              style="
+                width: 34px;
+                height: 34px;
+                border-radius: 9px;
+                background: #f0b35a;
+                color: #12302f;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 800;
+                font-size: 16px;
+              "
+            >
+              S
+            </div>
+            <div style="font-weight: 800; font-size: 18px">SAFIC</div>
+          </div>
+          <a
+            href="Main.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #c6d6d3;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+              gap: 12px;
+            "
+            ><span class="ms" aria-hidden="true">apartment</span>Unidades</a
+          >
+          <a
+            href="F2Resumen.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #c6d6d3;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+              gap: 12px;
+            "
+            ><span class="ms" aria-hidden="true">account_balance_wallet</span>Finanzas</a
+          >
+          <a
+            href="F3Agenda.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #c6d6d3;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+              gap: 12px;
+            "
+            ><span class="ms" aria-hidden="true">event_available</span>Áreas comunes</a
+          >
+          <a
+            href="F4Tickets.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #c6d6d3;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+              gap: 12px;
+            "
+            ><span class="ms" aria-hidden="true">shield_person</span>Seguridad y comunicación</a
+          >
+          <a
+            href="F5Preparar.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #c6d6d3;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+              gap: 12px;
+            "
+            ><span class="ms" aria-hidden="true">how_to_vote</span>Asambleas</a
+          >
+          <div
+            style="
+              padding: 14px 12px 6px 12px;
+              font-size: 11px;
+              font-weight: 800;
+              letter-spacing: 1px;
+              color: #8fb0ab;
+            "
+          >
+            CONFIGURACIÓN
+          </div>
+          <a
+            href="F1Apariencia.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #c6d6d3;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+              gap: 12px;
+            "
+            ><span class="ms" aria-hidden="true">domain</span>Datos del condominio</a
+          >
+          <a
+            href="F1AmenidadesCondominio.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #c6d6d3;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+              gap: 12px;
+            "
+            ><span class="ms" aria-hidden="true">pool</span>Amenidades</a
+          >
+          <a
+            href="F1Usuarios.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #ffffff;
+              background: #1e4a48;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 700;
+              gap: 12px;
+            "
+            ><span class="ms on" aria-hidden="true">manage_accounts</span>Usuarios y roles</a
+          >
+          <a
+            href="F1RolesCondominio.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              gap: 12px;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #c6d6d3;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+            "
+            ><span class="ms" aria-hidden="true">admin_panel_settings</span>Roles</a
+          >
+          <a
+            href="F6MiSuscripcion.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #c6d6d3;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+              gap: 12px;
+            "
+            ><span class="ms" aria-hidden="true">card_membership</span>Mi suscripción</a
+          >
+        </nav>
+
+        <div style="flex-grow: 1; display: flex; flex-direction: column; min-width: 0">
+          <header
+            style="
+              height: 68px;
+              flex-shrink: 0;
+              background: #ffffff;
+              border-bottom: 1px solid #e4e1d8;
+              display: flex;
+              align-items: center;
+              padding: 0 32px;
+              gap: 12px;
+              box-sizing: border-box;
+            "
+          >
+            <div
+              style="
+                width: 28px;
+                height: 28px;
+                border-radius: 7px;
+                background: #e3efec;
+                color: #0b4a47;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 800;
+                font-size: 12px;
+              "
+            >
+              JV
+            </div>
+            <div style="font-size: 15px; font-weight: 700; flex-grow: 1">
+              Conjunto Jardines del Valle
+            </div>
+            <div
+              style="
+                width: 38px;
+                height: 38px;
+                border-radius: 50%;
+                background: #f0b35a;
+                color: #12302f;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 800;
+                font-size: 14px;
+              "
+            >
+              MR
+            </div>
+          </header>
+
+          <main
+            style="
+              flex-grow: 1;
+              padding: 24px 32px;
+              display: flex;
+              gap: 20px;
+              box-sizing: border-box;
+              min-height: 0;
+            "
+          >
+            <section
+              style="flex-grow: 1; display: flex; flex-direction: column; gap: 14px; min-width: 0"
+            >
+              <div style="display: flex; align-items: flex-end; gap: 12px">
+                <div style="flex-grow: 1">
+                  <div style="font-size: 13px; color: #5f5b52; font-weight: 600">
+                    Configuración / Usuarios y roles
+                  </div>
+                  <h1
+                    style="
+                      margin: 4px 0 0 0;
+                      font-size: 28px;
+                      font-weight: 800;
+                      letter-spacing: -0.4px;
+                    "
+                  >
+                    Usuarios y roles
+                  </h1>
+                </div>
+                <button
+                  onClick="{{asignar}}"
+                  style="
+                    height: 44px;
+                    padding: 0 16px;
+                    border-radius: 10px;
+                    border: none;
+                    background: #0e5e5b;
+                    color: #ffffff;
+                    font-size: 14px;
+                    font-weight: 700;
+                    cursor: pointer;
+                  "
+                >
+                  Asignar rol administrativo
+                </button>
+              </div>
+
+              <div style="display: flex; gap: 4px; border-bottom: 1px solid #e4e1d8">
+                <sc-for list="{{vistas}}" as="v" hint-placeholder-count="2">
+                  <button onClick="{{v.pick}}" style="{{v.style}}">{{v.label}}</button>
+                </sc-for>
+              </div>
+              <sc-if value="{{vUsuarios}}" hint-placeholder-val="{{ true }}">
+                <div
+                  style="
+                    display: flex;
+                    flex-direction: column;
+                    gap: 14px;
+                    flex-grow: 1;
+                    min-height: 0;
+                  "
+                >
+                  <div
+                    style="
+                      display: flex;
+                      align-items: center;
+                      gap: 14px;
+                      background: #ffffff;
+                      border: 1px solid #e4e1d8;
+                      border-radius: 14px;
+                      padding: 14px 18px;
+                    "
+                  >
+                    <div style="flex-grow: 1">
+                      <div style="font-size: 13px; font-weight: 700; color: #3d3a33">
+                        Usuarios administrativos · plan Profesional
+                      </div>
+                      <div
+                        style="
+                          height: 8px;
+                          border-radius: 4px;
+                          background: #ece9e0;
+                          margin-top: 8px;
+                          overflow: hidden;
+                        "
+                      >
+                        <div style="width: 100%; height: 8px; background: #b8641c"></div>
+                      </div>
+                    </div>
+                    <div style="font-size: 24px; font-weight: 800">3 de 3</div>
+                  </div>
+
+                  <sc-if value="{{error}}" hint-placeholder-val="{{ false }}">
+                    <div
+                      style="
+                        display: flex;
+                        align-items: center;
+                        gap: 12px;
+                        background: #fde8e6;
+                        border: 1px solid #f3b8b2;
+                        border-radius: 14px;
+                        padding: 14px 18px;
+                        color: #7f1810;
+                      "
+                    >
+                      <div style="flex-grow: 1; font-size: 13px; line-height: 1.45">
+                        <strong>Tu plan permite 3 usuarios administrativos.</strong> Desactiva a uno
+                        o sube al plan Completo (4 usuarios). Presidente, vicepresidente,
+                        secretario, guardia y residentes no cuentan.
+                      </div>
+                      <a
+                        href="F6MiSuscripcion.dc.html"
+                        style="
+                          height: 38px;
+                          padding: 0 14px;
+                          border-radius: 9px;
+                          background: #9b1c12;
+                          color: #ffffff;
+                          font-size: 13px;
+                          font-weight: 800;
+                          text-decoration: none;
+                          display: flex;
+                          align-items: center;
+                        "
+                        >Subir de plan</a
+                      >
+                      <button
+                        onClick="{{cerrarError}}"
+                        style="
+                          height: 38px;
+                          padding: 0 12px;
+                          border-radius: 9px;
+                          border: 1px solid #f3b8b2;
+                          background: #ffffff;
+                          color: #7f1810;
+                          font-size: 13px;
+                          font-weight: 700;
+                          cursor: pointer;
+                        "
+                      >
+                        Entendido
+                      </button>
+                    </div>
+                  </sc-if>
+
+                  <div
+                    style="
+                      flex-grow: 1;
+                      background: #ffffff;
+                      border: 1px solid #e4e1d8;
+                      border-radius: 14px;
+                      overflow: hidden;
+                    "
+                  >
+                    <div
+                      style="
+                        display: grid;
+                        grid-template-columns: 1.4fr 1.4fr 150px 150px;
+                        padding: 10px 18px;
+                        background: #faf9f5;
+                        font-size: 12px;
+                        font-weight: 700;
+                        color: #5f5b52;
+                        letter-spacing: 0.3px;
+                      "
+                    >
+                      <div>PERSONA</div>
+                      <div>ROLES</div>
+                      <div>CUENTA CUPO</div>
+                      <div>ACCESO HASTA</div>
+                    </div>
+                    <sc-for list="{{usuarios}}" as="u" hint-placeholder-count="8">
+                      <button onClick="{{u.pick}}" style="{{u.row}}">
+                        <div>
+                          <div style="font-weight: 800">{{u.nombre}}</div>
+                          <div style="font-size: 12px; color: #5f5b52">{{u.correo}}</div>
+                        </div>
+                        <div style="font-size: 13px; color: #3d3a33">{{u.roles}}</div>
+                        <div><span style="{{u.cupoStyle}}">{{u.cupo}}</span></div>
+                        <div style="font-size: 13px; color: #3d3a33">{{u.hasta}}</div>
+                      </button>
+                    </sc-for>
+                  </div>
+                </div>
+              </sc-if>
+              <sc-if value="{{vDirectiva}}" hint-placeholder-val="{{ false }}">
+                <div style="display: flex; flex-direction: column; gap: 14px">
+                  <div style="font-size: 13px; color: #3d3a33; line-height: 1.5">
+                    Cada cargo lo ocupa <strong>una sola persona</strong> y una persona ocupa
+                    <strong>un solo cargo</strong>. Para reemplazar a alguien usa
+                    <strong>Cambiar</strong>: se cierra su periodo y se abre el del nuevo.
+                  </div>
+                  <sc-if value="{{okMsg}}" hint-placeholder-val="{{ false }}">
+                    <div
+                      style="
+                        background: #e3efec;
+                        border: 1px solid #b9d7d0;
+                        border-radius: 12px;
+                        padding: 12px 16px;
+                        font-size: 13px;
+                        color: #0b4a47;
+                        font-weight: 600;
+                      "
+                    >
+                      {{okTxt}}
+                    </div>
+                  </sc-if>
+                  <div
+                    style="
+                      display: grid;
+                      grid-template-columns: repeat(2, minmax(0, 1fr));
+                      gap: 14px;
+                    "
+                  >
+                    <sc-for list="{{cargos}}" as="c" hint-placeholder-count="4">
+                      <div style="{{c.box}}">
+                        <div style="display: flex; align-items: center; gap: 8px">
+                          <div
+                            style="
+                              font-size: 12px;
+                              font-weight: 800;
+                              letter-spacing: 0.5px;
+                              color: #0e5e5b;
+                              flex-grow: 1;
+                            "
+                          >
+                            {{c.cargo}}
+                          </div>
+                          <span style="{{c.estStyle}}">{{c.est}}</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 12px">
+                          <div
+                            style="
+                              width: 42px;
+                              height: 42px;
+                              border-radius: 50%;
+                              background: #f0b35a;
+                              color: #12302f;
+                              display: flex;
+                              align-items: center;
+                              justify-content: center;
+                              font-weight: 800;
+                              font-size: 14px;
+                              flex-shrink: 0;
+                            "
+                          >
+                            {{c.ini}}
+                          </div>
+                          <div style="flex-grow: 1; min-width: 0">
+                            <div style="font-size: 17px; font-weight: 800">{{c.nombre}}</div>
+                            <div style="font-size: 12px; color: #5f5b52">
+                              Residente {{c.unidad}}
+                            </div>
+                          </div>
+                        </div>
+                        <div style="display: flex; gap: 16px; font-size: 12px; color: #3d3a33">
+                          <div>
+                            <div style="color: #5f5b52; font-weight: 700">PERIODO</div>
+                            <div style="font-weight: 700">{{c.periodo}}</div>
+                          </div>
+                          <div>
+                            <div style="color: #5f5b52; font-weight: 700">RESPALDO</div>
+                            <div style="font-weight: 700">{{c.acta}}</div>
+                          </div>
+                        </div>
+                        <button
+                          onClick="{{c.cambiar}}"
+                          style="
+                            align-self: flex-start;
+                            height: 36px;
+                            padding: 0 14px;
+                            border-radius: 9px;
+                            border: 1px solid #0e5e5b;
+                            background: #ffffff;
+                            color: #0e5e5b;
+                            font-size: 13px;
+                            font-weight: 700;
+                            cursor: pointer;
+                          "
+                        >
+                          Cambiar {{c.cargoMin}}
+                        </button>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+              </sc-if>
+            </section>
+
+            <aside
+              style="
+                width: 400px;
+                flex-shrink: 0;
+                background: #ffffff;
+                border: 1px solid #e4e1d8;
+                border-radius: 14px;
+                display: flex;
+                flex-direction: column;
+                overflow: hidden;
+              "
+            >
+              <sc-if value="{{vUsuarios}}" hint-placeholder-val="{{ true }}">
+                <div style="padding: 18px 20px 0 20px">
+                  <div style="display: flex; align-items: center; gap: 12px">
+                    <div
+                      style="
+                        width: 44px;
+                        height: 44px;
+                        border-radius: 50%;
+                        background: #e6ecf7;
+                        color: #23407a;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-weight: 800;
+                      "
+                    >
+                      AV
+                    </div>
+                    <div style="flex-grow: 1">
+                      <div style="font-size: 17px; font-weight: 800">Ana Villacís</div>
+                      <div style="font-size: 12px; color: #5f5b52">
+                        Contadora externa · también residente B-104
+                      </div>
+                    </div>
+                  </div>
+                  <div
+                    style="
+                      display: flex;
+                      gap: 4px;
+                      margin-top: 14px;
+                      border-bottom: 1px solid #ece9e0;
+                    "
+                  >
+                    <sc-for list="{{tabs}}" as="t" hint-placeholder-count="2">
+                      <button onClick="{{t.pick}}" style="{{t.style}}">{{t.label}}</button>
+                    </sc-for>
+                  </div>
+                </div>
+
+                <sc-if value="{{tabAcceso}}" hint-placeholder-val="{{ true }}">
+                  <div
+                    style="
+                      padding: 16px 20px;
+                      display: flex;
+                      flex-direction: column;
+                      gap: 10px;
+                      font-size: 13px;
+                    "
+                  >
+                    <div
+                      style="
+                        display: flex;
+                        align-items: center;
+                        gap: 10px;
+                        background: #e3efec;
+                        color: #0b4a47;
+                        border-radius: 10px;
+                        padding: 10px 12px;
+                        font-weight: 700;
+                      "
+                    >
+                      Acuerdo de confidencialidad v2 aceptado · 03 feb 2026 09:12 · IP 190.12.x.x
+                    </div>
+                    <div style="display: flex">
+                      <span style="flex-grow: 1; color: #5f5b52">Permisos</span
+                      ><strong>Ver y exportar finanzas</strong>
+                    </div>
+                    <div style="display: flex">
+                      <span style="flex-grow: 1; color: #5f5b52">Datos de residentes</span
+                      ><strong>Enmascarados</strong>
+                    </div>
+                    <div style="display: flex">
+                      <span style="flex-grow: 1; color: #5f5b52">Segundo factor</span
+                      ><strong>Activo · app autenticadora</strong>
+                    </div>
+                    <div style="display: flex">
+                      <span style="flex-grow: 1; color: #5f5b52">Exportaciones hoy</span
+                      ><strong>4 de 30</strong>
+                    </div>
+                    <label
+                      style="
+                        display: flex;
+                        flex-direction: column;
+                        gap: 6px;
+                        font-weight: 700;
+                        color: #3d3a33;
+                        margin-top: 4px;
+                      "
+                      >Acceso hasta<input
+                        value="31 dic 2026"
+                        style="
+                          height: 42px;
+                          border: 1px solid #cfcbbf;
+                          border-radius: 9px;
+                          padding: 0 12px;
+                          font-size: 15px;
+                        "
+                    /></label>
+                    <label
+                      style="
+                        display: flex;
+                        align-items: center;
+                        gap: 10px;
+                        font-weight: 600;
+                        color: #3d3a33;
+                      "
+                      ><input
+                        type="checkbox"
+                        checked
+                        style="width: 18px; height: 18px; accent-color: #0e5e5b"
+                      />
+                      Avisarme por correo en cada exportación</label
+                    >
+                    <div style="font-size: 12px; color: #5f5b52; line-height: 1.5">
+                      Al llegar la fecha, el rol se desactiva solo. Su acceso como residente de
+                      B-104 no cambia.
+                    </div>
+                    <button
+                      style="
+                        height: 42px;
+                        border-radius: 10px;
+                        border: 1px solid #9b1c12;
+                        background: #ffffff;
+                        color: #9b1c12;
+                        font-size: 14px;
+                        font-weight: 700;
+                        cursor: pointer;
+                        margin-top: 6px;
+                      "
+                    >
+                      Revocar acceso de contadora
+                    </button>
+                  </div>
+                </sc-if>
+
+                <sc-if value="{{tabBitacora}}" hint-placeholder-val="{{ false }}">
+                  <div style="padding: 8px 20px 16px 20px; display: flex; flex-direction: column">
+                    <sc-for list="{{bitacora}}" as="b" hint-placeholder-count="7">
+                      <div
+                        style="
+                          display: flex;
+                          gap: 12px;
+                          padding: 10px 0;
+                          border-bottom: 1px solid #f0ede5;
+                        "
+                      >
+                        <div
+                          style="
+                            width: 70px;
+                            flex-shrink: 0;
+                            font-size: 12px;
+                            color: #5f5b52;
+                            font-weight: 700;
+                          "
+                        >
+                          {{b.hora}}
+                        </div>
+                        <div style="flex-grow: 1; min-width: 0">
+                          <div style="font-size: 13px; font-weight: 700">{{b.recurso}}</div>
+                          <div style="font-size: 12px; color: #5f5b52">{{b.detalle}}</div>
+                        </div>
+                        <span style="{{b.tipoStyle}}">{{b.tipo}}</span>
+                      </div>
+                    </sc-for>
+                    <div style="font-size: 12px; color: #5f5b52; margin-top: 10px">
+                      Registro inmutable · se conserva 5 años.
+                    </div>
+                  </div>
+                </sc-if>
+              </sc-if>
+              <sc-if value="{{vDirectiva}}" hint-placeholder-val="{{ false }}">
+                <sc-if value="{{sinCambio}}" hint-placeholder-val="{{ true }}">
+                  <div
+                    style="
+                      padding: 18px 20px;
+                      display: flex;
+                      flex-direction: column;
+                      gap: 10px;
+                      font-size: 13px;
+                      color: #3d3a33;
+                      line-height: 1.5;
+                    "
+                  >
+                    <h2 style="margin: 0; font-size: 16px; font-weight: 800; color: #1c1b18">
+                      Reglas de la directiva
+                    </h2>
+                    <div>• Un cargo, una persona. No puede haber dos presidentes.</div>
+                    <div>• Una persona, un cargo: el acta necesita firmas distintas.</div>
+                    <div>• Solo residentes propietarios sin mora (Decreto 462).</div>
+                    <div>
+                      • Al vencer el periodo el cargo sigue <strong>prorrogado</strong> hasta
+                      nombrar reemplazo.
+                    </div>
+                    <div>• Si falta el presidente, lo subroga el vicepresidente.</div>
+                    <div>• Se registra el acta que respalda cada nombramiento.</div>
+                  </div>
+                </sc-if>
+                <sc-if value="{{hayCambio}}" hint-placeholder-val="{{ false }}">
+                  <div
+                    style="
+                      padding: 18px 20px;
+                      display: flex;
+                      flex-direction: column;
+                      gap: 12px;
+                      font-size: 13px;
+                    "
+                  >
+                    <h2 style="margin: 0; font-size: 17px; font-weight: 800">
+                      Cambiar {{cambioCargo}}
+                    </h2>
+                    <div
+                      style="
+                        background: #f7f6f2;
+                        border-radius: 10px;
+                        padding: 10px 12px;
+                        color: #3d3a33;
+                      "
+                    >
+                      Actual: <strong>{{cambioActual}}</strong>. Su periodo se cerrará hoy.
+                    </div>
+                    <div
+                      style="
+                        font-size: 12px;
+                        font-weight: 800;
+                        color: #5f5b52;
+                        letter-spacing: 0.4px;
+                      "
+                    >
+                      NUEVA PERSONA
+                    </div>
+                    <sc-for list="{{candidatos}}" as="k" hint-placeholder-count="5">
+                      <button onClick="{{k.pick}}" style="{{k.box}}">
+                        <div style="flex-grow: 1; text-align: left">
+                          <div style="font-weight: 800; font-size: 14px">{{k.nombre}}</div>
+                          <div style="font-size: 12px; color: #5f5b52">Residente {{k.unidad}}</div>
+                        </div>
+                        <span style="{{k.motivoStyle}}">{{k.motivo}}</span>
+                      </button>
+                    </sc-for>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px">
+                      <label
+                        style="
+                          display: flex;
+                          flex-direction: column;
+                          gap: 6px;
+                          font-weight: 700;
+                          color: #3d3a33;
+                        "
+                        >Acta que lo respalda<input
+                          value="Acta 2026-03 · 26 sep"
+                          style="
+                            height: 40px;
+                            border: 1px solid #cfcbbf;
+                            border-radius: 9px;
+                            padding: 0 10px;
+                            font-size: 14px;
+                          "
+                      /></label>
+                      <label
+                        style="
+                          display: flex;
+                          flex-direction: column;
+                          gap: 6px;
+                          font-weight: 700;
+                          color: #3d3a33;
+                        "
+                        >Periodo hasta<input
+                          value="26 sep 2027"
+                          style="
+                            height: 40px;
+                            border: 1px solid #cfcbbf;
+                            border-radius: 9px;
+                            padding: 0 10px;
+                            font-size: 14px;
+                          "
+                      /></label>
+                    </div>
+                    <div style="display: flex; gap: 10px; margin-top: 4px">
+                      <button
+                        onClick="{{cancelarCambio}}"
+                        style="
+                          flex-grow: 1;
+                          height: 44px;
+                          border-radius: 10px;
+                          border: 1px solid #d8d4c8;
+                          background: #ffffff;
+                          font-size: 14px;
+                          font-weight: 700;
+                          cursor: pointer;
+                        "
+                      >
+                        Cancelar
+                      </button>
+                      <button onClick="{{confirmar}}" style="{{confStyle}}">
+                        Confirmar cambio
+                      </button>
+                    </div>
+                  </div>
+                </sc-if>
+              </sc-if>
+            </aside>
+          </main>
+        </div>
+      </div>
+    </x-dc>
+    <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+      class Component extends DCLogic {
+        constructor(props) { super(props); this.state = { tab: 'acceso', sel: 2, error: false, vista: 'usuarios', cambio: null, cand: null, ok: '',
+            cargos: [
+              { cargo: 'Presidente', nombre: 'Fernando Salazar', unidad: 'C-12', periodo: '15 mar 2026 – 15 mar 2027', acta: 'Acta 2026-01', prorrogado: false },
+              { cargo: 'Vicepresidente', nombre: 'Paola Cedeño', unidad: 'B-201', periodo: '15 mar 2026 – 15 mar 2027', acta: 'Acta 2026-01', prorrogado: false },
+              { cargo: 'Secretario', nombre: 'Lucía Andrade', unidad: 'A-110', periodo: '20 mar 2025 – 20 mar 2026', acta: 'Acta 2025-02', prorrogado: true },
+              { cargo: 'Tesorero', nombre: 'Jorge Benítez', unidad: 'A-305', periodo: '15 mar 2026 – 15 mar 2027', acta: 'Acta 2026-01', prorrogado: false }
+            ] }; }
+        renderVals() {
+          var self = this, S = this.state;
+          var chip = function (bg, fg) { return 'display:inline-block;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:700;background:' + bg + ';color:' + fg; };
+          var U = [
+            ['María Rodríguez', 'm.rodriguez@jardinesdelvalle.ec', 'Administradora', true, '—'],
+            ['Jorge Benítez', 'jbenitez@gmail.com', 'Tesorero · residente A-305', true, '—'],
+            ['Ana Villacís', 'ana.villacis@contaec.com', 'Contadora · residente B-104', true, '31 dic 2026'],
+            ['Fernando Salazar', 'fsalazar@outlook.com', 'Presidente · residente C-12', false, '—'],
+            ['Paola Cedeño', 'pcedeno@gmail.com', 'Vicepresidenta · residente B-201', false, '—'],
+            ['Lucía Andrade', 'lucia.andrade@gmail.com', 'Secretaria · residente A-110', false, '—'],
+            ['Carlos Mera', 'Garita principal', 'Guardia', false, '—'],
+            ['Pedro Chila', 'Personal', 'Mantenimiento', false, '—']
+          ];
+          var T = [['acceso', 'Acceso y confidencialidad'], ['bit', 'Bitácora']];
+          var ver = chip('#F1EFE8', '#3D3A33'), exp = chip('#FFF1DC', '#8A3F0A');
+          var B = [
+            ['Hoy 10:42', 'Exportó cartera por antigüedad', 'Excel · 148 filas · código EXP-7Q2K', 'Exportó', exp],
+            ['Hoy 10:38', 'Vio reporte de cartera', 'Filtro: vencidas > 30 días', 'Vio', ver],
+            ['Hoy 10:31', 'Vio conciliación de septiembre', 'Banco Pichincha · 212 movimientos', 'Vio', ver],
+            ['Ayer 16:05', 'Exportó ingresos y gastos', 'Excel · sep 2026 · código EXP-6M9A', 'Exportó', exp],
+            ['Ayer 15:58', 'Vio pagos aprobados', 'Filtro: septiembre 2026', 'Vio', ver],
+            ['Ayer 15:50', 'Inicio de sesión', '2FA correcto · IP 190.12.x.x', 'Sesión', ver],
+            ['24 sep 11:20', 'Exportó saldos por unidad', 'PDF · código EXP-5T1C', 'Exportó', exp]
+          ];
+          var R = [['Carmen Loor', 'A-102', false], ['Diego Salas', 'B-310', false], ['Ricardo Vera', 'C-08', true], ['Paola Cedeño', 'B-201', false], ['Lucía Andrade', 'A-110', false], ['Jorge Benítez', 'A-305', false], ['Fernando Salazar', 'C-12', false]];
+          var ocupado = function (nombre) { for (var j = 0; j < S.cargos.length; j++) if (S.cargos[j].nombre === nombre) return S.cargos[j].cargo; return null; };
+          var ini = function (n) { return n.split(' ').map(function (w) { return w[0]; }).join('').slice(0, 2); };
+          var cand = [];
+          if (S.cambio !== null) {
+            R.forEach(function (r) {
+              var oc = ocupado(r[0]);
+              if (oc === S.cargos[S.cambio].cargo) return;
+              var motivo = r[2] ? 'En mora' : (oc ? 'Ya es ' + oc.toLowerCase() : 'Disponible');
+              var libre = !r[2] && !oc, on = S.cand === r[0];
+              cand.push({ nombre: r[0], unidad: r[1], motivo: motivo,
+                pick: function () { if (libre) self.setState({ cand: r[0] }); },
+                motivoStyle: 'flex-shrink:0;' + (libre ? chip('#E3EFEC', '#0B4A47') : chip('#FDE8E6', '#9B1C12')),
+                box: 'display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;border-radius:10px;font-family:inherit;color:#1C1B18;' + (libre ? 'cursor:pointer;' : 'cursor:not-allowed;opacity:0.6;') + (on ? 'border:2px solid #0E5E5B;background:#F2F7F6' : 'border:1px solid #E4E1D8;background:#FFFFFF') });
+            });
+          }
+          var V = [['usuarios', 'Todos los usuarios'], ['directiva', 'Directiva']];
+          return {
+            vistas: V.map(function (v) { var on = v[0] === S.vista; return { label: v[1], pick: function () { self.setState({ vista: v[0], cambio: null, cand: null, ok: '' }); },
+              style: 'height:42px;padding:0 14px;border:none;background:none;cursor:pointer;font-size:14px;font-weight:700;margin-bottom:-1px;' + (on ? 'color:#1C1B18;border-bottom:3px solid #0E5E5B' : 'color:#6B675D;border-bottom:3px solid transparent') }; }),
+            vUsuarios: S.vista === 'usuarios', vDirectiva: S.vista === 'directiva',
+            okMsg: !!S.ok, okTxt: S.ok,
+            cargos: S.cargos.map(function (c, i) {
+              var act = S.cambio === i;
+              return { cargo: c.cargo.toUpperCase(), cargoMin: c.cargo.toLowerCase(), nombre: c.nombre, unidad: c.unidad, ini: ini(c.nombre), periodo: c.periodo, acta: c.acta,
+                est: c.prorrogado ? 'Prorrogado' : 'Vigente', estStyle: c.prorrogado ? chip('#FFF1DC', '#8A3F0A') : chip('#E3EFEC', '#0B4A47'),
+                cambiar: function () { self.setState({ cambio: i, cand: null, ok: '' }); },
+                box: 'background:#FFFFFF;border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;gap:12px;' + (act ? 'border:2px solid #0E5E5B' : 'border:1px solid #E4E1D8') };
+            }),
+            sinCambio: S.cambio === null, hayCambio: S.cambio !== null,
+            cambioCargo: S.cambio !== null ? S.cargos[S.cambio].cargo.toLowerCase() : '',
+            cambioActual: S.cambio !== null ? S.cargos[S.cambio].nombre : '',
+            candidatos: cand,
+            cancelarCambio: function () { self.setState({ cambio: null, cand: null }); },
+            confStyle: 'flex-grow:2;height:44px;border-radius:10px;border:none;font-size:14px;font-weight:700;cursor:pointer;' + (S.cand ? 'background:#0E5E5B;color:#FFFFFF' : 'background:#E4E1D8;color:#6B675D'),
+            confirmar: function () {
+              if (!self.state.cand) return;
+              var i = self.state.cambio, cs = self.state.cargos.slice(), prev = cs[i].nombre;
+              var u = R.filter(function (r) { return r[0] === self.state.cand; })[0];
+              cs[i] = { cargo: cs[i].cargo, nombre: u[0], unidad: u[1], periodo: '26 sep 2026 – 26 sep 2027', acta: 'Acta 2026-03', prorrogado: false };
+              self.setState({ cargos: cs, cambio: null, cand: null, ok: cs[i].cargo + ': ' + u[0] + ' desde hoy. El periodo de ' + prev + ' se cerró y conserva su rol de residente.' });
+            },
+            error: S.error,
+            asignar: function () { self.setState({ error: true }); },
+            cerrarError: function () { self.setState({ error: false }); },
+            usuarios: U.map(function (u, i) {
+              var on = i === S.sel;
+              return { nombre: u[0], correo: u[1], roles: u[2], cupo: u[3] ? 'Sí' : 'No', hasta: u[4],
+                cupoStyle: u[3] ? chip('#FFF1DC', '#8A3F0A') : chip('#F1EFE8', '#6B675D'),
+                pick: function () { self.setState({ sel: i }); },
+                row: 'display:grid;grid-template-columns:1.4fr 1.4fr 150px 150px;align-items:center;width:100%;text-align:left;padding:0 18px;height:52px;border:none;border-top:1px solid #F0EDE5;font-size:14px;cursor:pointer;font-family:inherit;color:#1C1B18;' + (on ? 'background:#F2F7F6;box-shadow:inset 3px 0 0 #0E5E5B' : 'background:#FFFFFF') };
+            }),
+            tabs: T.map(function (t) {
+              var on = t[0] === S.tab;
+              return { label: t[1], pick: function () { self.setState({ tab: t[0] }); },
+                style: 'height:42px;padding:0 12px;border:none;background:none;cursor:pointer;font-size:13px;font-weight:700;margin-bottom:-1px;' + (on ? 'color:#1C1B18;border-bottom:3px solid #0E5E5B' : 'color:#6B675D;border-bottom:3px solid transparent') };
+            }),
+            tabAcceso: S.tab === 'acceso', tabBitacora: S.tab === 'bit',
+            bitacora: B.map(function (b) { return { hora: b[0], recurso: b[1], detalle: b[2], tipo: b[3], tipoStyle: b[4] + ';flex-shrink:0;align-self:center' }; })
+          };
+        }
+      }
+    </script>
+  </body>
+</html>

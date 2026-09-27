@@ -103,30 +103,7 @@
           <q-icon name="sym_r_notifications" size="22px" />
         </q-btn>
 
-        <button type="button" class="usuario" aria-label="Opciones de la cuenta">
-          <span class="usuario__avatar">{{ iniciales(session.usuario?.nombre ?? '') }}</span>
-          <span class="text-left gt-xs">
-            <span class="usuario__nombre">{{ session.usuario?.nombre }}</span>
-            <span class="usuario__rol">{{ rolVisible }}</span>
-          </span>
-          <q-menu :offset="[0, 8]">
-            <q-list style="min-width: 240px" class="q-py-sm">
-              <q-item>
-                <q-item-section>
-                  <q-item-label class="text-weight-bold">{{
-                    session.usuario?.nombre
-                  }}</q-item-label>
-                  <q-item-label caption>{{ session.usuario?.email }}</q-item-label>
-                </q-item-section>
-              </q-item>
-              <q-separator class="q-my-xs" />
-              <q-item v-close-popup clickable @click="salir">
-                <q-item-section avatar><q-icon :name="ICONOS.salir" /></q-item-section>
-                <q-item-section>{{ t('auth.cerrarSesion') }}</q-item-section>
-              </q-item>
-            </q-list>
-          </q-menu>
-        </button>
+        <MenuUsuario />
       </div>
     </q-header>
 
@@ -151,35 +128,37 @@
     <q-page-container>
       <router-view :key="session.condominioId ?? 0" />
     </q-page-container>
+
+    <VistaPreviaAviso />
   </q-layout>
 </template>
 
 <script setup lang="ts">
 import { useQuasar } from 'quasar';
 import { computed, ref } from 'vue';
-import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 
 import { queryClient } from '@/boot/vue-query';
 import { aApiError } from '@/core/api/errors';
 import { ICONOS } from '@/core/navigation/icons';
 import { filtrarMenu, MENU_BASE } from '@/core/navigation/menu';
-import { etiquetaRol } from '@/core/navigation/roles';
 import { colorAvatar, iniciales } from '@/core/theme/avatar';
+import VistaPreviaAviso from '@/components/VistaPreviaAviso.vue';
+import { MOSTRAR_VISTAS_PREVIAS } from '@/core/vista-previa';
 import MenuLateral from '@/layouts/components/MenuLateral.vue';
+import MenuUsuario from '@/layouts/components/MenuUsuario.vue';
 import { useSessionStore } from '@/stores/session';
 
 const $q = useQuasar();
-const { t } = useI18n();
 const router = useRouter();
 const session = useSessionStore();
 
 const menuAbierto = ref(false);
 const busqueda = ref('');
 
-const menu = computed(() => filtrarMenu(MENU_BASE, session.permisos));
-
-const rolVisible = computed(() => etiquetaRol(session.roles));
+const menu = computed(() =>
+  filtrarMenu(MENU_BASE, session.permisos, { vistasPrevias: MOSTRAR_VISTAS_PREVIAS }),
+);
 
 const gruposCondominios = computed(() => {
   const texto = busqueda.value.trim().toLowerCase();
@@ -209,15 +188,6 @@ async function cambiarCondominio(id: number): Promise<void> {
     await router.replace({ name: 'inicio' });
   } catch (error) {
     $q.notify({ type: 'negative', message: aApiError(error).mensaje });
-  }
-}
-
-async function salir(): Promise<void> {
-  try {
-    await session.cerrarSesion();
-  } finally {
-    queryClient.clear();
-    await router.replace({ name: 'login' });
   }
 }
 </script>
@@ -285,45 +255,6 @@ async function salir(): Promise<void> {
   display: block;
   font-size: 14px;
   font-weight: 700;
-}
-
-.usuario {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  border: none;
-  background: transparent;
-  padding: 4px;
-  border-radius: 10px;
-  cursor: pointer;
-  font: inherit;
-  color: inherit;
-}
-
-.usuario__avatar {
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  background: var(--q-accent);
-  color: var(--safic-tinta);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 800;
-  font-size: 14px;
-  flex-shrink: 0;
-}
-
-.usuario__nombre {
-  display: block;
-  font-size: 14px;
-  font-weight: 700;
-}
-
-.usuario__rol {
-  display: block;
-  font-size: 12px;
-  color: var(--safic-texto-suave);
 }
 
 .lateral {

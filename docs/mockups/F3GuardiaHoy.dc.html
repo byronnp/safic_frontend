@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>Reservas de hoy</title>
+    <script src="./support.js"></script>
+  </head>
+  <body>
+    <x-dc>
+      <helmet>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap"
+          rel="stylesheet"
+        />
+        <style>
+          body {
+            margin: 0;
+            font-family: Manrope, system-ui, sans-serif;
+            background: #f5f4ef;
+            color: #1c1b18;
+          }
+          a {
+            color: #0e5e5b;
+          }
+          a:hover {
+            color: #08403e;
+          }
+          button,
+          textarea {
+            font-family: inherit;
+          }
+        </style>
+      </helmet>
+      <div
+        style="
+          width: 390px;
+          height: 844px;
+          display: flex;
+          flex-direction: column;
+          background: #f5f4ef;
+          overflow: hidden;
+        "
+      >
+        <div style="background: #12302f; color: #ffffff; padding: 22px 16px 18px 16px">
+          <div style="font-size: 13px; color: #b9cdc9; font-weight: 600">
+            Garita principal · Turno día
+          </div>
+          <div style="display: flex; align-items: baseline; gap: 10px; margin-top: 2px">
+            <div style="font-size: 22px; font-weight: 800; flex-grow: 1">Reservas de hoy</div>
+            <div style="font-size: 13px; color: #d6e3e0; font-weight: 600">Sáb 3 oct</div>
+          </div>
+        </div>
+
+        <div
+          style="
+            flex-grow: 1;
+            padding: 14px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            overflow: hidden;
+          "
+        >
+          <sc-for list="{{items}}" as="r" hint-placeholder-count="4">
+            <div
+              style="
+                background: #ffffff;
+                border: 1px solid #e4e1d8;
+                border-radius: 14px;
+                padding: 12px 14px;
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+              "
+            >
+              <div style="display: flex; align-items: center; gap: 10px">
+                <div style="flex-grow: 1">
+                  <div style="font-size: 15px; font-weight: 800">{{r.area}}</div>
+                  <div style="font-size: 13px; color: #3d3a33">
+                    {{r.hora}} · {{r.unidad}} · {{r.persona}}
+                  </div>
+                </div>
+                <span style="{{r.badge}}">{{r.estado}}</span>
+              </div>
+              <div style="font-size: 12px; color: #5f5b52">{{r.pago}}</div>
+              <sc-if value="{{r.canIn}}" hint-placeholder-val="{{ true }}">
+                <button
+                  onClick="{{r.checkIn}}"
+                  style="
+                    height: 44px;
+                    border-radius: 10px;
+                    border: none;
+                    background: #0e5e5b;
+                    color: #ffffff;
+                    font-size: 14px;
+                    font-weight: 700;
+                    cursor: pointer;
+                  "
+                >
+                  Registrar ingreso
+                </button>
+              </sc-if>
+              <sc-if value="{{r.canOut}}" hint-placeholder-val="{{ false }}">
+                <button
+                  onClick="{{r.openOut}}"
+                  style="
+                    height: 44px;
+                    border-radius: 10px;
+                    border: 1px solid #0e5e5b;
+                    background: #ffffff;
+                    color: #0e5e5b;
+                    font-size: 14px;
+                    font-weight: 700;
+                    cursor: pointer;
+                  "
+                >
+                  Recibir área
+                </button>
+              </sc-if>
+              <sc-if value="{{r.outOpen}}" hint-placeholder-val="{{ false }}">
+                <div
+                  style="
+                    border-top: 1px solid #f0ede5;
+                    padding-top: 10px;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 8px;
+                  "
+                >
+                  <div
+                    style="
+                      display: grid;
+                      grid-template-columns: repeat(2, minmax(0, 1fr));
+                      gap: 8px;
+                    "
+                  >
+                    <button onClick="{{r.setOk}}" style="{{r.okStyle}}">Sin novedades</button>
+                    <button onClick="{{r.setDmg}}" style="{{r.dmgStyle}}">Con daños</button>
+                  </div>
+                  <sc-if value="{{r.dmg}}" hint-placeholder-val="{{ false }}">
+                    <textarea
+                      rows="2"
+                      aria-label="Describe el daño"
+                      style="
+                        border: 1px solid #cfcbbf;
+                        border-radius: 9px;
+                        padding: 8px 10px;
+                        font-size: 13px;
+                        resize: none;
+                      "
+                    >
+Silla plegable rota y mancha en el mesón.</textarea>
+                    <button
+                      style="
+                        height: 42px;
+                        border-radius: 10px;
+                        border: 1.5px dashed #9fbdb8;
+                        background: #f1f6f5;
+                        color: #0e5e5b;
+                        font-size: 13px;
+                        font-weight: 700;
+                        cursor: pointer;
+                      "
+                    >
+                      Tomar fotos (obligatorio)
+                    </button>
+                    <div style="font-size: 12px; color: #5f5b52">
+                      La administración decidirá el cargo por daños a la unidad.
+                    </div>
+                  </sc-if>
+                  <button
+                    onClick="{{r.finish}}"
+                    style="
+                      height: 44px;
+                      border-radius: 10px;
+                      border: none;
+                      background: #0e5e5b;
+                      color: #ffffff;
+                      font-size: 14px;
+                      font-weight: 700;
+                      cursor: pointer;
+                    "
+                  >
+                    Confirmar entrega
+                  </button>
+                </div>
+              </sc-if>
+            </div>
+          </sc-for>
+          <div style="font-size: 12px; color: #5f5b52; line-height: 1.5; padding: 0 4px">
+            El guardia no recibe pagos: solo aparecen reservas pagadas o gratuitas.
+          </div>
+        </div>
+      </div>
+    </x-dc>
+    <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+      class Component extends DCLogic {
+        constructor(props) { super(props); this.state = { st: { c: 'uso', b1: 'conf', b2: 'conf', s: 'conf' }, open: 'c', dmg: {} }; }
+        renderVals() {
+          var self = this, S = this.state;
+          var badge = function (bg, fg) { return 'padding:4px 10px;border-radius:999px;font-size:12px;font-weight:700;background:' + bg + ';color:' + fg; };
+          var B = { conf: ['Confirmada', badge('#E6ECF7', '#23407A')], uso: ['En uso', badge('#FFF1DC', '#8A3F0A')], fin: ['Finalizada', badge('#E3EFEC', '#0B4A47')] };
+          var data = [
+            { id: 'c', area: 'Cancha múltiple', hora: '09:00–11:00', unidad: 'B-306', persona: 'Jorge Cevallos', pago: 'Gratis' },
+            { id: 'b1', area: 'Área BBQ 1', hora: '12:00–16:00', unidad: 'A-201', persona: 'Fernando Salazar', pago: 'Uso $ 15,00 pagado' },
+            { id: 'b2', area: 'Área BBQ 2', hora: '13:00–17:00', unidad: 'B-305', persona: 'Andrea Villacís', pago: 'Uso $ 15,00 pagado' },
+            { id: 's', area: 'Salón comunal', hora: '18:00–23:00', unidad: 'CS-04', persona: 'Gabriela Torres', pago: 'Uso $ 50,00 y garantía $ 100,00 pagados' }
+          ];
+          var set = function (id, v) { var n = Object.assign({}, self.state.st); n[id] = v; return n; };
+          var btn = function (on, bad) { return 'height:42px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;' + (on ? (bad ? 'background:#FDE8E6;color:#9B1C12;border:2px solid #9B1C12' : 'background:#E3EFEC;color:#0B4A47;border:2px solid #0E5E5B') : 'background:#FFFFFF;color:#1C1B18;border:1px solid #D8D4C8'); };
+          var items = data.map(function (r) {
+            var e = S.st[r.id], open = S.open === r.id && e === 'uso', d = !!S.dmg[r.id];
+            return Object.assign({}, r, {
+              estado: B[e][0], badge: B[e][1],
+              canIn: e === 'conf', canOut: e === 'uso' && !open, outOpen: open, dmg: d,
+              okStyle: btn(!d, false), dmgStyle: btn(d, true),
+              checkIn: function () { self.setState({ st: set(r.id, 'uso') }); },
+              openOut: function () { self.setState({ open: r.id }); },
+              setOk: function () { var n = Object.assign({}, self.state.dmg); n[r.id] = false; self.setState({ dmg: n }); },
+              setDmg: function () { var n = Object.assign({}, self.state.dmg); n[r.id] = true; self.setState({ dmg: n }); },
+              finish: function () { self.setState({ st: set(r.id, 'fin'), open: '' }); }
+            });
+          });
+          return { items: items };
+        }
+      }
+    </script>
+  </body>
+</html>

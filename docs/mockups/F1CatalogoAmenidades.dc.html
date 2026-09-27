@@ -1,0 +1,638 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>Catálogo de amenidades</title>
+    <script src="./support.js"></script>
+  </head>
+  <body>
+    <x-dc>
+      <helmet>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap"
+          rel="stylesheet"
+        />
+        <style>
+          .ms {
+            font-family: 'Material Symbols Rounded';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 20px;
+            line-height: 1;
+            width: 20px;
+            height: 20px;
+            overflow: hidden;
+            flex-shrink: 0;
+            display: inline-block;
+            white-space: nowrap;
+            direction: ltr;
+            font-feature-settings: 'liga';
+            -webkit-font-smoothing: antialiased;
+            font-variation-settings:
+              'FILL' 0,
+              'wght' 400,
+              'GRAD' 0,
+              'opsz' 20;
+          }
+          .ms.on {
+            font-variation-settings:
+              'FILL' 1,
+              'wght' 500,
+              'GRAD' 0,
+              'opsz' 20;
+          }
+          body {
+            margin: 0;
+            font-family: Manrope, system-ui, sans-serif;
+            background: #f5f4ef;
+            color: #1c1b18;
+          }
+          a {
+            color: #0e5e5b;
+          }
+          a:hover {
+            color: #08403e;
+          }
+          button,
+          input,
+          select,
+          textarea {
+            font-family: inherit;
+          }
+        </style>
+        <link
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,300..500,0..1,0"
+          rel="stylesheet"
+        />
+      </helmet>
+      <div
+        style="width: 1440px; height: 900px; display: flex; background: #f5f4ef; overflow: hidden"
+      >
+        <nav
+          aria-label="Menú de plataforma"
+          style="
+            width: 248px;
+            flex-shrink: 0;
+            background: #1c1b18;
+            color: #edeae2;
+            display: flex;
+            flex-direction: column;
+            padding: 20px 14px;
+            gap: 2px;
+            box-sizing: border-box;
+          "
+        >
+          <div style="display: flex; align-items: center; gap: 10px; padding: 4px 10px 6px 10px">
+            <div
+              style="
+                width: 34px;
+                height: 34px;
+                border-radius: 9px;
+                background: #f0b35a;
+                color: #1c1b18;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 800;
+                font-size: 16px;
+              "
+            >
+              S
+            </div>
+            <div style="font-weight: 800; font-size: 18px">SAFIC</div>
+          </div>
+          <div
+            style="
+              margin: 0 10px 18px 10px;
+              font-size: 11px;
+              font-weight: 800;
+              letter-spacing: 1px;
+              color: #f0b35a;
+            "
+          >
+            PLATAFORMA
+          </div>
+          <a
+            href="F6Cobranza.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #bdb8ac;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+              gap: 12px;
+            "
+            ><span class="ms" aria-hidden="true">paid</span>Cobranza</a
+          >
+          <a
+            href="Platform.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #bdb8ac;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+              gap: 12px;
+            "
+            ><span class="ms" aria-hidden="true">location_city</span>Condominios</a
+          >
+          <a
+            href="F6Planes.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #bdb8ac;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+              gap: 12px;
+            "
+            ><span class="ms" aria-hidden="true">view_module</span>Planes y módulos</a
+          >
+          <a
+            href="F1CatalogoAmenidades.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #ffffff;
+              background: #34322d;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 700;
+              gap: 12px;
+            "
+            ><span class="ms on" aria-hidden="true">category</span>Catálogo de amenidades</a
+          >
+          <div
+            style="
+              padding: 14px 12px 6px 12px;
+              font-size: 11px;
+              font-weight: 800;
+              letter-spacing: 1px;
+              color: #8a857a;
+            "
+          >
+            ACCESO
+          </div>
+          <a
+            href="F1PlataformaRoles.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              gap: 12px;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #bdb8ac;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+            "
+            ><span class="ms" aria-hidden="true">admin_panel_settings</span>Roles y permisos</a
+          >
+          <a
+            href="F1PlataformaMenu.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              gap: 12px;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #bdb8ac;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+            "
+            ><span class="ms" aria-hidden="true">menu_open</span>Menú del sistema</a
+          >
+          <a
+            href="F6Configuracion.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #bdb8ac;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+              gap: 12px;
+            "
+            ><span class="ms" aria-hidden="true">settings</span>Configuración</a
+          >
+        </nav>
+
+        <main
+          style="
+            flex-grow: 1;
+            padding: 26px 32px;
+            display: flex;
+            gap: 18px;
+            box-sizing: border-box;
+            min-width: 0;
+          "
+        >
+          <section
+            style="flex-grow: 1; display: flex; flex-direction: column; gap: 14px; min-width: 0"
+          >
+            <div style="display: flex; align-items: flex-end; gap: 12px">
+              <div style="flex-grow: 1">
+                <div style="font-size: 13px; color: #5f5b52; font-weight: 600">
+                  Plataforma / Catálogo de amenidades
+                </div>
+                <h1
+                  style="
+                    margin: 4px 0 0 0;
+                    font-size: 28px;
+                    font-weight: 800;
+                    letter-spacing: -0.4px;
+                  "
+                >
+                  Catálogo de amenidades
+                </h1>
+              </div>
+              <button
+                onClick="{{nueva}}"
+                style="
+                  height: 44px;
+                  padding: 0 16px;
+                  border-radius: 10px;
+                  border: none;
+                  background: #0e5e5b;
+                  color: #ffffff;
+                  font-size: 14px;
+                  font-weight: 700;
+                  cursor: pointer;
+                "
+              >
+                Nueva amenidad
+              </button>
+            </div>
+
+            <div style="display: flex; gap: 4px; border-bottom: 1px solid #e4e1d8">
+              <sc-for list="{{ambitos}}" as="a" hint-placeholder-count="2">
+                <button onClick="{{a.pick}}" style="{{a.style}}">{{a.label}}</button>
+              </sc-for>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 8px">
+              <sc-for list="{{cats}}" as="c" hint-placeholder-count="6">
+                <button onClick="{{c.pick}}" style="{{c.style}}">{{c.label}}</button>
+              </sc-for>
+            </div>
+
+            <div
+              style="
+                flex-grow: 1;
+                background: #ffffff;
+                border: 1px solid #e4e1d8;
+                border-radius: 14px;
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
+                min-height: 0;
+              "
+            >
+              <div style="{{headGrid}}">
+                <div>AMENIDAD</div>
+                <div>CATEGORÍA</div>
+                <div>COMPORTAMIENTO</div>
+                <div>{{colUso}}</div>
+                <div>ESTADO</div>
+              </div>
+              <sc-for list="{{rows}}" as="r" hint-placeholder-count="10">
+                <button onClick="{{r.pick}}" style="{{r.row}}">
+                  <div style="display: flex; align-items: center; gap: 12px; min-width: 0">
+                    <span style="{{r.icon}}">{{r.ini}}</span>
+                    <div style="min-width: 0">
+                      <div style="font-weight: 800">{{r.nombre}}</div>
+                      <div
+                        style="
+                          font-size: 12px;
+                          color: #5f5b52;
+                          white-space: nowrap;
+                          overflow: hidden;
+                          text-overflow: ellipsis;
+                        "
+                      >
+                        {{r.sub}}
+                      </div>
+                    </div>
+                  </div>
+                  <div style="font-size: 13px; color: #3d3a33">{{r.cat}}</div>
+                  <div style="display: flex; gap: 6px; flex-wrap: wrap">
+                    <sc-for list="{{r.tags}}" as="t" hint-placeholder-count="2">
+                      <span style="{{t.style}}">{{t.label}}</span>
+                    </sc-for>
+                  </div>
+                  <div style="font-size: 13px; color: #3d3a33; font-weight: 600">{{r.uso}}</div>
+                  <div><span style="{{r.estStyle}}">{{r.est}}</span></div>
+                </button>
+              </sc-for>
+            </div>
+          </section>
+
+          <aside
+            style="
+              width: 380px;
+              flex-shrink: 0;
+              background: #ffffff;
+              border: 1px solid #e4e1d8;
+              border-radius: 14px;
+              padding: 18px 20px;
+              display: flex;
+              flex-direction: column;
+              gap: 12px;
+              box-sizing: border-box;
+              overflow: hidden;
+            "
+          >
+            <div style="display: flex; align-items: center; gap: 12px">
+              <span style="{{p.icon}}">{{p.ini}}</span>
+              <div style="flex-grow: 1">
+                <div style="font-size: 12px; color: #5f5b52; font-weight: 700">{{p.titulo}}</div>
+                <div style="font-size: 18px; font-weight: 800">{{p.nombre}}</div>
+              </div>
+            </div>
+
+            <sc-if value="{{p.propia}}" hint-placeholder-val="{{ false }}">
+              <div
+                style="
+                  background: #e6ecf7;
+                  color: #23407a;
+                  border-radius: 10px;
+                  padding: 10px 12px;
+                  font-size: 12px;
+                  font-weight: 600;
+                  line-height: 1.45;
+                "
+              >
+                Creada por el administrador de <strong>{{p.condo}}</strong>. Solo ese condominio la
+                ve. Si otros la piden, promuévela al catálogo global.
+              </div>
+            </sc-if>
+
+            <label
+              style="
+                display: flex;
+                flex-direction: column;
+                gap: 6px;
+                font-size: 13px;
+                font-weight: 700;
+                color: #3d3a33;
+              "
+              >Nombre<input
+                value="{{p.nombre}}"
+                style="
+                  height: 40px;
+                  border: 1px solid #cfcbbf;
+                  border-radius: 9px;
+                  padding: 0 12px;
+                  font-size: 15px;
+                "
+            /></label>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px">
+              <label
+                style="
+                  display: flex;
+                  flex-direction: column;
+                  gap: 6px;
+                  font-size: 13px;
+                  font-weight: 700;
+                  color: #3d3a33;
+                "
+                >Categoría<select
+                  style="
+                    height: 40px;
+                    border: 1px solid #cfcbbf;
+                    border-radius: 9px;
+                    padding: 0 8px;
+                    font-size: 14px;
+                    background: #ffffff;
+                  "
+                >
+                  <option>{{p.cat}}</option>
+                  <option>Recreación</option>
+                  <option>Deporte</option>
+                  <option>Social</option>
+                  <option>Servicios</option>
+                  <option>Seguridad</option>
+                </select></label
+              >
+              <label
+                style="
+                  display: flex;
+                  flex-direction: column;
+                  gap: 6px;
+                  font-size: 13px;
+                  font-weight: 700;
+                  color: #3d3a33;
+                "
+                >Orden<input
+                  value="{{p.orden}}"
+                  style="
+                    height: 40px;
+                    border: 1px solid #cfcbbf;
+                    border-radius: 9px;
+                    padding: 0 12px;
+                    font-size: 15px;
+                  "
+              /></label>
+            </div>
+
+            <div
+              style="
+                display: flex;
+                flex-direction: column;
+                border: 1px solid #e4e1d8;
+                border-radius: 12px;
+              "
+            >
+              <sc-for list="{{p.switches}}" as="s" hint-placeholder-count="4">
+                <div
+                  style="
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                    padding: 10px 12px;
+                    border-bottom: 1px solid #f0ede5;
+                  "
+                >
+                  <div style="flex-grow: 1">
+                    <div style="font-size: 13px; font-weight: 700">{{s.label}}</div>
+                    <div style="font-size: 11px; color: #5f5b52">{{s.help}}</div>
+                  </div>
+                  <button onClick="{{s.toggle}}" aria-label="{{s.label}}" style="{{s.track}}">
+                    <span style="{{s.knob}}"></span>
+                  </button>
+                </div>
+              </sc-for>
+            </div>
+
+            <sc-if value="{{p.reservable}}" hint-placeholder-val="{{ true }}">
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px">
+                <label
+                  style="
+                    display: flex;
+                    flex-direction: column;
+                    gap: 6px;
+                    font-size: 13px;
+                    font-weight: 700;
+                    color: #3d3a33;
+                  "
+                  >Capacidad sugerida<input
+                    value="{{p.cap}}"
+                    style="
+                      height: 40px;
+                      border: 1px solid #cfcbbf;
+                      border-radius: 9px;
+                      padding: 0 12px;
+                      font-size: 15px;
+                    "
+                /></label>
+                <label
+                  style="
+                    display: flex;
+                    flex-direction: column;
+                    gap: 6px;
+                    font-size: 13px;
+                    font-weight: 700;
+                    color: #3d3a33;
+                  "
+                  >Duración máxima<input
+                    value="{{p.dur}}"
+                    style="
+                      height: 40px;
+                      border: 1px solid #cfcbbf;
+                      border-radius: 9px;
+                      padding: 0 12px;
+                      font-size: 15px;
+                    "
+                /></label>
+              </div>
+            </sc-if>
+
+            <div style="{{p.avisoStyle}}">{{p.aviso}}</div>
+            <div style="flex-grow: 1"></div>
+            <div style="display: flex; gap: 10px">
+              <button style="{{p.secStyle}}">{{p.secLabel}}</button>
+              <button
+                onClick="{{guardar}}"
+                style="
+                  flex-grow: 1;
+                  height: 46px;
+                  border-radius: 10px;
+                  border: none;
+                  background: #0e5e5b;
+                  color: #ffffff;
+                  font-size: 14px;
+                  font-weight: 700;
+                  cursor: pointer;
+                "
+              >
+                {{guardarLabel}}
+              </button>
+            </div>
+          </aside>
+        </main>
+      </div>
+    </x-dc>
+    <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+      class Component extends DCLogic {
+        constructor(props) { super(props); this.state = { amb: 'global', cat: 'todas', sel: 0, nuevo: false, ov: {}, saved: false }; }
+        renderVals() {
+          var self = this, S = this.state;
+          var chip = function (bg, fg) { return 'display:inline-block;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:700;white-space:nowrap;background:' + bg + ';color:' + fg; };
+          var CAT = { rec: ['Recreación', '#0E5E5B'], dep: ['Deporte', '#23407A'], soc: ['Social', '#B8641C'], ser: ['Servicios', '#5F5B52'], seg: ['Seguridad', '#7A2E5A'] };
+          var G = [
+            { n: 'Piscina', c: 'rec', d: 'Piscina de uso común con horario', r: 1, e: 0, a: 0, cap: 30, dur: '3 h', uso: 5, act: 1 },
+            { n: 'Salón comunal', c: 'soc', d: 'Eventos sociales y reuniones', r: 1, e: 0, a: 1, cap: 80, dur: '6 h', uso: 6, act: 1 },
+            { n: 'Área BBQ', c: 'soc', d: 'Parrilla con mesas', r: 1, e: 0, a: 0, cap: 20, dur: '4 h', uso: 6, act: 1 },
+            { n: 'Cancha múltiple', c: 'dep', d: 'Fútbol, básquet o vóley', r: 1, e: 0, a: 0, cap: 12, dur: '2 h', uso: 4, act: 1 },
+            { n: 'Gimnasio', c: 'dep', d: 'Máquinas y pesas, uso libre', r: 0, e: 0, a: 0, cap: 15, dur: '—', uso: 4, act: 1 },
+            { n: 'Parque infantil', c: 'rec', d: 'Juegos para niños', r: 0, e: 0, a: 0, cap: 0, dur: '—', uso: 5, act: 1 },
+            { n: 'Ascensor', c: 'ser', d: 'Transporte vertical', r: 0, e: 1, a: 0, cap: 0, dur: '—', uso: 3, act: 1 },
+            { n: 'Generador eléctrico', c: 'ser', d: 'Respaldo de energía', r: 0, e: 1, a: 0, cap: 0, dur: '—', uso: 4, act: 1 },
+            { n: 'Guardianía 24 h', c: 'seg', d: 'Control de acceso permanente', r: 0, e: 1, a: 0, cap: 0, dur: '—', uso: 7, act: 1 },
+            { n: 'Sauna y turco', c: 'rec', d: 'Sin uso por ahora', r: 1, e: 0, a: 1, cap: 6, dur: '1 h', uso: 0, act: 0 }
+          ];
+          var P = [
+            { n: 'Muelle', c: 'rec', d: 'Embarcadero para botes pequeños', r: 1, e: 0, a: 1, cap: 4, dur: '4 h', condo: 'Brisas del Mar', act: 1 },
+            { n: 'Huerto comunitario', c: 'rec', d: 'Parcelas de siembra por familia', r: 0, e: 0, a: 0, cap: 0, dur: '—', condo: 'Jardines del Valle', act: 1 },
+            { n: 'Sala de cowork', c: 'soc', d: 'Escritorios y wifi', r: 1, e: 0, a: 0, cap: 10, dur: '4 h', condo: 'Parque Samborondón', act: 1 }
+          ];
+          var L = S.amb === 'global' ? G : P;
+          L = L.map(function (x, i) { var o = S.ov[S.amb + i]; return o ? Object.assign({}, x, o) : x; });
+          var idx = L.map(function (x, i) { return i; }).filter(function (i) { return S.cat === 'todas' || L[i].c === S.cat; });
+          var ico = function (c, size) { return 'width:' + size + 'px;height:' + size + 'px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:' + (size > 40 ? 16 : 13) + 'px;font-weight:800;color:#FFFFFF;background:' + CAT[c][1]; };
+          var ini = function (n) { return n.split(' ').filter(function (w) { return w.length > 2 || /\d/.test(w); }).map(function (w) { return w[0].toUpperCase(); }).join('').slice(0, 2); };
+          var grid = S.amb === 'global' ? '1.6fr 110px 190px 130px 100px' : '1.6fr 110px 190px 170px 100px';
+          var tagsOf = function (x) {
+            var t = [];
+            if (x.r) t.push({ label: 'Reservable', style: chip('#E3EFEC', '#0B4A47') });
+            if (x.e) t.push({ label: 'Esencial', style: chip('#E6ECF7', '#23407A') });
+            if (x.a) t.push({ label: 'Con aprobación', style: chip('#FFF1DC', '#8A3F0A') });
+            if (!t.length) t.push({ label: 'Informativa', style: chip('#F1EFE8', '#5F5B52') });
+            return t;
+          };
+          var sel = S.nuevo ? { n: 'Nueva amenidad', c: 'rec', d: '', r: 1, e: 0, a: 0, cap: '', dur: '', uso: 0, act: 1, condo: '' } : (L[S.sel] || L[0]);
+          var key = S.amb + S.sel;
+          var set = function (k) { if (S.nuevo) return; var ov = Object.assign({}, self.state.ov); var cur = Object.assign({}, ov[key] || {}); var base = sel[k]; cur[k] = base ? 0 : 1; if (k === 'e' && cur.e) cur.r = 0; if (k === 'r' && cur.r) cur.e = 0; ov[key] = cur; self.setState({ ov: ov, saved: false }); };
+          var sw = function (on) { return { track: 'width:44px;height:24px;border-radius:12px;border:none;position:relative;padding:0;cursor:pointer;flex-shrink:0;background:' + (on ? '#0E5E5B' : '#D8D4C8'), knob: 'position:absolute;top:3px;left:' + (on ? '23px' : '3px') + ';width:18px;height:18px;border-radius:50%;background:#FFFFFF;box-shadow:0 1px 2px rgba(0,0,0,.25)' }; };
+          var SW = [['r', 'Reservable', 'Los residentes pueden reservarla (fase 3)'], ['e', 'Esencial', 'Nunca se restringe a morosos (Decreto 462)'], ['a', 'Requiere aprobación', 'La reserva queda pendiente hasta que el admin la apruebe'], ['act', 'Activa', 'Inactiva: no aparece para nuevos condominios']];
+          var aviso, av;
+          if (S.saved) { aviso = 'Cambios guardados. Los condominios que ya la usan conservan su propia configuración.'; av = ['#E3EFEC', '#0B4A47']; }
+          else if (S.nuevo) { aviso = 'El nombre no puede repetirse en el catálogo global.'; av = ['#F1EFE8', '#3D3A33']; }
+          else if (S.amb === 'global' && sel.uso > 0) { aviso = 'Usada en ' + sel.uso + ' condominios: no se puede eliminar, solo desactivar. Cambiar los valores sugeridos no altera a quienes ya la configuraron.'; av = ['#FFF7EC', '#7A3808']; }
+          else if (S.amb === 'global') { aviso = 'Ningún condominio la usa. Se puede eliminar.'; av = ['#F1EFE8', '#3D3A33']; }
+          else { aviso = 'Al promoverla pasa al catálogo global y el condominio la conserva sin cambios.'; av = ['#E6ECF7', '#23407A']; }
+          return {
+            ambitos: [['global', 'Globales (' + G.length + ')'], ['propias', 'Propias de condominios (' + P.length + ')']].map(function (a) {
+              var on = a[0] === S.amb;
+              return { label: a[1], pick: function () { self.setState({ amb: a[0], sel: 0, nuevo: false, saved: false, cat: 'todas' }); },
+                style: 'height:42px;padding:0 14px;border:none;background:none;cursor:pointer;font-size:14px;font-weight:700;margin-bottom:-1px;' + (on ? 'color:#1C1B18;border-bottom:3px solid #0E5E5B' : 'color:#6B675D;border-bottom:3px solid transparent') };
+            }),
+            cats: [['todas', 'Todas']].concat(Object.keys(CAT).map(function (k) { return [k, CAT[k][0]]; })).map(function (c) {
+              var on = c[0] === S.cat;
+              return { label: c[1], pick: function () { self.setState({ cat: c[0] }); },
+                style: 'height:32px;padding:0 12px;border-radius:999px;font-size:13px;font-weight:700;cursor:pointer;' + (on ? 'background:#1C1B18;color:#FFFFFF;border:1px solid #1C1B18' : 'background:#FFFFFF;color:#3D3A33;border:1px solid #D8D4C8') };
+            }),
+            colUso: S.amb === 'global' ? 'EN USO' : 'CONDOMINIO',
+            headGrid: 'display:grid;grid-template-columns:' + grid + ';gap:12px;padding:9px 16px;background:#FAF9F5;font-size:12px;font-weight:700;color:#5F5B52;letter-spacing:0.3px',
+            rows: idx.map(function (i) {
+              var x = L[i], on = !S.nuevo && i === S.sel;
+              return { nombre: x.n, sub: x.d, cat: CAT[x.c][0], ini: ini(x.n), icon: ico(x.c, 36), tags: tagsOf(x),
+                uso: S.amb === 'global' ? (x.uso ? x.uso + ' condominios' : 'Sin uso') : x.condo,
+                est: x.act ? 'Activa' : 'Inactiva', estStyle: x.act ? chip('#E3EFEC', '#0B4A47') : chip('#F1EFE8', '#6B675D'),
+                pick: function () { self.setState({ sel: i, nuevo: false, saved: false }); },
+                row: 'display:grid;grid-template-columns:' + grid + ';gap:12px;align-items:center;width:100%;text-align:left;padding:0 16px;height:56px;border:none;border-top:1px solid #F0EDE5;font-size:14px;cursor:pointer;font-family:inherit;color:#1C1B18;' + (on ? 'background:#F2F7F6;box-shadow:inset 3px 0 0 #0E5E5B' : 'background:#FFFFFF') + (x.act ? '' : ';opacity:0.6') };
+            }),
+            p: {
+              titulo: S.nuevo ? 'Nueva amenidad global' : (S.amb === 'global' ? 'Amenidad global' : 'Amenidad propia'),
+              nombre: sel.n, cat: CAT[sel.c][0], orden: S.nuevo ? '11' : String(S.sel + 1), ini: S.nuevo ? '+' : ini(sel.n), icon: ico(sel.c, 48),
+              propia: S.amb === 'propias' && !S.nuevo, condo: sel.condo,
+              reservable: !!sel.r, cap: sel.cap || '', dur: sel.dur === '—' ? '' : sel.dur,
+              switches: SW.map(function (s) { var v = sw(!!sel[s[0]]); return { label: s[1], help: s[2], track: v.track, knob: v.knob, toggle: function () { set(s[0]); } }; }),
+              aviso: aviso, avisoStyle: 'border-radius:10px;padding:10px 12px;font-size:12px;font-weight:600;line-height:1.45;background:' + av[0] + ';color:' + av[1],
+              secLabel: S.amb === 'propias' && !S.nuevo ? 'Promover a global' : (S.nuevo ? 'Cancelar' : (sel.uso > 0 ? 'Desactivar' : 'Eliminar')),
+              secStyle: 'height:46px;padding:0 14px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;background:#FFFFFF;' + (S.amb === 'propias' ? 'border:1px solid #23407A;color:#23407A' : (sel.uso > 0 || S.nuevo ? 'border:1px solid #D8D4C8;color:#1C1B18' : 'border:1px solid #9B1C12;color:#9B1C12'))
+            },
+            guardarLabel: S.nuevo ? 'Crear amenidad' : 'Guardar cambios',
+            guardar: function () { self.setState({ saved: true }); },
+            nueva: function () { self.setState({ nuevo: true, amb: 'global', saved: false }); }
+          };
+        }
+      }
+    </script>
+  </body>
+</html>

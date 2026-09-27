@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>Mi cuenta</title>
+    <script src="./support.js"></script>
+  </head>
+  <body>
+    <x-dc>
+      <helmet>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap"
+          rel="stylesheet"
+        />
+        <style>
+          body {
+            margin: 0;
+            font-family: Manrope, system-ui, sans-serif;
+            background: #f5f4ef;
+            color: #1c1b18;
+          }
+          a {
+            color: #0e5e5b;
+          }
+          a:hover {
+            color: #08403e;
+          }
+        </style>
+      </helmet>
+      <div
+        style="
+          width: 390px;
+          height: 844px;
+          display: flex;
+          flex-direction: column;
+          background: #f5f4ef;
+          overflow: hidden;
+        "
+      >
+        <div style="background: #12302f; color: #ffffff; padding: 26px 20px 60px 20px">
+          <div style="font-size: 13px; color: #b9cdc9; font-weight: 600">
+            Jardines del Valle · A-102
+          </div>
+          <div style="font-size: 22px; font-weight: 800; margin-top: 4px">Mi cuenta</div>
+        </div>
+        <div
+          style="
+            margin: -40px 16px 0 16px;
+            background: #ffffff;
+            border: 1px solid #e4e1d8;
+            border-radius: 16px;
+            padding: 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+          "
+        >
+          <div style="font-size: 13px; color: #5f5b52; font-weight: 600">Total pendiente</div>
+          <div style="display: flex; align-items: baseline; gap: 10px">
+            <div style="font-size: 34px; font-weight: 800; letter-spacing: -0.5px">$ 240,00</div>
+            <span
+              style="
+                padding: 4px 10px;
+                border-radius: 999px;
+                background: #fde8e6;
+                color: #9b1c12;
+                font-size: 12px;
+                font-weight: 700;
+              "
+              >2 vencidas</span
+            >
+          </div>
+          <a
+            href="F2Pagar.dc.html"
+            style="
+              height: 50px;
+              border-radius: 12px;
+              background: #0e5e5b;
+              color: #ffffff;
+              font-size: 16px;
+              font-weight: 700;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              text-decoration: none;
+            "
+            >Pagar</a
+          >
+        </div>
+
+        <div
+          style="
+            flex-grow: 1;
+            padding: 18px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            overflow: hidden;
+          "
+        >
+          <div style="font-size: 15px; font-weight: 800">Cuotas</div>
+          <div style="background: #ffffff; border: 1px solid #e4e1d8; border-radius: 14px">
+            <div
+              style="
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 12px 14px;
+                border-bottom: 1px solid #f0ede5;
+              "
+            >
+              <div style="flex-grow: 1">
+                <div style="font-size: 14px; font-weight: 700">Julio 2026</div>
+                <div style="font-size: 12px; color: #9b1c12; font-weight: 600">
+                  Vencida el 10 jul
+                </div>
+              </div>
+              <div style="font-size: 15px; font-weight: 800">$ 80,00</div>
+            </div>
+            <div
+              style="
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 12px 14px;
+                border-bottom: 1px solid #f0ede5;
+              "
+            >
+              <div style="flex-grow: 1">
+                <div style="font-size: 14px; font-weight: 700">Agosto 2026</div>
+                <div style="font-size: 12px; color: #9b1c12; font-weight: 600">
+                  Vencida el 10 ago
+                </div>
+              </div>
+              <div style="font-size: 15px; font-weight: 800">$ 80,00</div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px; padding: 12px 14px">
+              <div style="flex-grow: 1">
+                <div style="font-size: 14px; font-weight: 700">Septiembre 2026</div>
+                <div style="font-size: 12px; color: #5f5b52">Vence el 10 oct</div>
+              </div>
+              <div style="font-size: 15px; font-weight: 800">$ 80,00</div>
+            </div>
+          </div>
+
+          <div style="font-size: 15px; font-weight: 800; margin-top: 6px">Pagos y recibos</div>
+          <div style="background: #ffffff; border: 1px solid #e4e1d8; border-radius: 14px">
+            <div
+              style="
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 12px 14px;
+                border-bottom: 1px solid #f0ede5;
+              "
+            >
+              <div style="flex-grow: 1">
+                <div style="font-size: 14px; font-weight: 700">Mayo 2026 · $ 80,00</div>
+                <div style="font-size: 12px; color: #5f5b52">Recibo N.º 000358 · 9 may</div>
+              </div>
+              <a
+                href="#"
+                style="font-size: 14px; font-weight: 700; text-decoration: none; padding: 10px 0"
+                >PDF</a
+              >
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px; padding: 12px 14px">
+              <div style="flex-grow: 1">
+                <div style="font-size: 14px; font-weight: 700">Junio 2026 · $ 80,00</div>
+                <div style="font-size: 12px; color: #5f5b52">Recibo N.º 000412 · 8 jun</div>
+              </div>
+              <a
+                href="#"
+                style="font-size: 14px; font-weight: 700; text-decoration: none; padding: 10px 0"
+                >PDF</a
+              >
+            </div>
+          </div>
+        </div>
+
+        <nav
+          aria-label="Navegación"
+          style="
+            height: 72px;
+            flex-shrink: 0;
+            background: #ffffff;
+            border-top: 1px solid #e4e1d8;
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+          "
+        >
+          <a
+            href="Residente.dc.html"
+            style="
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              justify-content: center;
+              gap: 4px;
+              font-size: 11px;
+              font-weight: 700;
+              color: #6b675d;
+              text-decoration: none;
+            "
+          >
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M3 11l9-8 9 8"></path>
+              <path d="M5 10v11h14V10"></path></svg
+            >Mi hogar</a
+          >
+          <a
+            href="F2MiCuenta.dc.html"
+            style="
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              justify-content: center;
+              gap: 4px;
+              font-size: 11px;
+              font-weight: 800;
+              color: #0e5e5b;
+              text-decoration: none;
+            "
+          >
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <rect x="2" y="5" width="20" height="14" rx="2"></rect>
+              <path d="M2 10h20"></path></svg
+            >Pagos</a
+          >
+          <a
+            href="#"
+            style="
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              justify-content: center;
+              gap: 4px;
+              font-size: 11px;
+              font-weight: 700;
+              color: #6b675d;
+              text-decoration: none;
+            "
+          >
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path></svg
+            >Avisos</a
+          >
+          <a
+            href="#"
+            style="
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              justify-content: center;
+              gap: 4px;
+              font-size: 11px;
+              font-weight: 700;
+              color: #6b675d;
+              text-decoration: none;
+            "
+          >
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <circle cx="12" cy="8" r="4"></circle>
+              <path d="M4 21c0-4 4-6 8-6s8 2 8 6"></path></svg
+            >Perfil</a
+          >
+        </nav>
+      </div>
+    </x-dc>
+    <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+      class Component extends DCLogic {
+        renderVals() { return {}; }
+      }
+    </script>
+  </body>
+</html>

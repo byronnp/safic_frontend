@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>Plataforma · Condominios</title>
+    <script src="./support.js"></script>
+  </head>
+  <body>
+    <x-dc>
+      <helmet>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap"
+          rel="stylesheet"
+        />
+        <style>
+          .ms {
+            font-family: 'Material Symbols Rounded';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 20px;
+            line-height: 1;
+            width: 20px;
+            height: 20px;
+            overflow: hidden;
+            flex-shrink: 0;
+            display: inline-block;
+            white-space: nowrap;
+            direction: ltr;
+            font-feature-settings: 'liga';
+            -webkit-font-smoothing: antialiased;
+            font-variation-settings:
+              'FILL' 0,
+              'wght' 400,
+              'GRAD' 0,
+              'opsz' 20;
+          }
+          .ms.on {
+            font-variation-settings:
+              'FILL' 1,
+              'wght' 500,
+              'GRAD' 0,
+              'opsz' 20;
+          }
+          body {
+            margin: 0;
+            font-family: Manrope, system-ui, sans-serif;
+            background: #f5f4ef;
+            color: #1c1b18;
+          }
+          a {
+            color: #0e5e5b;
+          }
+          a:hover {
+            color: #08403e;
+          }
+          button,
+          input {
+            font-family: inherit;
+          }
+        </style>
+        <link
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,300..500,0..1,0"
+          rel="stylesheet"
+        />
+      </helmet>
+      <div
+        style="width: 1440px; height: 900px; display: flex; background: #f5f4ef; overflow: hidden"
+      >
+        <nav
+          aria-label="Menú de plataforma"
+          style="
+            width: 248px;
+            flex-shrink: 0;
+            background: #1c1b18;
+            color: #edeae2;
+            display: flex;
+            flex-direction: column;
+            padding: 20px 14px;
+            gap: 4px;
+            box-sizing: border-box;
+          "
+        >
+          <div style="display: flex; align-items: center; gap: 10px; padding: 4px 10px 6px 10px">
+            <div
+              style="
+                width: 34px;
+                height: 34px;
+                border-radius: 9px;
+                background: #f0b35a;
+                color: #1c1b18;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 800;
+                font-size: 16px;
+              "
+            >
+              S
+            </div>
+            <div style="font-weight: 800; font-size: 18px">SAFIC</div>
+          </div>
+          <div
+            style="
+              margin: 0 10px 18px 10px;
+              font-size: 11px;
+              font-weight: 800;
+              letter-spacing: 1px;
+              color: #f0b35a;
+            "
+          >
+            PLATAFORMA
+          </div>
+          <a
+            href="#"
+            style="
+              display: flex;
+              align-items: center;
+              padding: 11px 12px;
+              border-radius: 9px;
+              color: #ffffff;
+              background: #34322d;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 700;
+              gap: 12px;
+            "
+            ><span class="ms on" aria-hidden="true">location_city</span>Condominios</a
+          >
+          <a
+            href="#"
+            style="
+              display: flex;
+              align-items: center;
+              padding: 11px 12px;
+              border-radius: 9px;
+              color: #bdb8ac;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+              gap: 12px;
+            "
+            ><span class="ms" aria-hidden="true">admin_panel_settings</span>Administradores</a
+          >
+          <a
+            href="#"
+            style="
+              display: flex;
+              align-items: center;
+              padding: 11px 12px;
+              border-radius: 9px;
+              color: #bdb8ac;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+              gap: 12px;
+            "
+            ><span class="ms" aria-hidden="true">view_module</span>Planes</a
+          >
+          <a
+            href="#"
+            style="
+              display: flex;
+              align-items: center;
+              padding: 11px 12px;
+              border-radius: 9px;
+              color: #bdb8ac;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+              gap: 12px;
+            "
+            ><span class="ms" aria-hidden="true">policy</span>Auditoría global</a
+          >
+          <a
+            href="#"
+            style="
+              display: flex;
+              align-items: center;
+              padding: 11px 12px;
+              border-radius: 9px;
+              color: #bdb8ac;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+              gap: 12px;
+            "
+            ><span class="ms" aria-hidden="true">settings</span>Configuración</a
+          >
+        </nav>
+
+        <main
+          style="
+            flex-grow: 1;
+            padding: 32px 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+            box-sizing: border-box;
+          "
+        >
+          <div style="display: flex; align-items: flex-end; gap: 16px">
+            <div style="flex-grow: 1">
+              <h1 style="margin: 0; font-size: 28px; font-weight: 800; letter-spacing: -0.4px">
+                Condominios
+              </h1>
+              <div style="font-size: 14px; color: #5f5b52; margin-top: 4px">
+                Todos los clientes de la plataforma
+              </div>
+            </div>
+            <label
+              style="
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                height: 44px;
+                width: 300px;
+                padding: 0 12px;
+                border: 1px solid #d8d4c8;
+                border-radius: 10px;
+                background: #ffffff;
+                box-sizing: border-box;
+              "
+            >
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#5F5B52"
+                stroke-width="2"
+                stroke-linecap="round"
+              >
+                <circle cx="11" cy="11" r="7"></circle>
+                <path d="M20 20l-3.5-3.5"></path>
+              </svg>
+              <input
+                placeholder="Buscar por nombre o RUC"
+                aria-label="Buscar condominios"
+                style="
+                  border: none;
+                  outline: none;
+                  font-size: 14px;
+                  flex-grow: 1;
+                  background: transparent;
+                "
+              />
+            </label>
+            <button
+              style="
+                height: 44px;
+                padding: 0 18px;
+                border-radius: 10px;
+                border: none;
+                background: #0e5e5b;
+                color: #ffffff;
+                font-size: 14px;
+                font-weight: 700;
+                cursor: pointer;
+              "
+            >
+              Nuevo condominio
+            </button>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px">
+            <sc-for list="{{condos}}" as="c" hint-placeholder-count="6">
+              <div
+                style="
+                  background: #ffffff;
+                  border: 1px solid #e4e1d8;
+                  border-radius: 16px;
+                  padding: 20px;
+                  display: flex;
+                  flex-direction: column;
+                  gap: 14px;
+                "
+              >
+                <div style="display: flex; align-items: center; gap: 12px">
+                  <div
+                    style="width: 46px; height: 46px; border-radius: 11px; background: {{c.bg}}; color: {{c.fg}}; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 15px"
+                  >
+                    {{c.ini}}
+                  </div>
+                  <div style="flex-grow: 1; min-width: 0">
+                    <div style="font-size: 16px; font-weight: 800">{{c.nombre}}</div>
+                    <div style="font-size: 13px; color: #5f5b52">{{c.ciudad}}</div>
+                  </div>
+                  <span style="{{c.estadoStyle}}">{{c.estado}}</span>
+                </div>
+                <div
+                  style="
+                    display: grid;
+                    grid-template-columns: repeat(3, minmax(0, 1fr));
+                    gap: 8px;
+                    padding: 12px 0;
+                    border-top: 1px solid #f0ede5;
+                    border-bottom: 1px solid #f0ede5;
+                  "
+                >
+                  <div>
+                    <div style="font-size: 20px; font-weight: 800">{{c.unidades}}</div>
+                    <div style="font-size: 12px; color: #5f5b52">Unidades</div>
+                  </div>
+                  <div>
+                    <div style="font-size: 20px; font-weight: 800">{{c.residentes}}</div>
+                    <div style="font-size: 12px; color: #5f5b52">Residentes</div>
+                  </div>
+                  <div>
+                    <div style="font-size: 20px; font-weight: 800">{{c.admins}}</div>
+                    <div style="font-size: 12px; color: #5f5b52">Admins</div>
+                  </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px">
+                  <div style="font-size: 13px; color: #3d3a33; flex-grow: 1">Plan {{c.plan}}</div>
+                  <a
+                    href="Main.dc.html"
+                    style="
+                      font-size: 14px;
+                      font-weight: 700;
+                      text-decoration: none;
+                      padding: 10px 4px;
+                    "
+                    >Entrar como admin</a
+                  >
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </main>
+      </div>
+    </x-dc>
+    <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+      class Component extends DCLogic {
+        renderVals() {
+          var act = 'padding:4px 10px;border-radius:999px;font-size:12px;font-weight:700;background:#E3EFEC;color:#0B4A47';
+          var prueba = 'padding:4px 10px;border-radius:999px;font-size:12px;font-weight:700;background:#E6ECF7;color:#23407A';
+          var susp = 'padding:4px 10px;border-radius:999px;font-size:12px;font-weight:700;background:#FDE8E6;color:#9B1C12';
+          var c = function (ini, nombre, ciudad, u, r, a, plan, estado, st, bg, fg) { return { ini: ini, nombre: nombre, ciudad: ciudad, unidades: u, residentes: r, admins: a, plan: plan, estado: estado, estadoStyle: st, bg: bg, fg: fg }; };
+          return {
+            condos: [
+              c('JV','Jardines del Valle','Cumbayá, Pichincha',148,412,2,'Profesional','Activo',act,'#E3EFEC','#0B4A47'),
+              c('TM','Torres del Mirador','Quito',96,251,1,'Profesional','Activo',act,'#FFF1DC','#8A3F0A'),
+              c('LA','Los Arrayanes','Tumbaco, Pichincha',54,160,1,'Básico','Activo',act,'#E6ECF7','#23407A'),
+              c('BM','Brisas del Mar','Salinas, Santa Elena',72,98,1,'Básico','Prueba',prueba,'#E3EFEC','#0B4A47'),
+              c('PS','Parque Samborondón','Samborondón, Guayas',210,588,3,'Empresarial','Activo',act,'#FFF1DC','#8A3F0A'),
+              c('RC','Residencial El Cedro','Cuenca, Azuay',38,0,1,'Básico','Suspendido',susp,'#F1EFE8','#4E4A42')
+            ]
+          };
+        }
+      }
+    </script>
+  </body>
+</html>

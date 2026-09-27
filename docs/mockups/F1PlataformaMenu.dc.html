@@ -1,0 +1,706 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>Menú del sistema</title>
+    <script src="./support.js"></script>
+  </head>
+  <body>
+    <x-dc>
+      <helmet>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap"
+          rel="stylesheet"
+        />
+        <style>
+          .ms {
+            font-family: 'Material Symbols Rounded';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 20px;
+            line-height: 1;
+            width: 20px;
+            height: 20px;
+            overflow: hidden;
+            flex-shrink: 0;
+            display: inline-block;
+            white-space: nowrap;
+            direction: ltr;
+            font-feature-settings: 'liga';
+            -webkit-font-smoothing: antialiased;
+            font-variation-settings:
+              'FILL' 0,
+              'wght' 400,
+              'GRAD' 0,
+              'opsz' 20;
+          }
+          .ms.on {
+            font-variation-settings:
+              'FILL' 1,
+              'wght' 500,
+              'GRAD' 0,
+              'opsz' 20;
+          }
+          body {
+            margin: 0;
+            font-family: Manrope, system-ui, sans-serif;
+            background: #f5f4ef;
+            color: #1c1b18;
+          }
+          a {
+            color: #0e5e5b;
+          }
+          a:hover {
+            color: #08403e;
+          }
+          button,
+          input,
+          select {
+            font-family: inherit;
+          }
+        </style>
+        <link
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,300..500,0..1,0"
+          rel="stylesheet"
+        />
+      </helmet>
+      <div
+        style="width: 1440px; height: 900px; display: flex; background: #f5f4ef; overflow: hidden"
+      >
+        <nav
+          aria-label="Menú de plataforma"
+          style="
+            width: 248px;
+            flex-shrink: 0;
+            background: #1c1b18;
+            color: #edeae2;
+            display: flex;
+            flex-direction: column;
+            padding: 20px 14px;
+            gap: 2px;
+            box-sizing: border-box;
+          "
+        >
+          <div style="display: flex; align-items: center; gap: 10px; padding: 4px 10px 6px 10px">
+            <div
+              style="
+                width: 34px;
+                height: 34px;
+                border-radius: 9px;
+                background: #f0b35a;
+                color: #1c1b18;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 800;
+                font-size: 16px;
+              "
+            >
+              S
+            </div>
+            <div style="font-weight: 800; font-size: 18px">SAFIC</div>
+          </div>
+          <div
+            style="
+              margin: 0 10px 18px 10px;
+              font-size: 11px;
+              font-weight: 800;
+              letter-spacing: 1px;
+              color: #f0b35a;
+            "
+          >
+            PLATAFORMA
+          </div>
+          <a
+            href="F6Cobranza.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              gap: 12px;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #bdb8ac;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+            "
+            ><span class="ms" aria-hidden="true">paid</span>Cobranza</a
+          >
+          <a
+            href="Platform.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              gap: 12px;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #bdb8ac;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+            "
+            ><span class="ms" aria-hidden="true">location_city</span>Condominios</a
+          >
+          <a
+            href="F6Planes.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              gap: 12px;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #bdb8ac;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+            "
+            ><span class="ms" aria-hidden="true">view_module</span>Planes y módulos</a
+          >
+          <a
+            href="F1CatalogoAmenidades.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              gap: 12px;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #bdb8ac;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+            "
+            ><span class="ms" aria-hidden="true">category</span>Catálogo de amenidades</a
+          >
+          <div
+            style="
+              padding: 14px 12px 6px 12px;
+              font-size: 11px;
+              font-weight: 800;
+              letter-spacing: 1px;
+              color: #8a857a;
+            "
+          >
+            ACCESO
+          </div>
+          <a
+            href="F1PlataformaRoles.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              gap: 12px;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #bdb8ac;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+            "
+            ><span class="ms" aria-hidden="true">admin_panel_settings</span>Roles y permisos</a
+          >
+          <a
+            href="F1PlataformaMenu.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              gap: 12px;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #ffffff;
+              background: #34322d;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 700;
+            "
+            ><span class="ms on" aria-hidden="true">menu_open</span>Menú del sistema</a
+          >
+          <a
+            href="F6Configuracion.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              gap: 12px;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #bdb8ac;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+            "
+            ><span class="ms" aria-hidden="true">settings</span>Configuración</a
+          >
+        </nav>
+
+        <main
+          style="
+            flex-grow: 1;
+            padding: 24px 32px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            box-sizing: border-box;
+            min-width: 0;
+          "
+        >
+          <div style="display: flex; align-items: flex-end; gap: 12px">
+            <div style="flex-grow: 1">
+              <div style="font-size: 13px; color: #5f5b52; font-weight: 600">
+                Plataforma / Acceso / Menú del sistema
+              </div>
+              <h1
+                style="margin: 4px 0 0 0; font-size: 28px; font-weight: 800; letter-spacing: -0.4px"
+              >
+                Menú del sistema
+              </h1>
+            </div>
+            <button
+              style="
+                height: 42px;
+                padding: 0 14px;
+                border-radius: 10px;
+                border: 1px solid #d8d4c8;
+                background: #ffffff;
+                font-size: 14px;
+                font-weight: 700;
+                cursor: pointer;
+              "
+            >
+              Nuevo grupo
+            </button>
+            <button
+              style="
+                height: 42px;
+                padding: 0 14px;
+                border-radius: 10px;
+                border: 1px solid #0e5e5b;
+                background: #ffffff;
+                color: #0e5e5b;
+                font-size: 14px;
+                font-weight: 700;
+                cursor: pointer;
+              "
+            >
+              Nuevo ítem
+            </button>
+            <button onClick="{{publicar}}" style="{{pubStyle}}">{{pubLabel}}</button>
+          </div>
+
+          <div style="display: flex; gap: 4px; border-bottom: 1px solid #e4e1d8">
+            <sc-for list="{{ambitos}}" as="a" hint-placeholder-count="3">
+              <button onClick="{{a.pick}}" style="{{a.style}}">{{a.label}}</button>
+            </sc-for>
+          </div>
+
+          <div style="display: flex; gap: 14px; flex-grow: 1; min-height: 0">
+            <section
+              style="
+                flex-grow: 1;
+                background: #ffffff;
+                border: 1px solid #e4e1d8;
+                border-radius: 14px;
+                overflow-y: auto;
+                min-width: 0;
+              "
+            >
+              <div
+                style="
+                  display: grid;
+                  grid-template-columns: 1fr 150px 56px 64px;
+                  gap: 8px;
+                  padding: 9px 14px;
+                  background: #faf9f5;
+                  font-size: 11px;
+                  font-weight: 700;
+                  color: #5f5b52;
+                  letter-spacing: 0.3px;
+                "
+              >
+                <div>ÍTEM</div>
+                <div>PERMISO · MÓDULO</div>
+                <div>ACTIVO</div>
+                <div style="text-align: right">ORDEN</div>
+              </div>
+              <sc-for list="{{rows}}" as="r" hint-placeholder-count="14">
+                <div style="{{r.row}}">
+                  <button
+                    onClick="{{r.pick}}"
+                    style="
+                      display: flex;
+                      align-items: center;
+                      gap: 10px;
+                      border: none;
+                      background: none;
+                      padding: 0;
+                      text-align: left;
+                      cursor: pointer;
+                      min-width: 0;
+                      font-family: inherit;
+                      color: #1c1b18;
+                    "
+                  >
+                    <span style="{{r.indent}}"></span>
+                    <span class="ms" aria-hidden="true" style="{{r.iconStyle}}">{{r.icon}}</span>
+                    <span style="{{r.labelStyle}}">{{r.label}}</span>
+                  </button>
+                  <div
+                    style="
+                      font-size: 11px;
+                      color: #5f5b52;
+                      line-height: 1.35;
+                      min-width: 0;
+                      overflow: hidden;
+                      text-overflow: ellipsis;
+                      white-space: nowrap;
+                    "
+                  >
+                    {{r.perm}}<br />{{r.mod}}
+                  </div>
+                  <div>
+                    <button onClick="{{r.toggle}}" aria-label="Activo" style="{{r.track}}">
+                      <span style="{{r.knob}}"></span>
+                    </button>
+                  </div>
+                  <div style="display: flex; justify-content: flex-end; gap: 4px">
+                    <button
+                      onClick="{{r.up}}"
+                      aria-label="Subir"
+                      style="
+                        width: 28px;
+                        height: 28px;
+                        border-radius: 7px;
+                        border: 1px solid #e4e1d8;
+                        background: #ffffff;
+                        cursor: pointer;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        color: #3d3a33;
+                      "
+                    >
+                      <span class="ms" style="font-size: 18px; width: 18px; height: 18px"
+                        >arrow_upward</span
+                      >
+                    </button>
+                    <button
+                      onClick="{{r.down}}"
+                      aria-label="Bajar"
+                      style="
+                        width: 28px;
+                        height: 28px;
+                        border-radius: 7px;
+                        border: 1px solid #e4e1d8;
+                        background: #ffffff;
+                        cursor: pointer;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        color: #3d3a33;
+                      "
+                    >
+                      <span class="ms" style="font-size: 18px; width: 18px; height: 18px"
+                        >arrow_downward</span
+                      >
+                    </button>
+                  </div>
+                </div>
+              </sc-for>
+            </section>
+
+            <aside
+              style="
+                width: 340px;
+                flex-shrink: 0;
+                background: #ffffff;
+                border: 1px solid #e4e1d8;
+                border-radius: 14px;
+                padding: 16px 18px;
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+                box-sizing: border-box;
+                overflow: hidden;
+              "
+            >
+              <div style="font-size: 12px; color: #5f5b52; font-weight: 700">{{ed.tipo}}</div>
+              <label
+                style="
+                  display: flex;
+                  flex-direction: column;
+                  gap: 5px;
+                  font-size: 12px;
+                  font-weight: 700;
+                  color: #3d3a33;
+                "
+                >Etiqueta<input
+                  value="{{ed.label}}"
+                  style="
+                    height: 38px;
+                    border: 1px solid #cfcbbf;
+                    border-radius: 9px;
+                    padding: 0 10px;
+                    font-size: 14px;
+                  "
+              /></label>
+              <div style="font-size: 12px; font-weight: 700; color: #3d3a33">Ícono</div>
+              <div style="display: grid; grid-template-columns: repeat(8, 1fr); gap: 5px">
+                <sc-for list="{{iconos}}" as="i" hint-placeholder-count="24">
+                  <button onClick="{{i.pick}}" aria-label="{{i.name}}" style="{{i.style}}">
+                    <span class="ms" aria-hidden="true">{{i.name}}</span>
+                  </button>
+                </sc-for>
+              </div>
+              <sc-if value="{{ed.esItem}}" hint-placeholder-val="{{ true }}">
+                <label
+                  style="
+                    display: flex;
+                    flex-direction: column;
+                    gap: 5px;
+                    font-size: 12px;
+                    font-weight: 700;
+                    color: #3d3a33;
+                  "
+                  >Pantalla (del manifiesto de rutas)<select
+                    style="
+                      height: 38px;
+                      border: 1px solid #cfcbbf;
+                      border-radius: 9px;
+                      padding: 0 8px;
+                      font-size: 13px;
+                      background: #ffffff;
+                    "
+                  >
+                    <option>{{ed.ruta}}</option>
+                  </select></label
+                >
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px">
+                  <label
+                    style="
+                      display: flex;
+                      flex-direction: column;
+                      gap: 5px;
+                      font-size: 12px;
+                      font-weight: 700;
+                      color: #3d3a33;
+                    "
+                    >Permiso requerido<select
+                      style="
+                        height: 38px;
+                        border: 1px solid #cfcbbf;
+                        border-radius: 9px;
+                        padding: 0 6px;
+                        font-size: 12px;
+                        background: #ffffff;
+                      "
+                    >
+                      <option>{{ed.perm}}</option>
+                    </select></label
+                  >
+                  <label
+                    style="
+                      display: flex;
+                      flex-direction: column;
+                      gap: 5px;
+                      font-size: 12px;
+                      font-weight: 700;
+                      color: #3d3a33;
+                    "
+                    >Módulo requerido<select
+                      style="
+                        height: 38px;
+                        border: 1px solid #cfcbbf;
+                        border-radius: 9px;
+                        padding: 0 6px;
+                        font-size: 12px;
+                        background: #ffffff;
+                      "
+                    >
+                      <option>{{ed.mod}}</option>
+                    </select></label
+                  >
+                </div>
+              </sc-if>
+              <div
+                style="
+                  background: #f1efe8;
+                  border-radius: 10px;
+                  padding: 9px 11px;
+                  font-size: 11px;
+                  color: #3d3a33;
+                  line-height: 1.45;
+                "
+              >
+                {{ed.nota}}
+              </div>
+            </aside>
+
+            <aside
+              style="width: 230px; flex-shrink: 0; display: flex; flex-direction: column; gap: 8px"
+            >
+              <label
+                style="
+                  display: flex;
+                  flex-direction: column;
+                  gap: 5px;
+                  font-size: 12px;
+                  font-weight: 700;
+                  color: #3d3a33;
+                "
+                >Ver como
+                <select
+                  onChange="{{setRol}}"
+                  style="
+                    height: 38px;
+                    border: 1px solid #cfcbbf;
+                    border-radius: 9px;
+                    padding: 0 8px;
+                    font-size: 13px;
+                    background: #ffffff;
+                  "
+                >
+                  <option value="admin">Administrador · Profesional</option>
+                  <option value="tes">Tesorero · Profesional</option>
+                  <option value="cont">Contador · Profesional</option>
+                  <option value="guar">Guardia · Profesional</option>
+                  <option value="adminC">Administrador · Completo</option>
+                </select></label
+              >
+              <div
+                style="
+                  flex-grow: 1;
+                  background: #12302f;
+                  border-radius: 14px;
+                  padding: 14px 10px;
+                  display: flex;
+                  flex-direction: column;
+                  gap: 1px;
+                  overflow: hidden;
+                "
+              >
+                <div
+                  style="
+                    font-size: 11px;
+                    font-weight: 800;
+                    color: #f0b35a;
+                    letter-spacing: 0.8px;
+                    padding: 0 8px 10px 8px;
+                  "
+                >
+                  VISTA PREVIA
+                </div>
+                <sc-for list="{{preview}}" as="p" hint-placeholder-count="12">
+                  <div style="{{p.style}}">
+                    <span class="ms" aria-hidden="true" style="{{p.iconStyle}}">{{p.icon}}</span
+                    >{{p.label}}
+                  </div>
+                </sc-for>
+              </div>
+              <div style="font-size: 11px; color: #5f5b52; line-height: 1.4">{{ocultos}}</div>
+            </aside>
+          </div>
+        </main>
+      </div>
+    </x-dc>
+    <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+      class Component extends DCLogic {
+        constructor(props) {
+          super(props);
+          this.state = { amb: 'cond', sel: 3, rol: 'admin', dirty: false, published: false, items: [
+            { k: 'inicio', t: 'i', l: 'Inicio', ic: 'home', r: 'inicio', p: '', m: '', a: 1, s: 1 },
+            { k: 'unidades', t: 'i', l: 'Unidades', ic: 'apartment', r: 'unidades.index', p: 'unidades.ver', m: 'Núcleo', a: 1, s: 1 },
+            { k: 'g-fin', t: 'g', l: 'FINANZAS', ic: 'account_balance_wallet', m: 'Finanzas', a: 1, s: 1 },
+            { k: 'resumen', t: 'i', g: 'g-fin', l: 'Resumen', ic: 'dashboard', r: 'finanzas.resumen', p: 'finanzas.ver', m: 'Finanzas', a: 1, s: 1 },
+            { k: 'pagos', t: 'i', g: 'g-fin', l: 'Pagos de residentes', ic: 'fact_check', r: 'finanzas.pagos', p: 'pagos.aprobar', m: 'Finanzas', a: 1, s: 1 },
+            { k: 'cxp', t: 'i', g: 'g-fin', l: 'Cuentas por pagar', ic: 'request_quote', r: 'finanzas.cuentas-por-pagar', p: 'gastos.registrar', m: 'Finanzas', a: 1, s: 1 },
+            { k: 'conc', t: 'i', g: 'g-fin', l: 'Conciliación bancaria', ic: 'account_balance', r: 'finanzas.conciliacion', p: 'conciliacion.gestionar', m: 'Conciliación automática', a: 1, s: 1 },
+            { k: 'rep', t: 'i', g: 'g-fin', l: 'Reportes', ic: 'bar_chart', r: 'finanzas.reportes', p: 'finanzas.ver', m: 'Finanzas', a: 1, s: 1 },
+            { k: 'areas', t: 'i', l: 'Áreas comunes', ic: 'event_available', r: 'reservas.agenda', p: 'reservas.ver', m: 'Áreas comunes', a: 1, s: 1 },
+            { k: 'garita', t: 'i', l: 'Garita', ic: 'badge', r: 'garita.bitacora', p: 'visitas.registrar', m: 'Garita', a: 1, s: 1 },
+            { k: 'asam', t: 'i', l: 'Asambleas', ic: 'how_to_vote', r: 'asambleas.index', p: 'asambleas.preparar', m: 'Asambleas', a: 1, s: 1 },
+            { k: 'g-conf', t: 'g', l: 'CONFIGURACIÓN', ic: 'settings', m: '', a: 1, s: 1 },
+            { k: 'amen', t: 'i', g: 'g-conf', l: 'Amenidades', ic: 'pool', r: 'amenidades.index', p: 'amenidades.gestionar', m: 'Núcleo', a: 1, s: 1 },
+            { k: 'usu', t: 'i', g: 'g-conf', l: 'Usuarios y roles', ic: 'manage_accounts', r: 'usuarios.index', p: 'usuarios.gestionar', m: 'Núcleo', a: 1, s: 1 },
+            { k: 'sus', t: 'i', g: 'g-conf', l: 'Mi suscripción', ic: 'card_membership', r: 'suscripcion.mia', p: 'suscripcion.ver', m: 'Núcleo', a: 1, s: 1 }
+          ] };
+        }
+        renderVals() {
+          var self = this, S = this.state, IT = S.items;
+          var ROLES = {
+            admin: { perms: '*', mods: ['Núcleo', 'Finanzas', 'Áreas comunes', 'Garita', 'Comunicación'] },
+            adminC: { perms: '*', mods: ['Núcleo', 'Finanzas', 'Áreas comunes', 'Garita', 'Comunicación', 'Conciliación automática', 'Asambleas'] },
+            tes: { perms: ['unidades.ver', 'finanzas.ver', 'pagos.aprobar', 'gastos.registrar', 'conciliacion.gestionar'], mods: ['Núcleo', 'Finanzas', 'Áreas comunes', 'Garita', 'Comunicación'] },
+            cont: { perms: ['finanzas.ver'], mods: ['Núcleo', 'Finanzas', 'Áreas comunes', 'Garita', 'Comunicación'] },
+            guar: { perms: ['visitas.registrar', 'reservas.ver'], mods: ['Núcleo', 'Finanzas', 'Áreas comunes', 'Garita', 'Comunicación'] }
+          };
+          var R = ROLES[S.rol];
+          var visible = function (x) {
+            if (!x.a) return false;
+            if (x.m && R.mods.indexOf(x.m) < 0) return false;
+            if (x.p && R.perms !== '*' && R.perms.indexOf(x.p) < 0) return false;
+            return true;
+          };
+          var swap = function (i, dir) {
+            var arr = self.state.items.slice(), x = arr[i];
+            var j = i + dir;
+            while (j >= 0 && j < arr.length && (arr[j].g || '') !== (x.g || '')) j += dir;
+            if (j < 0 || j >= arr.length) return;
+            if (x.t === 'g' || arr[j].t === 'g') return;
+            arr[i] = arr[j]; arr[j] = x;
+            self.setState({ items: arr, sel: j, dirty: true, published: false });
+          };
+          var ICONOS = ['home', 'apartment', 'group', 'dashboard', 'fact_check', 'request_quote', 'account_balance', 'bar_chart', 'event_available', 'badge', 'how_to_vote', 'pool', 'manage_accounts', 'card_membership', 'campaign', 'report', 'inventory_2', 'savings', 'storefront', 'receipt_long', 'tune', 'settings', 'domain', 'shield_person'];
+          var sel = IT[S.sel];
+          var rows = IT.map(function (x, i) {
+            var on = i === S.sel, g = x.t === 'g';
+            return {
+              label: x.l, icon: x.ic,
+              perm: g ? 'Grupo' : (x.p || 'Sin permiso'), mod: g ? (x.m ? 'Módulo ' + x.m : 'Siempre') : (x.m || '—'),
+              indent: 'width:' + (x.g ? 18 : 0) + 'px;flex-shrink:0',
+              iconStyle: g ? 'color:#8A857A' : 'color:#0E5E5B',
+              labelStyle: 'font-size:' + (g ? '11px;letter-spacing:0.8px;font-weight:800;color:#5F5B52' : '14px;font-weight:700') + ';white-space:nowrap;overflow:hidden;text-overflow:ellipsis',
+              row: 'display:grid;grid-template-columns:1fr 150px 56px 64px;gap:8px;align-items:center;padding:0 14px;height:44px;border-top:1px solid #F0EDE5;' + (on ? 'background:#F2F7F6;box-shadow:inset 3px 0 0 #0E5E5B' : (g ? 'background:#FCFBF8' : 'background:#FFFFFF')) + (x.a ? '' : ';opacity:0.55'),
+              pick: function () { self.setState({ sel: i }); },
+              toggle: function () { var arr = self.state.items.slice(); arr[i] = Object.assign({}, arr[i], { a: arr[i].a ? 0 : 1 }); self.setState({ items: arr, dirty: true, published: false }); },
+              track: 'width:38px;height:22px;border-radius:11px;border:none;position:relative;padding:0;cursor:pointer;background:' + (x.a ? '#0E5E5B' : '#D8D4C8'),
+              knob: 'position:absolute;top:3px;left:' + (x.a ? '19px' : '3px') + ';width:16px;height:16px;border-radius:50%;background:#FFFFFF',
+              up: function () { swap(i, -1); }, down: function () { swap(i, 1); }
+            };
+          });
+          var prev = [];
+          IT.forEach(function (x, i) {
+            if (x.t === 'g') {
+              var kids = IT.filter(function (y) { return y.g === x.k && visible(y); });
+              if (x.a && kids.length) prev.push({ label: x.l, icon: '', style: 'padding:10px 8px 4px 8px;font-size:10px;font-weight:800;letter-spacing:0.8px;color:#8FB0AB', iconStyle: 'display:none' });
+            } else if (visible(x) && (!x.g || IT.filter(function (y) { return y.k === x.g; })[0].a)) {
+              prev.push({ label: x.l, icon: x.ic, style: 'display:flex;align-items:center;gap:10px;padding:7px 8px;border-radius:8px;font-size:12px;font-weight:600;color:#C6D6D3' + (i === S.sel ? ';background:#1E4A48;color:#FFFFFF' : ''), iconStyle: 'font-size:18px;width:18px;height:18px' });
+            }
+          });
+          var ocultos = IT.filter(function (x) { return x.t === 'i' && !visible(x); }).length;
+          return {
+            ambitos: [['cond', 'Condominio (web)'], ['plat', 'Plataforma'], ['res', 'App del residente']].map(function (a) {
+              var on = a[0] === S.amb;
+              return { label: a[1], pick: function () { self.setState({ amb: a[0] }); },
+                style: 'height:40px;padding:0 14px;border:none;background:none;cursor:pointer;font-size:14px;font-weight:700;margin-bottom:-1px;' + (on ? 'color:#1C1B18;border-bottom:3px solid #0E5E5B' : 'color:#6B675D;border-bottom:3px solid transparent') };
+            }),
+            rows: rows,
+            iconos: ICONOS.map(function (n) {
+              var on = sel.ic === n;
+              return { name: n, pick: function () { var arr = self.state.items.slice(); arr[self.state.sel] = Object.assign({}, arr[self.state.sel], { ic: n }); self.setState({ items: arr, dirty: true, published: false }); },
+                style: 'height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;' + (on ? 'background:#0E5E5B;color:#FFFFFF;border:1px solid #0E5E5B' : 'background:#FFFFFF;color:#3D3A33;border:1px solid #E4E1D8') };
+            }),
+            ed: {
+              tipo: sel.t === 'g' ? 'Grupo del menú' + (sel.s ? ' · de sistema' : '') : 'Ítem del menú' + (sel.s ? ' · de sistema (se edita, no se borra)' : ''),
+              label: sel.l, esItem: sel.t === 'i', ruta: sel.r + '  (' + sel.l + ')', perm: sel.p || 'Ninguno', mod: sel.m || 'Ninguno',
+              nota: sel.t === 'g' ? 'Un grupo solo se muestra si el usuario ve al menos uno de sus ítems.' : 'Ocultar este ítem no quita el acceso: la API sigue exigiendo el permiso ' + (sel.p || '') + '. El ícono es obligatorio.'
+            },
+            setRol: function (e) { self.setState({ rol: e.target.value }); },
+            preview: prev,
+            ocultos: ocultos + ' ítems ocultos para este rol por permiso, módulo del plan o porque están inactivos.',
+            pubLabel: S.published ? 'Publicado' : (S.dirty ? 'Publicar cambios' : 'Sin cambios'),
+            pubStyle: 'height:42px;padding:0 16px;border-radius:10px;border:none;font-size:14px;font-weight:700;cursor:pointer;' + (S.dirty && !S.published ? 'background:#0E5E5B;color:#FFFFFF' : 'background:#E4E1D8;color:#6B675D'),
+            publicar: function () { if (self.state.dirty) self.setState({ published: true, dirty: false }); }
+          };
+        }
+      }
+    </script>
+  </body>
+</html>

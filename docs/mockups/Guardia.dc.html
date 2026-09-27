@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>Directorio de garita</title>
+    <script src="./support.js"></script>
+  </head>
+  <body>
+    <x-dc>
+      <helmet>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap"
+          rel="stylesheet"
+        />
+        <style>
+          body {
+            margin: 0;
+            font-family: Manrope, system-ui, sans-serif;
+            background: #12302f;
+            color: #1c1b18;
+          }
+          a {
+            color: #0e5e5b;
+          }
+          a:hover {
+            color: #08403e;
+          }
+          button,
+          input {
+            font-family: inherit;
+          }
+        </style>
+      </helmet>
+      <div
+        style="
+          width: 390px;
+          height: 844px;
+          display: flex;
+          flex-direction: column;
+          background: #f5f4ef;
+          overflow: hidden;
+        "
+      >
+        <div
+          style="
+            background: #12302f;
+            color: #ffffff;
+            padding: 24px 16px 20px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+          "
+        >
+          <div style="display: flex; align-items: center">
+            <div style="flex-grow: 1">
+              <div style="font-size: 13px; color: #b9cdc9; font-weight: 600">
+                Garita principal · Turno día
+              </div>
+              <div style="font-size: 22px; font-weight: 800; margin-top: 2px">Directorio</div>
+            </div>
+            <div
+              style="
+                width: 38px;
+                height: 38px;
+                border-radius: 50%;
+                background: #f0b35a;
+                color: #12302f;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 800;
+                font-size: 13px;
+              "
+            >
+              JP
+            </div>
+          </div>
+          <label
+            style="
+              display: flex;
+              align-items: center;
+              gap: 10px;
+              height: 56px;
+              padding: 0 16px;
+              border-radius: 14px;
+              background: #ffffff;
+              box-sizing: border-box;
+            "
+          >
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#5F5B52"
+              stroke-width="2"
+              stroke-linecap="round"
+            >
+              <circle cx="11" cy="11" r="7"></circle>
+              <path d="M20 20l-3.5-3.5"></path>
+            </svg>
+            <input
+              value="PBC"
+              aria-label="Buscar por nombre, unidad o placa"
+              style="
+                border: none;
+                outline: none;
+                font-size: 18px;
+                font-weight: 700;
+                flex-grow: 1;
+                background: transparent;
+                color: #1c1b18;
+              "
+            />
+          </label>
+          <div style="display: flex; gap: 8px">
+            <span
+              style="
+                padding: 8px 14px;
+                border-radius: 999px;
+                background: #f0b35a;
+                color: #12302f;
+                font-size: 13px;
+                font-weight: 800;
+              "
+              >Placa</span
+            >
+            <span
+              style="
+                padding: 8px 14px;
+                border-radius: 999px;
+                background: #1e4a48;
+                color: #d6e3e0;
+                font-size: 13px;
+                font-weight: 700;
+              "
+              >Nombre</span
+            >
+            <span
+              style="
+                padding: 8px 14px;
+                border-radius: 999px;
+                background: #1e4a48;
+                color: #d6e3e0;
+                font-size: 13px;
+                font-weight: 700;
+              "
+              >Unidad</span
+            >
+          </div>
+        </div>
+
+        <div
+          style="
+            flex-grow: 1;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            overflow: hidden;
+          "
+        >
+          <div style="font-size: 13px; font-weight: 700; color: #5f5b52">2 resultados</div>
+          <div
+            style="
+              background: #ffffff;
+              border: 1px solid #e4e1d8;
+              border-radius: 16px;
+              padding: 16px;
+              display: flex;
+              flex-direction: column;
+              gap: 12px;
+            "
+          >
+            <div style="display: flex; align-items: center; gap: 12px">
+              <div
+                style="
+                  padding: 6px 10px;
+                  border: 2px solid #1c1b18;
+                  border-radius: 6px;
+                  font-weight: 800;
+                  font-size: 17px;
+                  letter-spacing: 1px;
+                  background: #fff8e1;
+                "
+              >
+                PBC-4821
+              </div>
+              <div style="font-size: 13px; color: #3d3a33">Kia Sportage · Gris</div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px">
+              <div
+                style="
+                  width: 44px;
+                  height: 44px;
+                  border-radius: 10px;
+                  background: #e3efec;
+                  color: #0b4a47;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  font-weight: 800;
+                  font-size: 14px;
+                "
+              >
+                A-102
+              </div>
+              <div style="flex-grow: 1">
+                <div style="font-size: 15px; font-weight: 700">Diego Mora</div>
+                <div style="font-size: 12px; color: #5f5b52">Inquilino · Torre A</div>
+              </div>
+              <a
+                href="tel:0983307710"
+                aria-label="Llamar a Diego Mora"
+                style="
+                  width: 48px;
+                  height: 48px;
+                  border-radius: 12px;
+                  background: #0e5e5b;
+                  color: #ffffff;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                "
+              >
+                <svg
+                  width="22"
+                  height="22"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path
+                    d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"
+                  ></path></svg
+              ></a>
+            </div>
+          </div>
+          <div
+            style="
+              background: #ffffff;
+              border: 1px solid #e4e1d8;
+              border-radius: 16px;
+              padding: 16px;
+              display: flex;
+              flex-direction: column;
+              gap: 12px;
+            "
+          >
+            <div style="display: flex; align-items: center; gap: 12px">
+              <div
+                style="
+                  padding: 6px 10px;
+                  border: 2px solid #1c1b18;
+                  border-radius: 6px;
+                  font-weight: 800;
+                  font-size: 17px;
+                  letter-spacing: 1px;
+                  background: #fff8e1;
+                "
+              >
+                PBC-1093
+              </div>
+              <div style="font-size: 13px; color: #3d3a33">Chevrolet Onix · Blanco</div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px">
+              <div
+                style="
+                  width: 44px;
+                  height: 44px;
+                  border-radius: 10px;
+                  background: #fff1dc;
+                  color: #8a3f0a;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  font-weight: 800;
+                  font-size: 13px;
+                "
+              >
+                CS-04
+              </div>
+              <div style="flex-grow: 1">
+                <div style="font-size: 15px; font-weight: 700">Gabriela Torres</div>
+                <div style="font-size: 12px; color: #5f5b52">Propietaria · Casas</div>
+              </div>
+              <a
+                href="tel:0990000000"
+                aria-label="Llamar a Gabriela Torres"
+                style="
+                  width: 48px;
+                  height: 48px;
+                  border-radius: 12px;
+                  background: #0e5e5b;
+                  color: #ffffff;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                "
+              >
+                <svg
+                  width="22"
+                  height="22"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path
+                    d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"
+                  ></path></svg
+              ></a>
+            </div>
+          </div>
+          <div style="font-size: 12px; color: #5f5b52; line-height: 1.5; padding: 4px 4px 0 4px">
+            Solo se muestran nombre, unidad, teléfono y placas. Cédulas y correos están ocultos para
+            el rol de guardia.
+          </div>
+        </div>
+      </div>
+    </x-dc>
+    <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+      class Component extends DCLogic {
+        renderVals() { return {}; }
+      }
+    </script>
+  </body>
+</html>

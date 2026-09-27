@@ -1,0 +1,441 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>Pagar por transferencia</title>
+    <script src="./support.js"></script>
+  </head>
+  <body>
+    <x-dc>
+      <helmet>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap"
+          rel="stylesheet"
+        />
+        <style>
+          body {
+            margin: 0;
+            font-family: Manrope, system-ui, sans-serif;
+            background: #f5f4ef;
+            color: #1c1b18;
+          }
+          a {
+            color: #0e5e5b;
+          }
+          a:hover {
+            color: #08403e;
+          }
+          button,
+          input {
+            font-family: inherit;
+          }
+        </style>
+      </helmet>
+      <div
+        style="
+          width: 390px;
+          height: 844px;
+          display: flex;
+          flex-direction: column;
+          background: #f5f4ef;
+          overflow: hidden;
+        "
+      >
+        <div
+          style="
+            height: 60px;
+            flex-shrink: 0;
+            background: #ffffff;
+            border-bottom: 1px solid #e4e1d8;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 0 8px;
+          "
+        >
+          <a
+            href="F2MiCuenta.dc.html"
+            aria-label="Volver"
+            style="
+              width: 44px;
+              height: 44px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              color: #1c1b18;
+            "
+          >
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            >
+              <path d="M15 6l-6 6 6 6"></path></svg
+          ></a>
+          <div style="font-size: 17px; font-weight: 800">Pagar por transferencia</div>
+        </div>
+
+        <sc-if value="{{editing}}" hint-placeholder-val="{{ true }}">
+          <div
+            style="
+              flex-grow: 1;
+              padding: 14px 16px;
+              display: flex;
+              flex-direction: column;
+              gap: 12px;
+              overflow: hidden;
+            "
+          >
+            <div style="font-size: 14px; font-weight: 800">1. Elige qué cuotas pagas</div>
+            <div style="background: #ffffff; border: 1px solid #e4e1d8; border-radius: 14px">
+              <sc-for list="{{cuotas}}" as="c" hint-placeholder-count="3">
+                <label
+                  style="
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                    min-height: 52px;
+                    padding: 0 14px;
+                    border-bottom: 1px solid #f0ede5;
+                    cursor: pointer;
+                  "
+                >
+                  <input
+                    type="checkbox"
+                    checked="{{c.on}}"
+                    onChange="{{c.toggle}}"
+                    style="width: 20px; height: 20px; accent-color: #0e5e5b"
+                  />
+                  <span style="flex-grow: 1"
+                    ><span style="display: block; font-size: 14px; font-weight: 700">{{c.mes}}</span
+                    ><span style="{{c.subStyle}}">{{c.sub}}</span></span
+                  >
+                  <span style="font-size: 15px; font-weight: 800">$ 80,00</span>
+                </label>
+              </sc-for>
+            </div>
+            <div style="font-size: 12px; color: #5f5b52; margin-top: -4px">
+              Se paga desde la cuota más antigua y cada cuota completa.
+            </div>
+
+            <div style="font-size: 14px; font-weight: 800">2. Transfiere exactamente</div>
+            <div
+              style="
+                background: #ffffff;
+                border: 1px solid #e4e1d8;
+                border-radius: 14px;
+                padding: 12px 14px;
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+                font-size: 13px;
+              "
+            >
+              <div style="display: flex; align-items: center">
+                <span style="flex-grow: 1; color: #5f5b52">Monto</span
+                ><strong style="font-size: 20px">{{total}}</strong
+                ><button
+                  aria-label="Copiar monto"
+                  style="
+                    width: 40px;
+                    height: 40px;
+                    border: none;
+                    background: transparent;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                  "
+                >
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#0E5E5B"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <rect x="9" y="9" width="12" height="12" rx="2"></rect>
+                    <path d="M5 15V5a2 2 0 0 1 2-2h10"></path>
+                  </svg>
+                </button>
+              </div>
+              <div style="display: flex; align-items: center">
+                <span style="flex-grow: 1; color: #5f5b52">Banco Pichincha · Cta. corriente</span
+                ><strong>[N.º DE CUENTA]</strong
+                ><button
+                  aria-label="Copiar número de cuenta"
+                  style="
+                    width: 40px;
+                    height: 40px;
+                    border: none;
+                    background: transparent;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                  "
+                >
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#0E5E5B"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <rect x="9" y="9" width="12" height="12" rx="2"></rect>
+                    <path d="M5 15V5a2 2 0 0 1 2-2h10"></path>
+                  </svg>
+                </button>
+              </div>
+              <div style="display: flex">
+                <span style="flex-grow: 1; color: #5f5b52">Titular</span
+                ><strong>Condominio Jardines del Valle</strong>
+              </div>
+              <div
+                style="
+                  display: flex;
+                  align-items: center;
+                  background: #fff7ec;
+                  border-radius: 10px;
+                  padding: 4px 4px 4px 10px;
+                "
+              >
+                <span style="flex-grow: 1; color: #8a3f0a; font-weight: 600"
+                  >Escribe en el concepto</span
+                ><strong style="font-size: 16px; letter-spacing: 0.5px">JV-A102</strong
+                ><button
+                  aria-label="Copiar código"
+                  style="
+                    width: 40px;
+                    height: 40px;
+                    border: none;
+                    background: transparent;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                  "
+                >
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#8A3F0A"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <rect x="9" y="9" width="12" height="12" rx="2"></rect>
+                    <path d="M5 15V5a2 2 0 0 1 2-2h10"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <div style="font-size: 14px; font-weight: 800">3. Sube tu comprobante</div>
+            <div style="display: flex; gap: 10px">
+              <button
+                style="
+                  flex-grow: 1;
+                  height: 50px;
+                  border: 1.5px dashed #9fbdb8;
+                  border-radius: 12px;
+                  background: #f1f6f5;
+                  color: #0e5e5b;
+                  font-size: 14px;
+                  font-weight: 700;
+                  cursor: pointer;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  gap: 8px;
+                "
+              >
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M4 7h3l2-3h6l2 3h3v13H4z"></path>
+                  <circle cx="12" cy="13" r="4"></circle></svg
+                >Foto o PDF
+              </button>
+              <label
+                style="
+                  width: 150px;
+                  display: flex;
+                  flex-direction: column;
+                  gap: 2px;
+                  font-size: 11px;
+                  font-weight: 700;
+                  color: #5f5b52;
+                "
+                >N.º comprobante<input
+                  value="004518823"
+                  style="
+                    height: 32px;
+                    border: 1px solid #cfcbbf;
+                    border-radius: 8px;
+                    padding: 0 8px;
+                    font-size: 14px;
+                    color: #1c1b18;
+                  "
+              /></label>
+            </div>
+          </div>
+          <div style="padding: 10px 16px 16px 16px; flex-shrink: 0">
+            <button onClick="{{send}}" style="{{sendStyle}}">Enviar comprobante · {{total}}</button>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{sent}}" hint-placeholder-val="{{ false }}">
+          <div
+            style="
+              flex-grow: 1;
+              padding: 40px 24px;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              text-align: center;
+              gap: 14px;
+            "
+          >
+            <div
+              style="
+                width: 72px;
+                height: 72px;
+                border-radius: 50%;
+                background: #fff1dc;
+                color: #8a3f0a;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+              "
+            >
+              <svg
+                width="34"
+                height="34"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <circle cx="12" cy="12" r="9"></circle>
+                <path d="M12 7v5l3 2"></path>
+              </svg>
+            </div>
+            <div style="font-size: 22px; font-weight: 800">Pago en revisión</div>
+            <div style="font-size: 15px; color: #3d3a33; line-height: 1.5">
+              La administración verificará tu transferencia de <strong>{{total}}</strong>. Te
+              avisaremos cuando se apruebe y recibirás tu recibo.
+            </div>
+            <div
+              style="
+                width: 100%;
+                background: #ffffff;
+                border: 1px solid #e4e1d8;
+                border-radius: 14px;
+                padding: 14px;
+                font-size: 14px;
+                text-align: left;
+                display: flex;
+                flex-direction: column;
+                gap: 6px;
+                box-sizing: border-box;
+              "
+            >
+              <div style="display: flex">
+                <span style="flex-grow: 1; color: #5f5b52">Cuotas</span
+                ><strong>{{mesesTxt}}</strong>
+              </div>
+              <div style="display: flex">
+                <span style="flex-grow: 1; color: #5f5b52">Comprobante</span
+                ><strong>004518823</strong>
+              </div>
+            </div>
+            <a
+              href="F2MiCuenta.dc.html"
+              style="
+                width: 100%;
+                height: 50px;
+                border-radius: 12px;
+                background: #0e5e5b;
+                color: #ffffff;
+                font-size: 16px;
+                font-weight: 700;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                text-decoration: none;
+              "
+              >Volver a Mi cuenta</a
+            >
+            <button
+              onClick="{{again}}"
+              style="
+                height: 44px;
+                border: none;
+                background: transparent;
+                color: #0e5e5b;
+                font-size: 14px;
+                font-weight: 700;
+                cursor: pointer;
+              "
+            >
+              Ver otra vez el formulario
+            </button>
+          </div>
+        </sc-if>
+      </div>
+    </x-dc>
+    <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+      class Component extends DCLogic {
+        constructor(props) { super(props); this.state = { n: 2, sent: false }; }
+        renderVals() {
+          var self = this;
+          var n = this.state.n;
+          var meses = [
+            { mes: 'Julio 2026', sub: 'Vencida', venc: true },
+            { mes: 'Agosto 2026', sub: 'Vencida', venc: true },
+            { mes: 'Septiembre 2026', sub: 'Vence el 10 oct', venc: false }
+          ];
+          var cuotas = meses.map(function (m, i) {
+            return {
+              mes: m.mes, sub: m.sub, on: i < n,
+              subStyle: 'display:block;font-size:12px;font-weight:600;color:' + (m.venc ? '#9B1C12' : '#5F5B52'),
+              toggle: function () { self.setState({ n: i < self.state.n ? i : i + 1 }); }
+            };
+          });
+          var total = '$ ' + (n * 80) + ',00';
+          return {
+            cuotas: cuotas, total: total,
+            editing: !this.state.sent, sent: this.state.sent,
+            mesesTxt: meses.slice(0, n).map(function (m) { return m.mes.split(' ')[0]; }).join(', ') || '—',
+            send: function () { if (self.state.n > 0) self.setState({ sent: true }); },
+            again: function () { self.setState({ sent: false }); },
+            sendStyle: 'width:100%;height:52px;border-radius:12px;border:none;font-size:16px;font-weight:700;cursor:pointer;' + (n > 0 ? 'background:#0E5E5B;color:#FFFFFF' : 'background:#E4E1D8;color:#6B675D')
+          };
+        }
+      }
+    </script>
+  </body>
+</html>

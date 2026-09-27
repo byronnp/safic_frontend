@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>Asamblea en vivo</title>
+    <script src="./support.js"></script>
+  </head>
+  <body>
+    <x-dc>
+      <helmet>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap"
+          rel="stylesheet"
+        />
+        <style>
+          body {
+            margin: 0;
+            font-family: Manrope, system-ui, sans-serif;
+            background: #f5f4ef;
+            color: #1c1b18;
+          }
+          a {
+            color: #0e5e5b;
+          }
+          button {
+            font-family: inherit;
+          }
+        </style>
+      </helmet>
+      <div
+        style="
+          width: 390px;
+          height: 844px;
+          display: flex;
+          flex-direction: column;
+          background: #f5f4ef;
+          overflow: hidden;
+        "
+      >
+        <div style="background: #12302f; color: #ffffff; padding: 22px 18px 18px 18px">
+          <div style="display: flex; align-items: center; gap: 8px">
+            <span style="width: 10px; height: 10px; border-radius: 50%; background: #f0b35a"></span>
+            <span style="font-size: 12px; font-weight: 800; letter-spacing: 0.6px; color: #f0b35a"
+              >EN VIVO</span
+            >
+          </div>
+          <div style="font-size: 21px; font-weight: 800; margin-top: 6px">
+            Asamblea ordinaria 2026
+          </div>
+          <div style="font-size: 13px; color: #b9cdc9; margin-top: 2px">
+            Jardines del Valle · A-201 · alícuota 0,71 %
+          </div>
+        </div>
+
+        <div
+          style="
+            flex-grow: 1;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            overflow: hidden;
+          "
+        >
+          <sc-if value="{{noPresente}}" hint-placeholder-val="{{ false }}">
+            <button
+              onClick="{{marcar}}"
+              style="
+                height: 56px;
+                border-radius: 14px;
+                border: none;
+                background: #0e5e5b;
+                color: #ffffff;
+                font-size: 17px;
+                font-weight: 800;
+                cursor: pointer;
+              "
+            >
+              Estoy presente
+            </button>
+          </sc-if>
+          <sc-if value="{{presente}}" hint-placeholder-val="{{ true }}">
+            <div
+              style="
+                background: #e3efec;
+                color: #0b4a47;
+                border-radius: 12px;
+                padding: 10px 14px;
+                font-size: 13px;
+                font-weight: 700;
+              "
+            >
+              Asistencia registrada · 19:05 · cuentas para el quórum (58,4 %)
+            </div>
+          </sc-if>
+
+          <div
+            style="
+              background: #ffffff;
+              border: 1px solid #e4e1d8;
+              border-radius: 16px;
+              padding: 16px;
+              display: flex;
+              flex-direction: column;
+              gap: 12px;
+            "
+          >
+            <div style="font-size: 12px; font-weight: 800; color: #0e5e5b">
+              PUNTO 4 · VOTACIÓN ABIERTA
+            </div>
+            <div style="font-size: 19px; font-weight: 800; line-height: 1.25">
+              Presupuesto 2027 y valor de alícuotas
+            </div>
+            <a href="#" style="font-size: 14px; font-weight: 700; text-decoration: none"
+              >Ver documento del presupuesto</a
+            >
+
+            <sc-if value="{{mora}}" hint-placeholder-val="{{ false }}">
+              <div
+                style="
+                  background: #fde8e6;
+                  color: #7f1810;
+                  border-radius: 12px;
+                  padding: 12px 14px;
+                  font-size: 13px;
+                  line-height: 1.45;
+                "
+              >
+                <strong>Tu unidad no puede votar</strong> porque tiene cuotas vencidas (Decreto
+                462). Sigues contando para el quórum y puedes ver los resultados.
+              </div>
+            </sc-if>
+
+            <sc-if value="{{puedeVotar}}" hint-placeholder-val="{{ true }}">
+              <div style="display: flex; flex-direction: column; gap: 8px">
+                <sc-for list="{{opciones}}" as="o" hint-placeholder-count="3">
+                  <button onClick="{{o.pick}}" style="{{o.style}}">{{o.label}}</button>
+                </sc-for>
+              </div>
+              <button onClick="{{confirmar}}" style="{{confStyle}}">Confirmar voto</button>
+              <div style="font-size: 12px; color: #5f5b52; text-align: center">
+                Una vez confirmado, el voto no se puede cambiar.
+              </div>
+            </sc-if>
+
+            <sc-if value="{{votado}}" hint-placeholder-val="{{ false }}">
+              <div
+                style="background: #e3efec; border-radius: 12px; padding: 16px; text-align: center"
+              >
+                <div style="font-size: 13px; color: #0b4a47; font-weight: 700">
+                  Tu voto quedó registrado · 19:42
+                </div>
+                <div style="font-size: 28px; font-weight: 800; color: #0b4a47; margin-top: 4px">
+                  {{elegida}}
+                </div>
+                <div style="font-size: 12px; color: #0b4a47; margin-top: 4px">
+                  Verás el resultado cuando el presidente cierre la votación.
+                </div>
+              </div>
+            </sc-if>
+          </div>
+
+          <div
+            style="
+              background: #ffffff;
+              border: 1px solid #e4e1d8;
+              border-radius: 16px;
+              padding: 14px 16px;
+            "
+          >
+            <div style="font-size: 12px; font-weight: 800; color: #5f5b52; margin-bottom: 6px">
+              ORDEN DEL DÍA
+            </div>
+            <div style="font-size: 13px; color: #3d3a33; line-height: 1.8">
+              1. Quórum ✓ · 2. Informe ✓ · 3. Estados financieros ✓ Aprobado<br /><strong
+                >4. Presupuesto 2027 · votando</strong
+              ><br />5. Elección de directiva · 6. Reforma del reglamento
+            </div>
+          </div>
+        </div>
+      </div>
+    </x-dc>
+    <script
+      type="text/x-dc"
+      data-dc-script
+      data-props='{"enMora":{"editor":"boolean","default":false},"$preview":{"width":390,"height":844}}'
+    >
+      class Component extends DCLogic {
+        constructor(props) { super(props); this.state = { presente: true, sel: null, votado: false }; }
+        renderVals() {
+          var self = this, S = this.state;
+          var mora = this.props.enMora ?? false;
+          var L = ['Sí', 'No', 'Abstención'];
+          var opciones = L.map(function (l, i) {
+            var on = S.sel === i;
+            return { label: l, pick: function () { self.setState({ sel: i }); },
+              style: 'height:54px;border-radius:12px;font-size:17px;font-weight:800;cursor:pointer;' + (on ? 'background:#0E5E5B;color:#FFFFFF;border:2px solid #0E5E5B' : 'background:#FFFFFF;color:#1C1B18;border:1px solid #D8D4C8') };
+          });
+          var ok = S.sel !== null;
+          return {
+            mora: mora, presente: S.presente, noPresente: !S.presente,
+            marcar: function () { self.setState({ presente: true }); },
+            puedeVotar: !mora && S.presente && !S.votado, votado: !mora && S.votado,
+            opciones: opciones, elegida: ok ? L[S.sel] : '',
+            confirmar: function () { if (self.state.sel !== null) self.setState({ votado: true }); },
+            confStyle: 'height:50px;border-radius:12px;border:none;font-size:16px;font-weight:700;cursor:pointer;' + (ok ? 'background:#12302F;color:#FFFFFF' : 'background:#E4E1D8;color:#6B675D')
+          };
+        }
+      }
+    </script>
+  </body>
+</html>

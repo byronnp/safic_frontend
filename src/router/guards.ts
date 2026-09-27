@@ -8,6 +8,11 @@ export interface SesionParaGuarda {
   tienePermiso: (permiso: string) => boolean;
 }
 
+export interface OpcionesGuarda {
+  /** Permite abrir pantallas en vista previa (solo desarrollo). */
+  vistasPrevias?: boolean;
+}
+
 /**
  * Decide a dónde puede ir el usuario:
  * 1. Recupera la sesión con el refresh token la primera vez.
@@ -15,10 +20,13 @@ export interface SesionParaGuarda {
  * 3. Sin sesión → login (recordando a dónde iba).
  * 4. Sin condominio elegido → selector de condominio.
  * 5. Sin el permiso de la ruta → página "sin permiso".
+ *    Las pantallas en vista previa no piden permiso (no muestran datos reales),
+ *    pero solo se abren en desarrollo.
  */
 export async function guardaDeSesion(
   destino: RouteLocationNormalized,
   sesion: SesionParaGuarda,
+  opciones: OpcionesGuarda = {},
 ): Promise<true | RouteLocationRaw> {
   await sesion.restaurar();
 
@@ -37,6 +45,10 @@ export async function guardaDeSesion(
 
   if (!destino.meta.sinCondominio && sesion.condominioId === null) {
     return { name: 'seleccionar-condominio', query: { redirect: destino.fullPath } };
+  }
+
+  if (destino.meta.vistaPrevia) {
+    return opciones.vistasPrevias ? true : { name: 'sin-permiso' };
   }
 
   if (destino.meta.permiso && !sesion.tienePermiso(destino.meta.permiso)) {

@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>Iniciar sesión</title>
+    <script src="./support.js"></script>
+  </head>
+  <body>
+    <x-dc>
+      <helmet>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap"
+          rel="stylesheet"
+        />
+        <style>
+          body {
+            margin: 0;
+            font-family: Manrope, system-ui, sans-serif;
+            background: #f5f4ef;
+            color: #1c1b18;
+          }
+          a {
+            color: #0e5e5b;
+          }
+          a:hover {
+            color: #08403e;
+          }
+          button,
+          input {
+            font-family: inherit;
+          }
+        </style>
+      </helmet>
+      <div
+        style="width: 1440px; height: 900px; display: flex; background: #f5f4ef; overflow: hidden"
+      >
+        <div
+          style="
+            width: 620px;
+            flex-shrink: 0;
+            background: #12302f;
+            color: #e8f0ee;
+            padding: 56px 64px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+          "
+        >
+          <div style="display: flex; align-items: center; gap: 12px">
+            <div
+              style="
+                width: 42px;
+                height: 42px;
+                border-radius: 11px;
+                background: #f0b35a;
+                color: #12302f;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 800;
+                font-size: 20px;
+              "
+            >
+              S
+            </div>
+            <div>
+              <div style="font-weight: 800; font-size: 22px; letter-spacing: 1px">SAFIC</div>
+              <div style="font-size: 12px; color: #b9cdc9; font-weight: 600">
+                Sistema de Administración Financiera de Condominios
+              </div>
+            </div>
+          </div>
+          <div style="flex-grow: 1"></div>
+          <h1
+            style="
+              margin: 0;
+              font-size: 46px;
+              line-height: 1.08;
+              font-weight: 800;
+              letter-spacing: -1px;
+              color: #ffffff;
+            "
+          >
+            Las finanzas de tu condominio, claras y al día.
+          </h1>
+          <p
+            style="
+              margin: 20px 0 0 0;
+              font-size: 17px;
+              line-height: 1.55;
+              color: #b9cdc9;
+              max-width: 440px;
+            "
+          >
+            Cuotas, pagos por transferencia, conciliación bancaria y reportes para cada condominio,
+            con acceso para administradores, residentes y guardias.
+          </p>
+          <div style="display: flex; gap: 28px; margin-top: 40px">
+            <div
+              style="
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                font-size: 14px;
+                font-weight: 600;
+                color: #d6e3e0;
+              "
+            >
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#F0B35A"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"></path></svg
+              >Datos aislados por condominio
+            </div>
+            <div
+              style="
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                font-size: 14px;
+                font-weight: 600;
+                color: #d6e3e0;
+              "
+            >
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#F0B35A"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <rect x="7" y="2" width="10" height="20" rx="2"></rect>
+                <path d="M11 18h2"></path></svg
+              >Web y app móvil
+            </div>
+          </div>
+          <svg
+            width="420"
+            height="420"
+            viewBox="0 0 420 420"
+            fill="none"
+            stroke="#1E4A48"
+            stroke-width="2"
+            style="position: absolute; right: -120px; top: -90px"
+          >
+            <rect x="60" y="120" width="110" height="260"></rect>
+            <rect x="190" y="60" width="130" height="320"></rect>
+            <rect x="340" y="180" width="70" height="200"></rect>
+            <path
+              d="M80 150h70M80 190h70M80 230h70M80 270h70M210 100h90M210 140h90M210 180h90M210 220h90M210 260h90"
+            ></path>
+          </svg>
+        </div>
+
+        <div style="flex-grow: 1; display: flex; align-items: center; justify-content: center">
+          <div style="width: 440px; display: flex; flex-direction: column">
+            <div style="display: flex; flex-direction: column; gap: 20px">
+              <div>
+                <h2 style="margin: 0; font-size: 30px; font-weight: 800; letter-spacing: -0.5px">
+                  Iniciar sesión
+                </h2>
+                <p style="margin: 8px 0 0 0; font-size: 15px; color: #5f5b52">
+                  Ingresa con el correo que registró tu administración.
+                </p>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 6px">
+                <label for="email" style="font-size: 13px; font-weight: 700; color: #3d3a33"
+                  >Correo electrónico</label
+                >
+                <input
+                  id="email"
+                  type="email"
+                  value="maria.rivas@jardinesdelvalle.ec"
+                  style="
+                    height: 50px;
+                    padding: 0 14px;
+                    border: 1px solid #cfcbbf;
+                    border-radius: 10px;
+                    font-size: 15px;
+                    background: #ffffff;
+                    box-sizing: border-box;
+                    outline-color: #0e5e5b;
+                  "
+                />
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 6px">
+                <div style="display: flex; align-items: baseline">
+                  <label
+                    for="pass"
+                    style="font-size: 13px; font-weight: 700; color: #3d3a33; flex-grow: 1"
+                    >Contraseña</label
+                  >
+                  <a href="#" style="font-size: 13px; font-weight: 700; text-decoration: none"
+                    >¿Olvidaste tu contraseña?</a
+                  >
+                </div>
+                <div
+                  style="
+                    display: flex;
+                    align-items: center;
+                    height: 50px;
+                    border: 1px solid #cfcbbf;
+                    border-radius: 10px;
+                    background: #ffffff;
+                    padding: 0 6px 0 14px;
+                    box-sizing: border-box;
+                  "
+                >
+                  <input
+                    id="pass"
+                    type="{{passType}}"
+                    value="condominio2026"
+                    style="
+                      border: none;
+                      outline: none;
+                      font-size: 15px;
+                      flex-grow: 1;
+                      background: transparent;
+                    "
+                  />
+                  <button
+                    aria-label="Mostrar u ocultar contraseña"
+                    onClick="{{togglePass}}"
+                    style="
+                      width: 40px;
+                      height: 40px;
+                      border: none;
+                      background: transparent;
+                      border-radius: 8px;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      cursor: pointer;
+                    "
+                  >
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="#5F5B52"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"></path>
+                      <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <label
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: 10px;
+                  font-size: 14px;
+                  color: #3d3a33;
+                  min-height: 44px;
+                "
+              >
+                <input
+                  type="checkbox"
+                  checked
+                  style="width: 18px; height: 18px; accent-color: #0e5e5b"
+                />Mantener sesión iniciada</label
+              >
+              <a
+                href="Main.dc.html"
+                style="
+                  height: 52px;
+                  border-radius: 10px;
+                  background: #0e5e5b;
+                  color: #ffffff;
+                  font-size: 16px;
+                  font-weight: 700;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  text-decoration: none;
+                "
+                >Ingresar</a
+              >
+              <div
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: 12px;
+                  color: #6b675d;
+                  font-size: 13px;
+                "
+              >
+                <div style="flex-grow: 1; height: 1px; background: #e0dcd1"></div>
+                o
+                <div style="flex-grow: 1; height: 1px; background: #e0dcd1"></div>
+              </div>
+              <button
+                style="
+                  height: 50px;
+                  border: 1px solid #cfcbbf;
+                  border-radius: 10px;
+                  background: #ffffff;
+                  color: #1c1b18;
+                  font-size: 15px;
+                  font-weight: 700;
+                  cursor: pointer;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  gap: 10px;
+                "
+              >
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <rect x="4" y="4" width="16" height="16" rx="2"></rect>
+                  <path d="M9 9h6v6H9z"></path></svg
+                >Tengo un código de invitación
+              </button>
+              <p style="margin: 4px 0 0 0; font-size: 13px; color: #6b675d; text-align: center">
+                ¿Eres residente nuevo? Tu administrador te envía la invitación por correo.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </x-dc>
+    <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+      class Component extends DCLogic {
+        constructor(props) { super(props); this.state = { show: false }; }
+        renderVals() {
+          var self = this;
+          return {
+            passType: this.state.show ? 'text' : 'password',
+            togglePass: function () { self.setState({ show: !self.state.show }); }
+          };
+        }
+      }
+    </script>
+  </body>
+</html>

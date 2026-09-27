@@ -297,3 +297,101 @@ a {
   font-size: 16px;
   flex-shrink: 0;
 }
+
+/* ---------- Pestañas (mockup Datos del condominio) ---------- */
+
+.safic-pestanas {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--safic-borde);
+  overflow-x: auto;
+}
+
+.safic-pestana {
+  height: 40px;
+  padding: 0 14px;
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--safic-texto-tenue);
+  border: none;
+  background: transparent;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -1px;
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+.safic-pestana--activa {
+  color: var(--safic-texto);
+  border-bottom-color: var(--q-primary);
+}
+
+/* ---------- Píldoras de filtro (mockups Roles, Agenda…) ---------- */
+
+.safic-pildora {
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  background: var(--safic-superficie);
+  color: var(--safic-texto-2);
+  border: 1px solid var(--safic-borde-2);
+  font-family: inherit;
+}
+
+.safic-pildora--activa {
+  background: var(--safic-texto);
+  color: #ffffff;
+  border-color: var(--safic-texto);
+}
+
+/* ---------- App móvil ---------- */
+
+.app-pagina {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-cuerpo {
+  flex-grow: 1;
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.app-tarjeta {
+  background: var(--safic-superficie);
+  border: 1px solid var(--safic-borde);
+  border-radius: 14px;
+}
+
+.app-tarjeta-solapada {
+  margin: -36px 16px 0;
+  border-radius: 16px;
+  position: relative;
+}
+
+.app-seccion-titulo {
+  font-size: 15px;
+  font-weight: 800;
+  margin-bottom: 10px;
+}
+
+/* Placa de vehículo (mockups Mi hogar y Directorio) */
+.safic-placa {
+  display: inline-block;
+  padding: 4px 8px;
+  border: 2px solid var(--safic-texto);
+  border-radius: 5px;
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: 1px;
+  background: #fff8e1;
+}

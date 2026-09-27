@@ -1,126 +1,88 @@
 <template>
-  <nav aria-label="Menú principal" class="menu">
+  <nav :aria-label="etiqueta" class="menu" :class="`menu--${tono}`">
     <template v-for="item in items" :key="item.id">
-      <template v-if="item.hijos?.length">
-        <div class="menu__seccion">
-          <q-icon :name="item.icono" size="16px" />
-          {{ item.etiqueta }}
-        </div>
-        <router-link
+      <!-- Grupo siempre desplegado (CONFIGURACIÓN, ACCESO) o módulo de la pantalla actual -->
+      <template v-if="item.hijos?.length && (item.seccion || contieneActual(item))">
+        <div class="menu__seccion">{{ item.etiqueta }}</div>
+        <EnlaceMenu
           v-for="hijo in item.hijos"
           :key="hijo.id"
-          #default="{ href, navigate, isActive }"
-          :to="{ name: hijo.ruta }"
-          custom
-        >
-          <a
-            :href="href"
-            class="menu__item"
-            :class="{ 'menu__item--activo': isActive }"
-            :aria-current="isActive ? 'page' : undefined"
-            @click="navigate"
-          >
-            <q-icon :name="hijo.icono" size="20px" class="menu__icono" />
-            {{ hijo.etiqueta }}
-          </a>
-        </router-link>
+          :item="hijo"
+          :activo="esActual(hijo)"
+        />
       </template>
 
-      <router-link
-        v-else-if="item.ruta"
-        #default="{ href, navigate, isExactActive }"
-        :to="{ name: item.ruta }"
-        custom
-      >
-        <a
-          :href="href"
-          class="menu__item"
-          :class="{ 'menu__item--activo': isExactActive }"
-          :aria-current="isExactActive ? 'page' : undefined"
-          @click="navigate"
-        >
-          <q-icon :name="item.icono" size="20px" class="menu__icono" />
-          {{ item.etiqueta }}
-        </a>
-      </router-link>
+      <!-- Módulo cerrado: un solo enlace a su primera pantalla -->
+      <EnlaceMenu v-else-if="item.hijos?.length" :item="enlaceModulo(item)" :activo="false" />
+
+      <EnlaceMenu v-else-if="item.ruta" :item="item" :activo="esActual(item)" />
     </template>
 
     <div class="col-grow" />
-
-    <div class="menu__proximamente">
-      <div class="menu__seccion">PRÓXIMAMENTE</div>
-      <div class="menu__nota">Finanzas · Reservas · Visitas</div>
-    </div>
+    <slot name="pie" />
   </nav>
 </template>
 
 <script setup lang="ts">
+import { useRoute } from 'vue-router';
+
 import type { ItemMenu } from '@/core/navigation/menu';
 
-defineProps<{ items: ItemMenu[] }>();
+import EnlaceMenu from './EnlaceMenu.vue';
+
+withDefaults(
+  defineProps<{ items: ItemMenu[]; tono?: 'condominio' | 'plataforma'; etiqueta?: string }>(),
+  { tono: 'condominio', etiqueta: 'Menú principal' },
+);
+
+const route = useRoute();
+
+/** Nombre de la ruta que se marca activa (las pantallas de detalle apuntan a su lista). */
+function rutaActual(): string | undefined {
+  return route.meta.menuActivo ?? (typeof route.name === 'string' ? route.name : undefined);
+}
+
+function esActual(item: ItemMenu): boolean {
+  return item.ruta !== undefined && item.ruta === rutaActual();
+}
+
+/** Módulo cerrado: se muestra como enlace a su primera pantalla. */
+function enlaceModulo(item: ItemMenu): ItemMenu {
+  const primera = item.hijos?.[0]?.ruta;
+  return primera ? { ...item, ruta: primera } : item;
+}
+
+function contieneActual(item: ItemMenu): boolean {
+  return (item.hijos ?? []).some((hijo) => esActual(hijo));
+}
 </script>
 
 <style scoped>
 .menu {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
   padding: 0 14px 20px;
 }
 
-.menu__item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 11px 12px;
-  border-radius: 9px;
-  color: var(--safic-menu-texto);
-  text-decoration: none;
-  font-size: 14px;
-  font-weight: 600;
-  transition: background-color 0.15s;
+.menu--condominio {
+  --menu-texto: var(--safic-menu-texto);
+  --menu-activo: var(--safic-tinta-2);
+  --menu-seccion: var(--safic-menu-seccion);
 }
 
-.menu__item:hover {
-  background: rgba(255, 255, 255, 0.06);
-  color: #ffffff;
-}
-
-.menu__item--activo,
-.menu__item--activo:hover {
-  background: var(--safic-tinta-2);
-  color: #ffffff;
-  font-weight: 700;
-}
-
-/* Ícono relleno en el ítem activo, como en el mockup */
-.menu__item--activo .menu__icono {
-  font-variation-settings:
-    'FILL' 1,
-    'wght' 500;
-}
-
-.menu__item:focus-visible {
-  outline: 2px solid var(--q-accent);
-  outline-offset: 2px;
+.menu--plataforma {
+  --menu-texto: #bdb8ac;
+  --menu-activo: #34322d;
+  --menu-seccion: #8a857a;
 }
 
 .menu__seccion {
-  display: flex;
-  align-items: center;
-  gap: 8px;
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: 1px;
   text-transform: uppercase;
-  color: var(--safic-menu-seccion);
   padding: 14px 12px 6px;
-}
-
-.menu__nota {
-  padding: 0 12px;
-  color: #7f9d99;
-  font-size: 13px;
-  font-weight: 600;
+  color: var(--menu-seccion);
 }
 </style>

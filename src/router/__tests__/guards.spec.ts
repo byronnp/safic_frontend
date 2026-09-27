@@ -50,6 +50,24 @@ describe('guarda de sesión', () => {
   });
 });
 
+describe('vista previa', () => {
+  it('en desarrollo abre la pantalla aunque falte el permiso', async () => {
+    const destino = await guardaDeSesion(
+      ruta('/finanzas', { vistaPrevia: true }),
+      sesion({ tienePermiso: () => false }),
+      { vistasPrevias: true },
+    );
+    expect(destino).toBe(true);
+  });
+
+  it('en producción no se abre', async () => {
+    const destino = await guardaDeSesion(ruta('/finanzas', { vistaPrevia: true }), sesion(), {
+      vistasPrevias: false,
+    });
+    expect(destino).toEqual({ name: 'sin-permiso' });
+  });
+});
+
 describe('redirección segura', () => {
   it('acepta rutas internas y rechaza externas', () => {
     expect(redireccionSegura('/unidades/bloques')).toBe('/unidades/bloques');

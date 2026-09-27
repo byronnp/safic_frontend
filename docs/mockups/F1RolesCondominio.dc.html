@@ -1,0 +1,684 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>Roles disponibles</title>
+    <script src="./support.js"></script>
+  </head>
+  <body>
+    <x-dc>
+      <helmet>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap"
+          rel="stylesheet"
+        />
+        <style>
+          .ms {
+            font-family: 'Material Symbols Rounded';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 20px;
+            line-height: 1;
+            width: 20px;
+            height: 20px;
+            overflow: hidden;
+            flex-shrink: 0;
+            display: inline-block;
+            white-space: nowrap;
+            direction: ltr;
+            font-feature-settings: 'liga';
+            -webkit-font-smoothing: antialiased;
+            font-variation-settings:
+              'FILL' 0,
+              'wght' 400,
+              'GRAD' 0,
+              'opsz' 20;
+          }
+          .ms.on {
+            font-variation-settings:
+              'FILL' 1,
+              'wght' 500,
+              'GRAD' 0,
+              'opsz' 20;
+          }
+          body {
+            margin: 0;
+            font-family: Manrope, system-ui, sans-serif;
+            background: #f5f4ef;
+            color: #1c1b18;
+          }
+          a {
+            color: #0e5e5b;
+          }
+          a:hover {
+            color: #08403e;
+          }
+          button,
+          input,
+          select,
+          textarea {
+            font-family: inherit;
+          }
+        </style>
+        <link
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,300..500,0..1,0"
+          rel="stylesheet"
+        />
+      </helmet>
+      <div
+        style="width: 1440px; height: 900px; display: flex; background: #f5f4ef; overflow: hidden"
+      >
+        <nav
+          aria-label="Menú principal"
+          style="
+            width: 248px;
+            flex-shrink: 0;
+            background: #12302f;
+            color: #e8f0ee;
+            display: flex;
+            flex-direction: column;
+            padding: 20px 14px;
+            gap: 2px;
+            box-sizing: border-box;
+          "
+        >
+          <div style="display: flex; align-items: center; gap: 10px; padding: 4px 10px 20px 10px">
+            <div
+              style="
+                width: 34px;
+                height: 34px;
+                border-radius: 9px;
+                background: #f0b35a;
+                color: #12302f;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 800;
+                font-size: 16px;
+              "
+            >
+              S
+            </div>
+            <div style="font-weight: 800; font-size: 18px">SAFIC</div>
+          </div>
+          <a
+            href="Main.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              gap: 12px;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #c6d6d3;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+            "
+            ><span class="ms" aria-hidden="true">apartment</span>Unidades</a
+          >
+          <a
+            href="F2Resumen.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              gap: 12px;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #c6d6d3;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+            "
+            ><span class="ms" aria-hidden="true">account_balance_wallet</span>Finanzas</a
+          >
+          <a
+            href="F3Agenda.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              gap: 12px;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #c6d6d3;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+            "
+            ><span class="ms" aria-hidden="true">event_available</span>Áreas comunes</a
+          >
+          <a
+            href="F4Tickets.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              gap: 12px;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #c6d6d3;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+            "
+            ><span class="ms" aria-hidden="true">shield_person</span>Seguridad y comunicación</a
+          >
+          <div
+            style="
+              padding: 14px 12px 6px 12px;
+              font-size: 11px;
+              font-weight: 800;
+              letter-spacing: 1px;
+              color: #8fb0ab;
+            "
+          >
+            CONFIGURACIÓN
+          </div>
+          <a
+            href="F1Apariencia.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              gap: 12px;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #c6d6d3;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+            "
+            ><span class="ms" aria-hidden="true">domain</span>Datos del condominio</a
+          >
+          <a
+            href="F1AmenidadesCondominio.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              gap: 12px;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #c6d6d3;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+            "
+            ><span class="ms" aria-hidden="true">pool</span>Amenidades</a
+          >
+          <a
+            href="F1Usuarios.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              gap: 12px;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #c6d6d3;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+            "
+            ><span class="ms" aria-hidden="true">manage_accounts</span>Usuarios</a
+          >
+          <a
+            href="F1RolesCondominio.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              gap: 12px;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #ffffff;
+              background: #1e4a48;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 700;
+            "
+            ><span class="ms on" aria-hidden="true">admin_panel_settings</span>Roles</a
+          >
+          <a
+            href="F6MiSuscripcion.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              gap: 12px;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #c6d6d3;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+            "
+            ><span class="ms" aria-hidden="true">card_membership</span>Mi suscripción</a
+          >
+        </nav>
+
+        <div style="flex-grow: 1; display: flex; flex-direction: column; min-width: 0">
+          <header
+            style="
+              height: 64px;
+              flex-shrink: 0;
+              background: #ffffff;
+              border-bottom: 1px solid #e4e1d8;
+              display: flex;
+              align-items: center;
+              padding: 0 32px;
+              gap: 12px;
+              box-sizing: border-box;
+            "
+          >
+            <div
+              style="
+                width: 28px;
+                height: 28px;
+                border-radius: 7px;
+                background: #e3efec;
+                color: #0b4a47;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 800;
+                font-size: 12px;
+              "
+            >
+              JV
+            </div>
+            <div style="font-size: 15px; font-weight: 700; flex-grow: 1">
+              Conjunto Jardines del Valle · plan Profesional
+            </div>
+            <div
+              style="
+                width: 38px;
+                height: 38px;
+                border-radius: 50%;
+                background: #f0b35a;
+                color: #12302f;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 800;
+                font-size: 14px;
+              "
+            >
+              MR
+            </div>
+          </header>
+
+          <main
+            style="
+              flex-grow: 1;
+              padding: 20px 32px;
+              display: flex;
+              gap: 16px;
+              box-sizing: border-box;
+              min-height: 0;
+            "
+          >
+            <section
+              style="
+                width: 300px;
+                flex-shrink: 0;
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+                min-height: 0;
+              "
+            >
+              <div style="display: flex; align-items: center">
+                <h1 style="margin: 0; font-size: 24px; font-weight: 800; flex-grow: 1">
+                  Roles disponibles
+                </h1>
+                <button
+                  onClick="{{abrirSolicitud}}"
+                  style="
+                    height: 38px;
+                    padding: 0 12px;
+                    border-radius: 9px;
+                    border: 1px solid #0e5e5b;
+                    background: #ffffff;
+                    color: #0e5e5b;
+                    font-size: 13px;
+                    font-weight: 700;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    gap: 6px;
+                  "
+                >
+                  <span class="ms" style="font-size: 18px; width: 18px; height: 18px"
+                    >outgoing_mail</span
+                  >Solicitar rol
+                </button>
+              </div>
+              <div
+                style="
+                  flex-grow: 1;
+                  background: #ffffff;
+                  border: 1px solid #e4e1d8;
+                  border-radius: 14px;
+                  overflow-y: auto;
+                "
+              >
+                <sc-for list="{{lista}}" as="r" hint-placeholder-count="14">
+                  <button onClick="{{r.pick}}" style="{{r.row}}">
+                    <span class="ms" aria-hidden="true" style="{{r.icStyle}}">{{r.ic}}</span>
+                    <span style="flex-grow: 1; text-align: left; min-width: 0"
+                      ><span style="{{r.nomStyle}}">{{r.nombre}}</span
+                      ><span style="display: block; font-size: 11px; color: #5f5b52"
+                        >{{r.sub}}</span
+                      ></span
+                    >
+                    <span style="{{r.admStyle}}">ADM</span>
+                  </button>
+                </sc-for>
+              </div>
+            </section>
+
+            <section
+              style="
+                flex-grow: 1;
+                background: #ffffff;
+                border: 1px solid #e4e1d8;
+                border-radius: 14px;
+                padding: 18px 20px;
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+                box-sizing: border-box;
+                min-width: 0;
+                min-height: 0;
+              "
+            >
+              <div style="display: flex; align-items: center; gap: 10px">
+                <div style="flex-grow: 1">
+                  <div style="font-size: 12px; color: #5f5b52; font-weight: 700">{{ed.tipo}}</div>
+                  <div style="font-size: 20px; font-weight: 800">{{ed.nombre}}</div>
+                </div>
+                <span style="{{ed.lockStyle}}"
+                  ><span class="ms" style="font-size: 16px; width: 16px; height: 16px">lock</span
+                  >{{ed.lockTxt}}</span
+                >
+              </div>
+
+              <sc-if value="{{solicitando}}" hint-placeholder-val="{{ false }}">
+                <div
+                  style="
+                    border: 1px solid #0e5e5b;
+                    border-radius: 12px;
+                    padding: 12px 14px;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 8px;
+                  "
+                >
+                  <div style="font-size: 14px; font-weight: 800">
+                    Solicitar un rol nuevo a la plataforma
+                  </div>
+                  <label
+                    style="
+                      display: flex;
+                      flex-direction: column;
+                      gap: 5px;
+                      font-size: 12px;
+                      font-weight: 700;
+                      color: #3d3a33;
+                    "
+                    >Nombre sugerido<input
+                      value="Jardinero"
+                      style="
+                        height: 36px;
+                        border: 1px solid #cfcbbf;
+                        border-radius: 9px;
+                        padding: 0 10px;
+                        font-size: 14px;
+                      "
+                  /></label>
+                  <label
+                    style="
+                      display: flex;
+                      flex-direction: column;
+                      gap: 5px;
+                      font-size: 12px;
+                      font-weight: 700;
+                      color: #3d3a33;
+                    "
+                    >¿Qué debe poder hacer?<input
+                      value="Ver la agenda de áreas y reportar incidencias de áreas verdes"
+                      style="
+                        height: 36px;
+                        border: 1px solid #cfcbbf;
+                        border-radius: 9px;
+                        padding: 0 10px;
+                        font-size: 13px;
+                      "
+                  /></label>
+                  <div style="display: flex; gap: 8px; justify-content: flex-end">
+                    <button
+                      onClick="{{cerrarSolicitud}}"
+                      style="
+                        height: 36px;
+                        padding: 0 12px;
+                        border-radius: 9px;
+                        border: 1px solid #d8d4c8;
+                        background: #ffffff;
+                        font-size: 13px;
+                        font-weight: 700;
+                        cursor: pointer;
+                      "
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      onClick="{{enviarSolicitud}}"
+                      style="
+                        height: 36px;
+                        padding: 0 14px;
+                        border-radius: 9px;
+                        border: none;
+                        background: #0e5e5b;
+                        color: #ffffff;
+                        font-size: 13px;
+                        font-weight: 700;
+                        cursor: pointer;
+                      "
+                    >
+                      Enviar solicitud
+                    </button>
+                  </div>
+                </div>
+              </sc-if>
+
+              <div style="{{aviso.style}}">{{aviso.txt}}</div>
+
+              <div
+                style="
+                  flex-grow: 1;
+                  overflow-y: auto;
+                  border: 1px solid #e4e1d8;
+                  border-radius: 12px;
+                  min-height: 0;
+                "
+              >
+                <sc-for list="{{permisos}}" as="p" hint-placeholder-count="22">
+                  <div style="{{p.row}}">
+                    <sc-if value="{{p.esMod}}" hint-placeholder-val="{{ false }}">
+                      <span
+                        style="
+                          flex-grow: 1;
+                          font-size: 11px;
+                          font-weight: 800;
+                          letter-spacing: 0.8px;
+                          color: #0e5e5b;
+                        "
+                        >{{p.label}}</span
+                      >
+                      <span style="{{p.planStyle}}">{{p.plan}}</span>
+                    </sc-if>
+                    <sc-if value="{{p.esPerm}}" hint-placeholder-val="{{ true }}">
+                      <button onClick="{{p.toggle}}" aria-label="{{p.label}}" style="{{p.box}}">
+                        <span class="ms" aria-hidden="true" style="{{p.icStyle}}">{{p.ic}}</span>
+                      </button>
+                      <span
+                        style="flex-grow: 1; font-size: 13px; font-weight: 600; color: {{p.color}}"
+                        >{{p.label}}</span
+                      >
+                      <span style="{{p.admStyle}}">ADM</span>
+                      <span
+                        style="
+                          font-size: 11px;
+                          color: #8a857a;
+                          font-family: ui-monospace, Menlo, monospace;
+                          width: 170px;
+                          text-align: right;
+                        "
+                        >{{p.key}}</span
+                      >
+                    </sc-if>
+                  </div>
+                </sc-for>
+              </div>
+
+              <div style="display: flex; gap: 10px; align-items: center">
+                <span style="flex-grow: 1; font-size: 12px; color: #5f5b52">{{ed.pie}}</span>
+                <a href="F1Usuarios.dc.html" style="{{asignarStyle}}">Asignar a usuarios</a>
+              </div>
+            </section>
+
+            <aside
+              style="width: 210px; flex-shrink: 0; display: flex; flex-direction: column; gap: 8px"
+            >
+              <div style="font-size: 12px; font-weight: 800; color: #5f5b52">MENÚ QUE VERÁ</div>
+              <div
+                style="
+                  flex-grow: 1;
+                  background: #12302f;
+                  border-radius: 14px;
+                  padding: 12px 8px;
+                  display: flex;
+                  flex-direction: column;
+                  gap: 1px;
+                "
+              >
+                <sc-for list="{{menu}}" as="m" hint-placeholder-count="8">
+                  <div
+                    style="
+                      display: flex;
+                      align-items: center;
+                      gap: 10px;
+                      padding: 7px 8px;
+                      border-radius: 8px;
+                      font-size: 12px;
+                      font-weight: 600;
+                      color: #c6d6d3;
+                    "
+                  >
+                    <span
+                      class="ms"
+                      aria-hidden="true"
+                      style="font-size: 18px; width: 18px; height: 18px"
+                      >{{m.ic}}</span
+                    >{{m.l}}
+                  </div>
+                </sc-for>
+                <sc-if value="{{menuVacio}}" hint-placeholder-val="{{ false }}">
+                  <div style="padding: 8px; font-size: 12px; color: #8fb0ab">
+                    Sin pantallas: marca al menos un permiso.
+                  </div>
+                </sc-if>
+              </div>
+              <div style="font-size: 11px; color: #5f5b52; line-height: 1.45">
+                El menú se arma solo con los permisos del rol y los módulos del plan.
+              </div>
+            </aside>
+          </main>
+        </div>
+      </div>
+    </x-dc>
+    <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+      class Component extends DCLogic {
+        constructor(props) {
+          super(props);
+          this.state = { sel: 'asis', solicitando: false, enviada: false, perms: {
+            asis: { 'unidades.ver': 1, 'finanzas.ver': 1, 'gastos.registrar': 1 },
+            conserje: { 'reservas.ver': 1, 'incidencias.gestionar': 1, 'anuncios.publicar': 1 }
+          }, nuevos: 0 };
+        }
+        renderVals() {
+          var self = this, S = this.state;
+          var PLAN = ['Núcleo', 'Finanzas', 'Áreas comunes', 'Garita', 'Comunicación'];
+          var P = [
+            ['unidades.ver', 'Ver unidades y residentes', 'Núcleo', 0], ['unidades.editar', 'Crear y editar unidades', 'Núcleo', 1], ['residentes.ver_datos', 'Ver datos personales completos', 'Núcleo', 1], ['amenidades.gestionar', 'Gestionar amenidades', 'Núcleo', 1],
+            ['finanzas.ver', 'Ver finanzas y reportes', 'Finanzas', 0], ['pagos.aprobar', 'Aprobar pagos de residentes', 'Finanzas', 1], ['gastos.registrar', 'Registrar facturas de proveedores', 'Finanzas', 1], ['finanzas.exportar', 'Exportar a Excel y PDF', 'Finanzas', 1],
+            ['reservas.ver', 'Ver agenda de áreas', 'Áreas comunes', 0], ['reservas.gestionar', 'Aprobar y gestionar reservas', 'Áreas comunes', 1],
+            ['visitas.registrar', 'Registrar visitas y paquetes', 'Garita', 0],
+            ['anuncios.publicar', 'Publicar anuncios', 'Comunicación', 0], ['incidencias.gestionar', 'Gestionar incidencias', 'Comunicación', 0],
+            ['conciliacion.importar', 'Importar estados de cuenta', 'Conciliación automática', 1],
+            ['asambleas.preparar', 'Preparar y convocar asambleas', 'Asambleas', 0]
+          ];
+          var FIX = {
+            admin: ['unidades.ver', 'unidades.editar', 'residentes.ver_datos', 'amenidades.gestionar', 'finanzas.ver', 'pagos.aprobar', 'gastos.registrar', 'finanzas.exportar', 'reservas.ver', 'reservas.gestionar', 'visitas.registrar', 'anuncios.publicar', 'incidencias.gestionar'],
+            contador: ['finanzas.ver', 'finanzas.exportar'], guardia: ['visitas.registrar', 'reservas.ver'], mant: ['incidencias.gestionar'], residente: ['reservas.ver'],
+            pres: ['unidades.ver', 'finanzas.ver', 'reservas.ver', 'anuncios.publicar', 'asambleas.preparar'], vice: ['unidades.ver', 'finanzas.ver', 'reservas.ver', 'anuncios.publicar', 'asambleas.preparar'], sec: ['unidades.ver'], tes: ['unidades.ver', 'finanzas.ver', 'pagos.aprobar', 'gastos.registrar', 'finanzas.exportar']
+          };
+          var ROLES = [
+            { h: 'SISTEMA' },
+            { k: 'admin', n: 'Administrador', t: 'sis', u: 1, ic: 'shield' }, { k: 'contador', n: 'Contador', t: 'sis', u: 1, ic: 'calculate' }, { k: 'guardia', n: 'Guardia', t: 'sis', u: 3, ic: 'badge' }, { k: 'mant', n: 'Mantenimiento', t: 'sis', u: 1, ic: 'build' }, { k: 'residente', n: 'Residente', t: 'sis', u: 146, ic: 'home' },
+            { h: 'CARGOS DE DIRECTIVA' },
+            { k: 'pres', n: 'Presidente', t: 'car', u: 1, ic: 'workspace_premium' }, { k: 'vice', n: 'Vicepresidente', t: 'car', u: 1, ic: 'workspace_premium' }, { k: 'sec', n: 'Secretario', t: 'car', u: 1, ic: 'edit_note' }, { k: 'tes', n: 'Tesorero', t: 'car', u: 1, ic: 'savings' },
+            { h: 'ADICIONALES DE LA PLATAFORMA' },
+            { k: 'asis', n: 'Asistente contable', t: 'per', u: 0, ic: 'person' },
+            { k: 'conserje', n: 'Conserje', t: 'per', u: 2, ic: 'person' }
+          ];
+          var has = function (rk, pk) { var r = ROLES.filter(function (x) { return x.k === rk; })[0]; if (r.t === 'per') return !!(S.perms[rk] || {})[pk]; return (FIX[rk] || []).indexOf(pk) >= 0; };
+          var isAdm = function (rk) { return P.some(function (p) { return p[3] && PLAN.indexOf(p[2]) >= 0 && has(rk, p[0]); }); };
+          var sel = ROLES.filter(function (x) { return x.k === S.sel; })[0];
+          var editable = false;
+          var aviso;
+          if (S.enviada) aviso = ['Solicitud enviada a la plataforma. Te avisaremos cuando el rol esté disponible.', '#E3EFEC', '#0B4A47'];
+          else if (sel.t === 'car') aviso = ['Cargo de directiva: se asigna desde Usuarios › Directiva. Sus permisos los define la plataforma.', '#F1EFE8', '#3D3A33'];
+          else if (isAdm(sel.k)) aviso = ['Rol administrativo: quien lo tenga cuenta para el límite de tu plan (3 de 3 usados). Los roles los define la plataforma; aquí solo los asignas.', '#FFF7EC', '#7A3808'];
+          else aviso = ['Los roles los define la plataforma; aquí ves qué permite cada uno en tu plan y los asignas a tus usuarios. ¿Necesitas otro? Usa Solicitar rol.', '#E6ECF7', '#23407A'];
+          var permisos = [], last = '';
+          P.forEach(function (p) {
+            var enPlan = PLAN.indexOf(p[2]) >= 0;
+            if (p[2] !== last) { last = p[2]; permisos.push({ esMod: true, esPerm: false, label: p[2].toUpperCase(), plan: enPlan ? '' : 'Requiere plan Completo', planStyle: enPlan ? 'display:none' : 'display:inline-flex;padding:2px 8px;border-radius:999px;background:#F1EFE8;color:#6B675D;font-size:11px;font-weight:700', row: 'display:flex;align-items:center;gap:10px;padding:0 14px;height:30px;background:#F2F7F6;border-top:1px solid #E4E1D8' }); }
+            var on = enPlan && has(sel.k, p[0]);
+            var can = false;
+            permisos.push({ esMod: false, esPerm: true, label: p[1], key: p[0], ic: !enPlan ? 'lock' : (on ? 'check' : ''),
+              color: enPlan ? '#1C1B18' : '#A7A195',
+              admStyle: p[3] ? 'padding:1px 6px;border-radius:5px;background:#FFF1DC;color:#8A3F0A;font-size:9px;font-weight:800' : 'display:none',
+              icStyle: !enPlan ? 'font-size:15px;width:15px;height:15px;color:#B9B3A5' : 'font-size:17px;width:17px;height:17px;color:#FFFFFF',
+              box: 'width:24px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;padding:0;flex-shrink:0;cursor:default;' + (!enPlan ? 'border:1px dashed #D8D4C8;background:#FAF9F5' : (on ? 'border:1px solid #0E5E5B;background:#0E5E5B' : 'border:1.5px solid #D8D4C8;background:#FFFFFF')),
+              row: 'display:flex;align-items:center;gap:10px;padding:0 14px;height:38px;border-top:1px solid #F0EDE5',
+              toggle: function () { if (!can) return; var all = Object.assign({}, self.state.perms); var cur = Object.assign({}, all[sel.k] || {}); cur[p[0]] = cur[p[0]] ? 0 : 1; all[sel.k] = cur; self.setState({ perms: all, saved: false }); } });
+          });
+          var MENU = [['unidades.ver', 'Unidades', 'apartment'], ['finanzas.ver', 'Finanzas', 'account_balance_wallet'], ['gastos.registrar', 'Cuentas por pagar', 'request_quote'], ['reservas.ver', 'Áreas comunes', 'event_available'], ['visitas.registrar', 'Garita', 'badge'], ['anuncios.publicar', 'Anuncios', 'campaign'], ['incidencias.gestionar', 'Incidencias', 'report'], ['amenidades.gestionar', 'Amenidades', 'pool']];
+          var menu = MENU.filter(function (m) { return has(sel.k, m[0]); }).map(function (m) { return { l: m[1], ic: m[2] }; });
+          return {
+            lista: ROLES.map(function (r) {
+              if (r.h) return { nombre: r.h, sub: '', ic: '', icStyle: 'display:none', admStyle: 'display:none', nomStyle: 'display:block;font-size:10px;font-weight:800;letter-spacing:0.8px;color:#8A857A', pick: function () {}, row: 'display:flex;align-items:center;width:100%;padding:12px 14px 4px 14px;border:none;background:#FFFFFF;cursor:default;font-family:inherit' };
+              var on = r.k === S.sel;
+              return { nombre: r.n, sub: r.u + (r.u === 1 ? ' usuario' : ' usuarios') + (r.t === 'car' ? ' · cargo' : ''), ic: r.t === 'car' ? 'lock' : r.ic,
+                icStyle: 'color:' + (r.t === 'per' ? '#0E5E5B' : '#8A857A'), nomStyle: 'display:block;font-size:14px;font-weight:700',
+                admStyle: isAdm(r.k) ? 'padding:1px 6px;border-radius:5px;background:#FFF1DC;color:#8A3F0A;font-size:9px;font-weight:800;flex-shrink:0' : 'display:none',
+                pick: function () { self.setState({ sel: r.k, enviada: false }); },
+                row: 'display:flex;align-items:center;gap:10px;width:100%;padding:8px 14px;border:none;cursor:pointer;font-family:inherit;color:#1C1B18;' + (on ? 'background:#F2F7F6;box-shadow:inset 3px 0 0 #0E5E5B' : 'background:#FFFFFF') };
+            }),
+            ed: {
+              nombre: sel.n,
+              tipo: { sis: 'Rol de sistema', car: 'Cargo de directiva', per: 'Rol adicional creado por la plataforma' }[sel.t],
+              lockTxt: 'Solo lectura · lo define la plataforma',
+              lockStyle: 'display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;background:#F1EFE8;color:#5F5B52;font-size:12px;font-weight:700',
+              pie: sel.u + (sel.u === 1 ? ' usuario tiene' : ' usuarios tienen') + ' este rol en Jardines del Valle.'
+            },
+            aviso: { txt: aviso[0], style: 'border-radius:10px;padding:10px 12px;font-size:12px;font-weight:600;line-height:1.45;background:' + aviso[1] + ';color:' + aviso[2] },
+            permisos: permisos, menu: menu, menuVacio: menu.length === 0,
+            solicitando: S.solicitando,
+            abrirSolicitud: function () { self.setState({ solicitando: true, enviada: false }); },
+            cerrarSolicitud: function () { self.setState({ solicitando: false }); },
+            enviarSolicitud: function () { self.setState({ solicitando: false, enviada: true }); },
+            asignarStyle: sel.t === 'car' ? 'display:none' : 'height:42px;padding:0 16px;border-radius:10px;background:#0E5E5B;color:#FFFFFF;font-size:14px;font-weight:700;text-decoration:none;display:flex;align-items:center'
+          };
+        }
+      }
+    </script>
+  </body>
+</html>

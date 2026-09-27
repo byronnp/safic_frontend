@@ -6,6 +6,7 @@ import {
   createWebHistory,
 } from 'vue-router';
 
+import { MOSTRAR_VISTAS_PREVIAS } from '@/core/vista-previa';
 import { useSessionStore } from '@/stores/session';
 
 import { guardaDeSesion } from './guards';
@@ -26,7 +27,9 @@ export default defineRouter(({ store }) => {
 
   const session = useSessionStore(store);
 
-  router.beforeEach((destino) => guardaDeSesion(destino, session));
+  router.beforeEach((destino) =>
+    guardaDeSesion(destino, session, { vistasPrevias: MOSTRAR_VISTAS_PREVIAS }),
+  );
 
   router.afterEach((destino) => {
     document.title = destino.meta.titulo ? `${destino.meta.titulo} · SAFIC` : 'SAFIC';

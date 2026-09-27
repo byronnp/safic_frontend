@@ -1,0 +1,850 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>Amenidades del condominio</title>
+    <script src="./support.js"></script>
+  </head>
+  <body>
+    <x-dc>
+      <helmet>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap"
+          rel="stylesheet"
+        />
+        <style>
+          .ms {
+            font-family: 'Material Symbols Rounded';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 20px;
+            line-height: 1;
+            width: 20px;
+            height: 20px;
+            overflow: hidden;
+            flex-shrink: 0;
+            display: inline-block;
+            white-space: nowrap;
+            direction: ltr;
+            font-feature-settings: 'liga';
+            -webkit-font-smoothing: antialiased;
+            font-variation-settings:
+              'FILL' 0,
+              'wght' 400,
+              'GRAD' 0,
+              'opsz' 20;
+          }
+          .ms.on {
+            font-variation-settings:
+              'FILL' 1,
+              'wght' 500,
+              'GRAD' 0,
+              'opsz' 20;
+          }
+          body {
+            margin: 0;
+            font-family: Manrope, system-ui, sans-serif;
+            background: #f5f4ef;
+            color: #1c1b18;
+          }
+          a {
+            color: #0e5e5b;
+          }
+          a:hover {
+            color: #08403e;
+          }
+          button,
+          input,
+          select,
+          textarea {
+            font-family: inherit;
+          }
+        </style>
+        <link
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,300..500,0..1,0"
+          rel="stylesheet"
+        />
+      </helmet>
+      <div
+        style="width: 1440px; height: 900px; display: flex; background: #f5f4ef; overflow: hidden"
+      >
+        <nav
+          aria-label="Menú principal"
+          style="
+            width: 248px;
+            flex-shrink: 0;
+            background: #12302f;
+            color: #e8f0ee;
+            display: flex;
+            flex-direction: column;
+            padding: 20px 14px;
+            gap: 2px;
+            box-sizing: border-box;
+          "
+        >
+          <div style="display: flex; align-items: center; gap: 10px; padding: 4px 10px 20px 10px">
+            <div
+              style="
+                width: 34px;
+                height: 34px;
+                border-radius: 9px;
+                background: #f0b35a;
+                color: #12302f;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 800;
+                font-size: 16px;
+              "
+            >
+              S
+            </div>
+            <div style="font-weight: 800; font-size: 18px">SAFIC</div>
+          </div>
+          <a
+            href="Main.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #c6d6d3;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+              gap: 12px;
+            "
+            ><span class="ms" aria-hidden="true">apartment</span>Unidades</a
+          >
+          <a
+            href="F2Resumen.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #c6d6d3;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+              gap: 12px;
+            "
+            ><span class="ms" aria-hidden="true">account_balance_wallet</span>Finanzas</a
+          >
+          <a
+            href="F3Agenda.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #c6d6d3;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+              gap: 12px;
+            "
+            ><span class="ms" aria-hidden="true">event_available</span>Áreas comunes</a
+          >
+          <a
+            href="F4Tickets.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #c6d6d3;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+              gap: 12px;
+            "
+            ><span class="ms" aria-hidden="true">shield_person</span>Seguridad y comunicación</a
+          >
+          <a
+            href="F5Preparar.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #c6d6d3;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+              gap: 12px;
+            "
+            ><span class="ms" aria-hidden="true">how_to_vote</span>Asambleas</a
+          >
+          <div
+            style="
+              padding: 14px 12px 6px 12px;
+              font-size: 11px;
+              font-weight: 800;
+              letter-spacing: 1px;
+              color: #8fb0ab;
+            "
+          >
+            CONFIGURACIÓN
+          </div>
+          <a
+            href="F1Apariencia.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #c6d6d3;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+              gap: 12px;
+            "
+            ><span class="ms" aria-hidden="true">domain</span>Datos del condominio</a
+          >
+          <a
+            href="F1AmenidadesCondominio.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #ffffff;
+              background: #1e4a48;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 700;
+              gap: 12px;
+            "
+            ><span class="ms on" aria-hidden="true">pool</span>Amenidades</a
+          >
+          <a
+            href="F1Usuarios.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #c6d6d3;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+              gap: 12px;
+            "
+            ><span class="ms" aria-hidden="true">manage_accounts</span>Usuarios y roles</a
+          >
+          <a
+            href="F1RolesCondominio.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              gap: 12px;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #c6d6d3;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+            "
+            ><span class="ms" aria-hidden="true">admin_panel_settings</span>Roles</a
+          >
+          <a
+            href="F6MiSuscripcion.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #c6d6d3;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+              gap: 12px;
+            "
+            ><span class="ms" aria-hidden="true">card_membership</span>Mi suscripción</a
+          >
+        </nav>
+
+        <div style="flex-grow: 1; display: flex; flex-direction: column; min-width: 0">
+          <header
+            style="
+              height: 68px;
+              flex-shrink: 0;
+              background: #ffffff;
+              border-bottom: 1px solid #e4e1d8;
+              display: flex;
+              align-items: center;
+              padding: 0 32px;
+              gap: 12px;
+              box-sizing: border-box;
+            "
+          >
+            <div
+              style="
+                width: 28px;
+                height: 28px;
+                border-radius: 7px;
+                background: #e3efec;
+                color: #0b4a47;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 800;
+                font-size: 12px;
+              "
+            >
+              JV
+            </div>
+            <div style="font-size: 15px; font-weight: 700; flex-grow: 1">
+              Conjunto Jardines del Valle
+            </div>
+            <div
+              style="
+                width: 38px;
+                height: 38px;
+                border-radius: 50%;
+                background: #f0b35a;
+                color: #12302f;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 800;
+                font-size: 14px;
+              "
+            >
+              MR
+            </div>
+          </header>
+
+          <main
+            style="
+              flex-grow: 1;
+              padding: 22px 32px;
+              display: flex;
+              gap: 18px;
+              box-sizing: border-box;
+              min-height: 0;
+            "
+          >
+            <section
+              style="flex-grow: 1; display: flex; flex-direction: column; gap: 14px; min-width: 0"
+            >
+              <div style="display: flex; align-items: flex-end; gap: 12px">
+                <div style="flex-grow: 1">
+                  <div style="font-size: 13px; color: #5f5b52; font-weight: 600">
+                    Configuración / Amenidades
+                  </div>
+                  <h1
+                    style="
+                      margin: 4px 0 0 0;
+                      font-size: 28px;
+                      font-weight: 800;
+                      letter-spacing: -0.4px;
+                    "
+                  >
+                    Amenidades del condominio
+                  </h1>
+                </div>
+                <button
+                  onClick="{{abrirAgregar}}"
+                  style="
+                    height: 44px;
+                    padding: 0 16px;
+                    border-radius: 10px;
+                    border: none;
+                    background: #0e5e5b;
+                    color: #ffffff;
+                    font-size: 14px;
+                    font-weight: 700;
+                    cursor: pointer;
+                  "
+                >
+                  Agregar amenidad
+                </button>
+              </div>
+
+              <div
+                style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px"
+              >
+                <sc-for list="{{kpis}}" as="k" hint-placeholder-count="4">
+                  <div
+                    style="
+                      background: #ffffff;
+                      border: 1px solid #e4e1d8;
+                      border-radius: 14px;
+                      padding: 12px 16px;
+                    "
+                  >
+                    <div style="font-size: 12px; color: #5f5b52; font-weight: 700">{{k.l}}</div>
+                    <div style="font-size: 22px; font-weight: 800; margin-top: 2px">{{k.v}}</div>
+                  </div>
+                </sc-for>
+              </div>
+
+              <div
+                style="
+                  flex-grow: 1;
+                  background: #ffffff;
+                  border: 1px solid #e4e1d8;
+                  border-radius: 14px;
+                  overflow-y: auto;
+                  display: flex;
+                  flex-direction: column;
+                  min-height: 0;
+                "
+              >
+                <div
+                  style="
+                    display: grid;
+                    grid-template-columns: 1.5fr 120px 150px 190px 150px;
+                    gap: 12px;
+                    padding: 9px 16px;
+                    background: #faf9f5;
+                    font-size: 12px;
+                    font-weight: 700;
+                    color: #5f5b52;
+                    letter-spacing: 0.3px;
+                  "
+                >
+                  <div>AMENIDAD</div>
+                  <div>ORIGEN</div>
+                  <div>UBICACIÓN</div>
+                  <div>USO</div>
+                  <div>ESTADO</div>
+                </div>
+                <sc-for list="{{rows}}" as="r" hint-placeholder-count="10">
+                  <button onClick="{{r.pick}}" style="{{r.row}}">
+                    <div style="display: flex; align-items: center; gap: 12px; min-width: 0">
+                      <span style="{{r.icon}}">{{r.ini}}</span>
+                      <div style="min-width: 0">
+                        <div style="font-weight: 800">{{r.nombre}}</div>
+                        <div style="font-size: 12px; color: #5f5b52">{{r.tipo}}</div>
+                      </div>
+                    </div>
+                    <div><span style="{{r.origenStyle}}">{{r.origen}}</span></div>
+                    <div style="font-size: 13px; color: #3d3a33">{{r.ubic}}</div>
+                    <div style="font-size: 13px; color: #3d3a33">{{r.uso}}</div>
+                    <div><span style="{{r.estStyle}}">{{r.est}}</span></div>
+                  </button>
+                </sc-for>
+              </div>
+            </section>
+
+            <aside
+              style="
+                width: 390px;
+                flex-shrink: 0;
+                background: #ffffff;
+                border: 1px solid #e4e1d8;
+                border-radius: 14px;
+                padding: 18px 20px;
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+                box-sizing: border-box;
+                overflow: hidden;
+              "
+            >
+              <sc-if value="{{modoDetalle}}" hint-placeholder-val="{{ true }}">
+                <div
+                  style="
+                    height: 120px;
+                    border-radius: 12px;
+                    background: #dce7e4;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: #0b4a47;
+                    font-size: 13px;
+                    font-weight: 700;
+                  "
+                >
+                  {{det.fotos}}
+                </div>
+                <div>
+                  <div style="font-size: 12px; color: #5f5b52; font-weight: 700">
+                    {{det.tipo}} · {{det.origen}}
+                  </div>
+                  <div style="font-size: 20px; font-weight: 800">{{det.nombre}}</div>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 8px; font-size: 13px">
+                  <sc-for list="{{det.datos}}" as="x" hint-placeholder-count="4">
+                    <div
+                      style="display: flex; border-bottom: 1px solid #f0ede5; padding-bottom: 7px"
+                    >
+                      <span style="flex-grow: 1; color: #5f5b52">{{x.k}}</span
+                      ><strong>{{x.v}}</strong>
+                    </div>
+                  </sc-for>
+                </div>
+                <sc-if value="{{det.reservable}}" hint-placeholder-val="{{ true }}">
+                  <a
+                    href="F3ConfigArea.dc.html"
+                    style="
+                      height: 42px;
+                      border-radius: 10px;
+                      border: 1px solid #0e5e5b;
+                      color: #0e5e5b;
+                      font-size: 14px;
+                      font-weight: 700;
+                      text-decoration: none;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                    "
+                    >Configurar reservas y cobro</a
+                  >
+                </sc-if>
+                <div style="flex-grow: 1"></div>
+                <div style="{{det.notaStyle}}">{{det.nota}}</div>
+                <div style="display: flex; gap: 10px">
+                  <button
+                    onClick="{{mantenimiento}}"
+                    style="
+                      flex-grow: 1;
+                      height: 44px;
+                      border-radius: 10px;
+                      border: 1px solid #d8d4c8;
+                      background: #ffffff;
+                      font-size: 13px;
+                      font-weight: 700;
+                      cursor: pointer;
+                    "
+                  >
+                    {{det.mantLabel}}
+                  </button>
+                  <button
+                    style="
+                      flex-grow: 1;
+                      height: 44px;
+                      border-radius: 10px;
+                      border: 1px solid #9b1c12;
+                      background: #ffffff;
+                      color: #9b1c12;
+                      font-size: 13px;
+                      font-weight: 700;
+                      cursor: pointer;
+                    "
+                  >
+                    Desactivar
+                  </button>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{modoAgregar}}" hint-placeholder-val="{{ false }}">
+                <div style="display: flex; align-items: center">
+                  <h2 style="margin: 0; font-size: 18px; font-weight: 800; flex-grow: 1">
+                    Agregar amenidad
+                  </h2>
+                  <button
+                    onClick="{{cerrar}}"
+                    style="
+                      border: none;
+                      background: none;
+                      color: #5f5b52;
+                      font-size: 13px;
+                      font-weight: 700;
+                      cursor: pointer;
+                    "
+                  >
+                    Cerrar
+                  </button>
+                </div>
+                <div
+                  style="
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    background: #f1efe8;
+                    border-radius: 10px;
+                    padding: 4px;
+                  "
+                >
+                  <sc-for list="{{fuentes}}" as="f" hint-placeholder-count="2">
+                    <button onClick="{{f.pick}}" style="{{f.style}}">{{f.label}}</button>
+                  </sc-for>
+                </div>
+
+                <sc-if value="{{deCatalogo}}" hint-placeholder-val="{{ true }}">
+                  <div
+                    style="font-size: 12px; font-weight: 800; color: #5f5b52; letter-spacing: 0.4px"
+                  >
+                    ELIGE DEL CATÁLOGO
+                  </div>
+                  <div style="display: flex; flex-wrap: wrap; gap: 8px">
+                    <sc-for list="{{tipos}}" as="t" hint-placeholder-count="10">
+                      <button onClick="{{t.pick}}" style="{{t.style}}">{{t.label}}</button>
+                    </sc-for>
+                  </div>
+                </sc-if>
+
+                <sc-if value="{{esPropia}}" hint-placeholder-val="{{ false }}">
+                  <label
+                    style="
+                      display: flex;
+                      flex-direction: column;
+                      gap: 6px;
+                      font-size: 13px;
+                      font-weight: 700;
+                      color: #3d3a33;
+                    "
+                    >Nombre<input
+                      value="{{propNombre}}"
+                      onInput="{{setPropNombre}}"
+                      placeholder="Ej. Muelle, Huerto, Sala de cine"
+                      style="
+                        height: 40px;
+                        border: 1px solid #cfcbbf;
+                        border-radius: 9px;
+                        padding: 0 12px;
+                        font-size: 15px;
+                      "
+                  /></label>
+                  <label
+                    style="
+                      display: flex;
+                      flex-direction: column;
+                      gap: 6px;
+                      font-size: 13px;
+                      font-weight: 700;
+                      color: #3d3a33;
+                    "
+                    >Categoría<select
+                      style="
+                        height: 40px;
+                        border: 1px solid #cfcbbf;
+                        border-radius: 9px;
+                        padding: 0 8px;
+                        font-size: 14px;
+                        background: #ffffff;
+                      "
+                    >
+                      <option>Recreación</option>
+                      <option>Deporte</option>
+                      <option>Social</option>
+                      <option>Servicios</option>
+                      <option>Seguridad</option>
+                    </select></label
+                  >
+                  <div
+                    style="
+                      display: flex;
+                      align-items: center;
+                      gap: 12px;
+                      border: 1px solid #e4e1d8;
+                      border-radius: 10px;
+                      padding: 10px 12px;
+                    "
+                  >
+                    <div style="flex-grow: 1">
+                      <div style="font-size: 13px; font-weight: 700">Reservable</div>
+                      <div style="font-size: 11px; color: #5f5b52">
+                        Los residentes podrán reservarla
+                      </div>
+                    </div>
+                    <button
+                      onClick="{{togglePropRes}}"
+                      aria-label="Reservable"
+                      style="{{propResTrack}}"
+                    >
+                      <span style="{{propResKnob}}"></span>
+                    </button>
+                  </div>
+                </sc-if>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px">
+                  <div
+                    style="
+                      display: flex;
+                      flex-direction: column;
+                      gap: 6px;
+                      font-size: 13px;
+                      font-weight: 700;
+                      color: #3d3a33;
+                    "
+                  >
+                    Cantidad
+                    <div style="display: flex; align-items: center; gap: 8px; height: 40px">
+                      <button
+                        onClick="{{menos}}"
+                        aria-label="Menos"
+                        style="
+                          width: 36px;
+                          height: 36px;
+                          border-radius: 8px;
+                          border: 1px solid #d8d4c8;
+                          background: #ffffff;
+                          font-size: 18px;
+                          font-weight: 800;
+                          cursor: pointer;
+                        "
+                      >
+                        −
+                      </button>
+                      <span
+                        style="
+                          min-width: 28px;
+                          text-align: center;
+                          font-size: 18px;
+                          font-weight: 800;
+                        "
+                        >{{cant}}</span
+                      >
+                      <button
+                        onClick="{{mas}}"
+                        aria-label="Más"
+                        style="
+                          width: 36px;
+                          height: 36px;
+                          border-radius: 8px;
+                          border: 1px solid #d8d4c8;
+                          background: #ffffff;
+                          font-size: 18px;
+                          font-weight: 800;
+                          cursor: pointer;
+                        "
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+                  <label
+                    style="
+                      display: flex;
+                      flex-direction: column;
+                      gap: 6px;
+                      font-size: 13px;
+                      font-weight: 700;
+                      color: #3d3a33;
+                    "
+                    >Ubicación<select
+                      style="
+                        height: 40px;
+                        border: 1px solid #cfcbbf;
+                        border-radius: 9px;
+                        padding: 0 8px;
+                        font-size: 14px;
+                        background: #ffffff;
+                      "
+                    >
+                      <option>Área social</option>
+                      <option>Torre A</option>
+                      <option>Torre B</option>
+                      <option>Torre C</option>
+                    </select></label
+                  >
+                </div>
+
+                <div style="{{previewStyle}}">{{preview}}</div>
+                <div style="flex-grow: 1"></div>
+                <button onClick="{{agregar}}" style="{{agregarStyle}}">{{agregarLabel}}</button>
+              </sc-if>
+            </aside>
+          </main>
+        </div>
+      </div>
+    </x-dc>
+    <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+      class Component extends DCLogic {
+        constructor(props) {
+          super(props);
+          this.state = { modo: 'detalle', sel: 2, src: 'cat', tipo: null, cant: 1, propNombre: '', propRes: true, extra: [], mant: {} };
+        }
+        renderVals() {
+          var self = this, S = this.state;
+          var chip = function (bg, fg) { return 'display:inline-block;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:700;white-space:nowrap;background:' + bg + ';color:' + fg; };
+          var COL = { rec: '#0E5E5B', dep: '#23407A', soc: '#B8641C', ser: '#5F5B52', seg: '#7A2E5A' };
+          var CAT = [
+            ['Piscina', 'rec', 1, 0], ['Salón comunal', 'soc', 1, 0], ['Área BBQ', 'soc', 1, 0], ['Cancha múltiple', 'dep', 1, 0], ['Gimnasio', 'dep', 0, 0],
+            ['Parque infantil', 'rec', 0, 0], ['Ascensor', 'ser', 0, 1], ['Generador eléctrico', 'ser', 0, 1], ['Guardianía 24 h', 'seg', 0, 1], ['Parqueadero de visitas', 'ser', 0, 1]
+          ];
+          var A = [
+            { n: 'Piscina', t: 'Piscina', c: 'rec', o: 'cat', u: 'Área social', r: 1, e: 0, info: 'Capacidad 30 · reservas de 3 h', fotos: 4 },
+            { n: 'Salón comunal', t: 'Salón comunal', c: 'soc', o: 'cat', u: 'Área social', r: 1, e: 0, info: 'Capacidad 80 · con aprobación', fotos: 3 },
+            { n: 'Área BBQ 1', t: 'Área BBQ', c: 'soc', o: 'cat', u: 'Área social', r: 1, e: 0, info: 'Capacidad 20 · $ 15,00 por uso', fotos: 2 },
+            { n: 'Área BBQ 2', t: 'Área BBQ', c: 'soc', o: 'cat', u: 'Junto a torre C', r: 1, e: 0, info: 'Capacidad 20 · $ 15,00 por uso', fotos: 2, mant: 'hasta 30 sep' },
+            { n: 'Gimnasio', t: 'Gimnasio', c: 'dep', o: 'cat', u: 'Torre A · PB', r: 0, e: 0, info: 'Uso libre 06:00–22:00', fotos: 2 },
+            { n: 'Parque infantil', t: 'Parque infantil', c: 'rec', o: 'cat', u: 'Área social', r: 0, e: 0, info: 'Uso libre', fotos: 1 },
+            { n: 'Ascensores (3)', t: 'Ascensor', c: 'ser', o: 'cat', u: 'Torres A, B y C', r: 0, e: 1, info: 'Cantidad 3 · un solo registro', fotos: 0 },
+            { n: 'Guardianía 24 h', t: 'Guardianía 24 h', c: 'seg', o: 'cat', u: 'Garita principal', r: 0, e: 1, info: 'Servicio permanente', fotos: 0 },
+            { n: 'Huerto comunitario', t: 'Propia del condominio', c: 'rec', o: 'prop', u: 'Detrás de torre B', r: 0, e: 0, info: '12 parcelas por familia', fotos: 3 }
+          ].concat(S.extra);
+          A.forEach(function (a, i) { if (S.mant[i] !== undefined) a.mant = S.mant[i] ? 'hasta 30 sep' : null; });
+          var ini = function (n) { return n.replace(/\(.*\)/, '').split(' ').filter(function (w) { return w.length > 2 || /\d/.test(w); }).map(function (w) { return w[0].toUpperCase(); }).join('').slice(0, 2); };
+          var ico = function (c) { return 'width:36px;height:36px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#FFFFFF;background:' + COL[c]; };
+          var sel = A[S.sel] || A[0];
+          var tipoCat = S.tipo !== null ? CAT[S.tipo] : null;
+          var yaUsados = function (nombreTipo) { return A.filter(function (a) { return a.t === nombreTipo; }).length; };
+          // preview
+          var nombreBase = S.src === 'cat' ? (tipoCat ? tipoCat[0] : '') : S.propNombre.trim();
+          var resv = S.src === 'cat' ? (tipoCat ? !!tipoCat[2] : false) : S.propRes;
+          var enCat = S.src === 'prop' && CAT.some(function (c) { return c[0].toLowerCase() === nombreBase.toLowerCase(); });
+          var nombres = [];
+          if (nombreBase) {
+            if (resv && S.cant > 1) { var desde = S.src === 'cat' ? yaUsados(nombreBase) : 0; for (var k = 1; k <= S.cant; k++) nombres.push(nombreBase + ' ' + (desde + k)); }
+            else if (resv && S.src === 'cat' && yaUsados(nombreBase) > 0) nombres.push(nombreBase + ' ' + (yaUsados(nombreBase) + 1));
+            else nombres.push(S.cant > 1 ? nombreBase + ' (' + S.cant + ')' : nombreBase);
+          }
+          var valido = !!nombreBase && !enCat;
+          var prev, pv;
+          if (!nombreBase) { prev = S.src === 'cat' ? 'Elige un tipo del catálogo.' : 'Escribe el nombre de la amenidad.'; pv = ['#F1EFE8', '#3D3A33']; }
+          else if (enCat) { prev = '"' + nombreBase + '" ya existe en el catálogo. Agrégala desde "Del catálogo" para mantener los valores sugeridos.'; pv = ['#FDE8E6', '#7F1810']; }
+          else if (resv && S.cant > 1) { prev = 'Se crearán ' + S.cant + ' registros para reservarlos por separado: ' + nombres.join(', ') + '.'; pv = ['#E6ECF7', '#23407A']; }
+          else { prev = 'Se creará: ' + nombres[0] + (resv ? '. Después configura horarios y cobro en Áreas comunes.' : '.') + (S.src === 'prop' ? ' Solo tu condominio la verá.' : ''); pv = ['#E3EFEC', '#0B4A47']; }
+          var estado = function (a) { return a.mant ? ['Mantenimiento ' + a.mant, chip('#FFF1DC', '#8A3F0A')] : ['Disponible', chip('#E3EFEC', '#0B4A47')]; };
+          var usoTxt = function (a) { return a.e ? 'Esencial · no se restringe' : (a.r ? 'Reservable' : 'Uso libre'); };
+          var reservables = A.filter(function (a) { return a.r; }).length;
+          return {
+            kpis: [{ l: 'Amenidades', v: A.length }, { l: 'Reservables', v: reservables }, { l: 'En mantenimiento', v: A.filter(function (a) { return a.mant; }).length }, { l: 'Propias', v: A.filter(function (a) { return a.o === 'prop'; }).length }],
+            rows: A.map(function (a, i) {
+              var on = S.modo === 'detalle' && i === S.sel, e = estado(a);
+              return { nombre: a.n, tipo: a.t, ini: ini(a.n), icon: ico(a.c), ubic: a.u, uso: usoTxt(a), est: e[0], estStyle: e[1],
+                origen: a.o === 'cat' ? 'Catálogo' : 'Propia', origenStyle: a.o === 'cat' ? chip('#F1EFE8', '#3D3A33') : chip('#E6ECF7', '#23407A'),
+                pick: function () { self.setState({ sel: i, modo: 'detalle' }); },
+                row: 'display:grid;grid-template-columns:1.5fr 120px 150px 190px 150px;gap:12px;align-items:center;width:100%;text-align:left;padding:0 16px;height:54px;border:none;border-top:1px solid #F0EDE5;font-size:14px;cursor:pointer;font-family:inherit;color:#1C1B18;' + (on ? 'background:#F2F7F6;box-shadow:inset 3px 0 0 #0E5E5B' : 'background:#FFFFFF') };
+            }),
+            modoDetalle: S.modo === 'detalle', modoAgregar: S.modo === 'agregar',
+            det: {
+              nombre: sel.n, tipo: sel.t, origen: sel.o === 'cat' ? 'del catálogo' : 'propia', reservable: !!sel.r,
+              fotos: sel.fotos ? sel.fotos + ' fotos · ver galería' : 'Sin fotos · subir',
+              datos: [{ k: 'Ubicación', v: sel.u }, { k: 'Uso', v: usoTxt(sel) }, { k: 'Detalle', v: sel.info }, { k: 'Estado', v: estado(sel)[0] }],
+              mantLabel: sel.mant ? 'Quitar mantenimiento' : 'Poner en mantenimiento',
+              nota: sel.mant ? 'En mantenimiento no se puede reservar. Las reservas ya hechas en esas fechas se avisan a los residentes.' : (sel.e ? 'Amenidad esencial: nunca se restringe a residentes en mora.' : (sel.r ? 'Tiene reservas registradas: no se puede eliminar, solo desactivar.' : 'Visible para los residentes en Mi condominio.')),
+              notaStyle: 'border-radius:10px;padding:10px 12px;font-size:12px;font-weight:600;line-height:1.45;' + (sel.mant ? 'background:#FFF7EC;color:#7A3808' : 'background:#F1EFE8;color:#3D3A33')
+            },
+            mantenimiento: function () { var m = Object.assign({}, self.state.mant); m[self.state.sel] = !sel.mant; self.setState({ mant: m }); },
+            abrirAgregar: function () { self.setState({ modo: 'agregar', tipo: null, cant: 1, propNombre: '', src: 'cat' }); },
+            cerrar: function () { self.setState({ modo: 'detalle' }); },
+            fuentes: [['cat', 'Del catálogo'], ['prop', 'Crear propia']].map(function (f) {
+              var on = f[0] === S.src;
+              return { label: f[1], pick: function () { self.setState({ src: f[0], cant: 1 }); },
+                style: 'height:36px;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;' + (on ? 'background:#FFFFFF;color:#1C1B18;box-shadow:0 1px 2px rgba(0,0,0,.12)' : 'background:transparent;color:#5F5B52') };
+            }),
+            deCatalogo: S.src === 'cat', esPropia: S.src === 'prop',
+            tipos: CAT.map(function (c, i) {
+              var on = S.tipo === i, n = yaUsados(c[0]);
+              return { label: c[0] + (n ? ' · tienes ' + n : ''), pick: function () { self.setState({ tipo: i, cant: 1 }); },
+                style: 'height:34px;padding:0 12px;border-radius:999px;font-size:12px;font-weight:700;cursor:pointer;' + (on ? 'background:#0E5E5B;color:#FFFFFF;border:1px solid #0E5E5B' : 'background:#FFFFFF;color:#3D3A33;border:1px solid #D8D4C8') };
+            }),
+            propNombre: S.propNombre, setPropNombre: function (e) { self.setState({ propNombre: e.target.value }); },
+            togglePropRes: function () { self.setState({ propRes: !self.state.propRes }); },
+            propResTrack: 'width:44px;height:24px;border-radius:12px;border:none;position:relative;padding:0;cursor:pointer;flex-shrink:0;background:' + (S.propRes ? '#0E5E5B' : '#D8D4C8'),
+            propResKnob: 'position:absolute;top:3px;left:' + (S.propRes ? '23px' : '3px') + ';width:18px;height:18px;border-radius:50%;background:#FFFFFF;box-shadow:0 1px 2px rgba(0,0,0,.25)',
+            cant: S.cant,
+            menos: function () { self.setState({ cant: Math.max(1, self.state.cant - 1) }); },
+            mas: function () { self.setState({ cant: Math.min(10, self.state.cant + 1) }); },
+            preview: prev, previewStyle: 'border-radius:10px;padding:10px 12px;font-size:12px;font-weight:600;line-height:1.45;background:' + pv[0] + ';color:' + pv[1],
+            agregarLabel: nombres.length > 1 ? 'Agregar ' + nombres.length + ' amenidades' : 'Agregar amenidad',
+            agregarStyle: 'height:46px;border-radius:10px;border:none;font-size:14px;font-weight:700;cursor:pointer;' + (valido ? 'background:#0E5E5B;color:#FFFFFF' : 'background:#E4E1D8;color:#6B675D'),
+            agregar: function () {
+              if (!valido) return;
+              var c = S.src === 'cat' ? tipoCat[1] : 'rec';
+              var nuevos = nombres.map(function (n) { return { n: n, t: S.src === 'cat' ? nombreBase : 'Propia del condominio', c: c, o: S.src, u: 'Área social', r: resv ? 1 : 0, e: S.src === 'cat' ? tipoCat[3] : 0, info: resv ? 'Falta configurar reservas' : 'Uso libre', fotos: 0 }; });
+              self.setState({ extra: self.state.extra.concat(nuevos), modo: 'detalle', sel: A.length });
+            }
+          };
+        }
+      }
+    </script>
+  </body>
+</html>

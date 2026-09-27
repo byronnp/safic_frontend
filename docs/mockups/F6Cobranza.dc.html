@@ -1,0 +1,498 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>Cobranza de la plataforma</title>
+    <script src="./support.js"></script>
+  </head>
+  <body>
+    <x-dc>
+      <helmet>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap"
+          rel="stylesheet"
+        />
+        <style>
+          .ms {
+            font-family: 'Material Symbols Rounded';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 20px;
+            line-height: 1;
+            width: 20px;
+            height: 20px;
+            overflow: hidden;
+            flex-shrink: 0;
+            display: inline-block;
+            white-space: nowrap;
+            direction: ltr;
+            font-feature-settings: 'liga';
+            -webkit-font-smoothing: antialiased;
+            font-variation-settings:
+              'FILL' 0,
+              'wght' 400,
+              'GRAD' 0,
+              'opsz' 20;
+          }
+          .ms.on {
+            font-variation-settings:
+              'FILL' 1,
+              'wght' 500,
+              'GRAD' 0,
+              'opsz' 20;
+          }
+          body {
+            margin: 0;
+            font-family: Manrope, system-ui, sans-serif;
+            background: #f5f4ef;
+            color: #1c1b18;
+          }
+          a {
+            color: #0e5e5b;
+          }
+          a:hover {
+            color: #08403e;
+          }
+          button,
+          input {
+            font-family: inherit;
+          }
+        </style>
+        <link
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,300..500,0..1,0"
+          rel="stylesheet"
+        />
+      </helmet>
+      <div
+        style="width: 1440px; height: 900px; display: flex; background: #f5f4ef; overflow: hidden"
+      >
+        <nav
+          aria-label="Menú de plataforma"
+          style="
+            width: 248px;
+            flex-shrink: 0;
+            background: #1c1b18;
+            color: #edeae2;
+            display: flex;
+            flex-direction: column;
+            padding: 20px 14px;
+            gap: 2px;
+            box-sizing: border-box;
+          "
+        >
+          <div style="display: flex; align-items: center; gap: 10px; padding: 4px 10px 6px 10px">
+            <div
+              style="
+                width: 34px;
+                height: 34px;
+                border-radius: 9px;
+                background: #f0b35a;
+                color: #1c1b18;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 800;
+                font-size: 16px;
+              "
+            >
+              S
+            </div>
+            <div style="font-weight: 800; font-size: 18px">SAFIC</div>
+          </div>
+          <div
+            style="
+              margin: 0 10px 18px 10px;
+              font-size: 11px;
+              font-weight: 800;
+              letter-spacing: 1px;
+              color: #f0b35a;
+            "
+          >
+            PLATAFORMA
+          </div>
+          <a
+            href="F6Cobranza.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #ffffff;
+              background: #34322d;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 700;
+              gap: 12px;
+            "
+            ><span class="ms on" aria-hidden="true">paid</span
+            ><span style="flex-grow: 1">Cobranza</span
+            ><span
+              style="
+                min-width: 22px;
+                height: 22px;
+                border-radius: 11px;
+                background: #f0b35a;
+                color: #1c1b18;
+                font-size: 12px;
+                font-weight: 800;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+              "
+              >1</span
+            ></a
+          >
+          <a
+            href="Platform.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #bdb8ac;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+              gap: 12px;
+            "
+            ><span class="ms" aria-hidden="true">location_city</span>Condominios</a
+          >
+          <a
+            href="F6Planes.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #bdb8ac;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+              gap: 12px;
+            "
+            ><span class="ms" aria-hidden="true">view_module</span>Planes y módulos</a
+          >
+          <a
+            href="F1CatalogoAmenidades.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #bdb8ac;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+              gap: 12px;
+            "
+            ><span class="ms" aria-hidden="true">category</span>Catálogo de amenidades</a
+          >
+          <div
+            style="
+              padding: 14px 12px 6px 12px;
+              font-size: 11px;
+              font-weight: 800;
+              letter-spacing: 1px;
+              color: #8a857a;
+            "
+          >
+            ACCESO
+          </div>
+          <a
+            href="F1PlataformaRoles.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              gap: 12px;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #bdb8ac;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+            "
+            ><span class="ms" aria-hidden="true">admin_panel_settings</span>Roles y permisos</a
+          >
+          <a
+            href="F1PlataformaMenu.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              gap: 12px;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #bdb8ac;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+            "
+            ><span class="ms" aria-hidden="true">menu_open</span>Menú del sistema</a
+          >
+          <a
+            href="F6Configuracion.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #bdb8ac;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+              gap: 12px;
+            "
+            ><span class="ms" aria-hidden="true">settings</span>Configuración</a
+          >
+        </nav>
+
+        <main
+          style="
+            flex-grow: 1;
+            padding: 28px 36px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            box-sizing: border-box;
+            min-width: 0;
+          "
+        >
+          <div style="display: flex; align-items: flex-end; gap: 12px">
+            <div style="flex-grow: 1">
+              <div style="font-size: 13px; color: #5f5b52; font-weight: 600">
+                Plataforma / Cobranza
+              </div>
+              <h1
+                style="margin: 4px 0 0 0; font-size: 28px; font-weight: 800; letter-spacing: -0.4px"
+              >
+                Cobranza · Octubre 2026
+              </h1>
+            </div>
+            <button
+              style="
+                height: 44px;
+                padding: 0 16px;
+                border-radius: 10px;
+                border: 1px solid #d8d4c8;
+                background: #ffffff;
+                font-size: 14px;
+                font-weight: 700;
+                cursor: pointer;
+              "
+            >
+              Conciliar mi banco
+            </button>
+            <button
+              style="
+                height: 44px;
+                padding: 0 16px;
+                border-radius: 10px;
+                border: none;
+                background: #0e5e5b;
+                color: #ffffff;
+                font-size: 14px;
+                font-weight: 700;
+                cursor: pointer;
+              "
+            >
+              Registrar pago
+            </button>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px">
+            <div
+              style="
+                background: #ffffff;
+                border: 1px solid #e4e1d8;
+                border-radius: 14px;
+                padding: 16px 18px;
+              "
+            >
+              <div style="font-size: 12px; color: #5f5b52; font-weight: 700">
+                Ingreso recurrente mensual
+              </div>
+              <div style="font-size: 24px; font-weight: 800; margin-top: 6px">$ 1.560,00</div>
+              <div style="font-size: 12px; color: #5f5b52">5 condominios activos, sin IVA</div>
+            </div>
+            <div
+              style="
+                background: #ffffff;
+                border: 1px solid #e4e1d8;
+                border-radius: 14px;
+                padding: 16px 18px;
+              "
+            >
+              <div style="font-size: 12px; color: #5f5b52; font-weight: 700">Facturado del mes</div>
+              <div style="font-size: 24px; font-weight: 800; margin-top: 6px">$ 1.794,00</div>
+              <div style="font-size: 12px; color: #5f5b52">Con IVA</div>
+            </div>
+            <div
+              style="
+                background: #ffffff;
+                border: 1px solid #e4e1d8;
+                border-radius: 14px;
+                padding: 16px 18px;
+              "
+            >
+              <div style="font-size: 12px; color: #5f5b52; font-weight: 700">Cobrado</div>
+              <div style="font-size: 24px; font-weight: 800; margin-top: 6px; color: #0b4a47">
+                $ 1.150,00
+              </div>
+              <div
+                style="
+                  height: 6px;
+                  border-radius: 3px;
+                  background: #ece9e0;
+                  margin-top: 8px;
+                  overflow: hidden;
+                "
+              >
+                <div style="width: 64%; height: 6px; background: #0e5e5b"></div>
+              </div>
+            </div>
+            <div
+              style="
+                background: #fff7ec;
+                border: 1px solid #f1d6ae;
+                border-radius: 14px;
+                padding: 16px 18px;
+                color: #8a3f0a;
+              "
+            >
+              <div style="font-size: 12px; font-weight: 700">Pagos por aprobar</div>
+              <div style="font-size: 24px; font-weight: 800; margin-top: 6px">1 · $ 299,00</div>
+              <div style="font-size: 12px; font-weight: 600">Conjunto Los Arupos</div>
+            </div>
+            <div
+              style="
+                background: #fde8e6;
+                border: 1px solid #f3b8b2;
+                border-radius: 14px;
+                padding: 16px 18px;
+                color: #9b1c12;
+              "
+            >
+              <div style="font-size: 12px; font-weight: 700">Cartera vencida</div>
+              <div style="font-size: 24px; font-weight: 800; margin-top: 6px">$ 262,20</div>
+              <div style="font-size: 12px; font-weight: 600">1 condominio suspendido</div>
+            </div>
+          </div>
+
+          <section
+            style="
+              flex-grow: 1;
+              background: #ffffff;
+              border: 1px solid #e4e1d8;
+              border-radius: 14px;
+              overflow: hidden;
+              display: flex;
+              flex-direction: column;
+              min-height: 0;
+            "
+          >
+            <div
+              style="
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 14px 18px;
+                border-bottom: 1px solid #ece9e0;
+              "
+            >
+              <h2 style="margin: 0; font-size: 16px; font-weight: 800; flex-grow: 1">
+                Estado de pago por condominio
+              </h2>
+              <sc-for list="{{filtros}}" as="f" hint-placeholder-count="4">
+                <button onClick="{{f.pick}}" style="{{f.style}}">{{f.label}}</button>
+              </sc-for>
+            </div>
+            <div
+              style="
+                display: grid;
+                grid-template-columns: 1.6fr 120px 90px 90px 110px 170px 110px 130px;
+                padding: 10px 18px;
+                background: #faf9f5;
+                font-size: 12px;
+                font-weight: 700;
+                color: #5f5b52;
+                letter-spacing: 0.3px;
+              "
+            >
+              <div>CONDOMINIO</div>
+              <div>PLAN</div>
+              <div style="text-align: right">UNIDADES</div>
+              <div style="text-align: right">$ / UNIDAD</div>
+              <div style="text-align: right">FACTURA OCT</div>
+              <div style="padding-left: 16px">ESTADO DE PAGO</div>
+              <div style="text-align: right">SALDO</div>
+              <div style="padding-left: 16px">SUSCRIPCIÓN</div>
+            </div>
+            <sc-for list="{{rows}}" as="r" hint-placeholder-count="7">
+              <a
+                href="F6CuentaCondominio.dc.html"
+                style="
+                  display: grid;
+                  grid-template-columns: 1.6fr 120px 90px 90px 110px 170px 110px 130px;
+                  align-items: center;
+                  padding: 0 18px;
+                  height: 56px;
+                  border-top: 1px solid #f0ede5;
+                  font-size: 14px;
+                  color: #1c1b18;
+                  text-decoration: none;
+                "
+              >
+                <div>
+                  <div style="font-weight: 800">{{r.nombre}}</div>
+                  <div style="font-size: 12px; color: #5f5b52">{{r.codigo}}</div>
+                </div>
+                <div>{{r.plan}}</div>
+                <div style="text-align: right">{{r.unidades}}</div>
+                <div style="text-align: right">{{r.valor}}</div>
+                <div style="text-align: right; font-weight: 700">{{r.factura}}</div>
+                <div style="padding-left: 16px">
+                  <span style="{{r.pagoStyle}}">{{r.pago}}</span>
+                </div>
+                <div style="text-align: right; font-weight: 800">{{r.saldo}}</div>
+                <div style="padding-left: 16px"><span style="{{r.subStyle}}">{{r.sub}}</span></div>
+              </a>
+            </sc-for>
+          </section>
+        </main>
+      </div>
+    </x-dc>
+    <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+      class Component extends DCLogic {
+        constructor(props) { super(props); this.state = { f: 'todos' }; }
+        renderVals() {
+          var self = this;
+          var chip = function (bg, fg) { return 'display:inline-block;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:700;background:' + bg + ';color:' + fg; };
+          var PAGO = { al: ['Al día', chip('#E3EFEC', '#0B4A47')], apr: ['Pago por aprobar', chip('#FFF1DC', '#8A3F0A')], pen: ['Pendiente · vence 11 oct', chip('#E6ECF7', '#23407A')], ven: ['Vencido 42 días', chip('#FDE8E6', '#9B1C12')], pru: ['En prueba', chip('#F1EFE8', '#3D3A33')] };
+          var SUB = { act: ['Activa', chip('#E3EFEC', '#0B4A47')], pru: ['Prueba', chip('#F1EFE8', '#3D3A33')], sus: ['Suspendida', chip('#FDE8E6', '#9B1C12')] };
+          var D = [
+            ['Parque Samborondón', 'CA-0005', 'Completo', 210, '$ 3,00', '$ 724,50', 'al', '$ 0,00', 'act'],
+            ['Jardines del Valle', 'CA-0001', 'Profesional', 148, '$ 2,50', '$ 425,50', 'al', '$ 0,00', 'act'],
+            ['Conjunto Los Arupos', 'CA-0012', 'Profesional', 130, '$ 2,00', '$ 299,00', 'apr', '$ 299,00', 'act'],
+            ['Torres del Mirador', 'CA-0002', 'Profesional', 96, '$ 2,50', '$ 276,00', 'pen', '$ 276,00', 'act'],
+            ['Los Arrayanes', 'CA-0003', 'Básico', 30, '$ 2,00', '$ 69,00', 'pen', '$ 69,00', 'act'],
+            ['Brisas del Mar', 'CA-0011', 'Completo', 72, '$ 2,00', '—', 'pru', '$ 0,00', 'pru'],
+            ['Residencial El Cedro', 'CA-0006', 'Básico', 38, '$ 2,00', '$ 87,40', 'ven', '$ 262,20', 'sus']
+          ];
+          var match = { todos: function () { return true; }, deben: function (d) { return d[6] === 'apr' || d[6] === 'pen' || d[6] === 'ven'; }, vencidos: function (d) { return d[6] === 'ven'; }, aprobar: function (d) { return d[6] === 'apr'; } };
+          var rows = D.filter(match[this.state.f]).map(function (d) {
+            return { nombre: d[0], codigo: d[1], plan: d[2], unidades: d[3], valor: d[4], factura: d[5], pago: PAGO[d[6]][0], pagoStyle: PAGO[d[6]][1], saldo: d[7], sub: SUB[d[8]][0], subStyle: SUB[d[8]][1] };
+          });
+          var F = [['todos', 'Todos'], ['deben', 'Con saldo'], ['aprobar', 'Por aprobar'], ['vencidos', 'Vencidos']];
+          return {
+            rows: rows,
+            filtros: F.map(function (f) {
+              var on = f[0] === self.state.f;
+              return { label: f[1], pick: function () { self.setState({ f: f[0] }); },
+                style: 'height:36px;padding:0 14px;border-radius:999px;font-size:13px;font-weight:700;cursor:pointer;' + (on ? 'background:#1C1B18;color:#FFFFFF;border:1px solid #1C1B18' : 'background:#FFFFFF;color:#3D3A33;border:1px solid #D8D4C8') };
+            })
+          };
+        }
+      }
+    </script>
+  </body>
+</html>

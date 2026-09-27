@@ -1,0 +1,523 @@
+{
+  "v": 3,
+  "attachments": {},
+  "boards": {
+    "F1AmenidadesCondominio.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "f1",
+      "title": "Admin · Amenidades del condominio",
+      "w": 1440,
+      "x": 4560,
+      "y": 0
+    },
+    "F1Apariencia.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "f1",
+      "title": "Admin · Apariencia del condominio",
+      "w": 1440,
+      "x": 7600,
+      "y": 0
+    },
+    "F1Asistente.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "f1",
+      "title": "Super admin · Nuevo condominio (asistente)",
+      "w": 1440,
+      "x": 2460,
+      "y": 1300
+    },
+    "F1CatalogoAmenidades.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "f1",
+      "title": "Super admin · Catálogo de amenidades",
+      "w": 1440,
+      "x": 3980,
+      "y": 1300
+    },
+    "F1PlataformaMenu.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "f1",
+      "title": "Super admin · Menú del sistema",
+      "w": 1440,
+      "x": 7020,
+      "y": 1300
+    },
+    "F1PlataformaRoles.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "f1",
+      "title": "Super admin · Plantillas de roles y permisos",
+      "w": 1440,
+      "x": 5500,
+      "y": 1300
+    },
+    "F1RolesCondominio.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "f1",
+      "title": "Admin · Roles del condominio",
+      "w": 1440,
+      "x": 6080,
+      "y": 0
+    },
+    "F1Usuarios.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "f1",
+      "title": "Admin · Usuarios, cupo y bitácora del contador",
+      "w": 1440,
+      "x": 3040,
+      "y": 0
+    },
+    "F2Conciliacion.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "f2",
+      "title": "Admin · Conciliación bancaria",
+      "w": 1440,
+      "x": 3040,
+      "y": 0
+    },
+    "F2CuentasPorPagar.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "f2",
+      "title": "Admin · Cuentas por pagar (aprobación)",
+      "w": 1440,
+      "x": 4560,
+      "y": 0
+    },
+    "F2MiCuenta.dc.html": {
+      "h": 844,
+      "page": "f2",
+      "title": "Residente · Mi cuenta",
+      "w": 390,
+      "x": 0,
+      "y": 1300
+    },
+    "F2Pagar.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "page": "f2",
+      "title": "Residente · Pagar por transferencia",
+      "w": 390,
+      "x": 470,
+      "y": 1300
+    },
+    "F2PagoProveedor.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "f2",
+      "title": "Tesorero · Registrar pago a proveedor",
+      "w": 1440,
+      "x": 6080,
+      "y": 0
+    },
+    "F2PagosPorAprobar.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "f2",
+      "title": "Admin · Pagos por aprobar",
+      "w": 1440,
+      "x": 1520,
+      "y": 0
+    },
+    "F2Resumen.dc.html": {
+      "h": 900,
+      "page": "f2",
+      "title": "Admin · Resumen financiero",
+      "w": 1440,
+      "x": 0,
+      "y": 0
+    },
+    "F3Agenda.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "f3",
+      "title": "Admin · Agenda de reservas",
+      "w": 1440,
+      "x": 0,
+      "y": 0
+    },
+    "F3ConfigArea.dc.html": {
+      "h": 900,
+      "page": "f3",
+      "title": "Admin · Configurar área",
+      "w": 1440,
+      "x": 1520,
+      "y": 0
+    },
+    "F3GuardiaHoy.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "page": "f3",
+      "title": "Guardia · Reservas de hoy",
+      "w": 390,
+      "x": 470,
+      "y": 1300
+    },
+    "F3Reservar.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "page": "f3",
+      "title": "Residente · Reservar",
+      "w": 390,
+      "x": 0,
+      "y": 1300
+    },
+    "F4Anuncios.dc.html": {
+      "h": 900,
+      "page": "f4",
+      "title": "Admin · Anuncios",
+      "w": 1440,
+      "x": 1520,
+      "y": 0
+    },
+    "F4Garita.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "page": "f4",
+      "title": "Guardia · Garita",
+      "w": 390,
+      "x": 0,
+      "y": 1300
+    },
+    "F4NuevaVisita.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "page": "f4",
+      "title": "Residente · Nueva visita",
+      "w": 390,
+      "x": 470,
+      "y": 1300
+    },
+    "F4Tickets.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "f4",
+      "title": "Admin · Incidencias",
+      "w": 1440,
+      "x": 0,
+      "y": 0
+    },
+    "F5Mesa.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "f5",
+      "title": "Presidente · Mesa de la asamblea (proyector)",
+      "w": 1440,
+      "x": 1520,
+      "y": 0
+    },
+    "F5Preparar.dc.html": {
+      "h": 900,
+      "page": "f5",
+      "title": "Admin · Preparar asamblea",
+      "w": 1440,
+      "x": 0,
+      "y": 0
+    },
+    "F5Votar.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "page": "f5",
+      "title": "Propietario · Asamblea en vivo",
+      "w": 390,
+      "x": 0,
+      "y": 1300
+    },
+    "F6Cobranza.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "f6",
+      "title": "Super admin · Cobranza",
+      "w": 1440,
+      "x": 0,
+      "y": 0
+    },
+    "F6Configuracion.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "f6",
+      "title": "Super admin · Configuración de cobro",
+      "w": 1440,
+      "x": 0,
+      "y": 1300
+    },
+    "F6CuentaCondominio.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "f6",
+      "title": "Super admin · Cuenta del condominio",
+      "w": 1440,
+      "x": 1520,
+      "y": 0
+    },
+    "F6MiSuscripcion.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "f6",
+      "title": "Admin del condominio · Mi suscripción",
+      "w": 1440,
+      "x": 1520,
+      "y": 1300
+    },
+    "F6Planes.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "f6",
+      "title": "Super admin · Planes y módulos",
+      "w": 1440,
+      "x": 3040,
+      "y": 0
+    },
+    "Guardia.dc.html": {
+      "h": 844,
+      "page": "f1",
+      "title": "Guardia · Directorio",
+      "w": 390,
+      "x": 1990,
+      "y": 1300
+    },
+    "Login.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "f1",
+      "title": "Login · Iniciar sesión",
+      "w": 1440,
+      "x": -1520,
+      "y": 0
+    },
+    "Main.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "f1",
+      "title": "Admin · Unidades",
+      "w": 1440,
+      "x": 0,
+      "y": 0
+    },
+    "Platform.dc.html": {
+      "h": 900,
+      "page": "f1",
+      "title": "Super admin · Condominios",
+      "w": 1440,
+      "x": 0,
+      "y": 1300
+    },
+    "Residente.dc.html": {
+      "h": 844,
+      "page": "f1",
+      "title": "Residente · Mi hogar",
+      "w": 390,
+      "x": 1520,
+      "y": 1300
+    },
+    "UnidadDetalle.dc.html": {
+      "h": 900,
+      "page": "f1",
+      "title": "Admin · Detalle de unidad",
+      "w": 1440,
+      "x": 1520,
+      "y": 0
+    }
+  },
+  "createdOnFiles": {
+    "at": "2026-09-26T11:45:00Z",
+    "v": 1
+  },
+  "designSystems": [],
+  "launch": {
+    "view": "canvas"
+  },
+  "notes": {
+    "f2t1": {
+      "kind": "title1",
+      "maxW": 7520,
+      "page": "f2",
+      "text": "Finanzas · Administrador (web)",
+      "w": 240,
+      "x": 0,
+      "y": -300
+    },
+    "f2t2": {
+      "kind": "title1",
+      "maxW": 860,
+      "page": "f2",
+      "text": "Finanzas · Residente (app)",
+      "w": 240,
+      "x": 0,
+      "y": 1000
+    },
+    "f3t1": {
+      "kind": "title1",
+      "maxW": 2960,
+      "page": "f3",
+      "text": "Áreas comunes · Administrador (web)",
+      "w": 240,
+      "x": 0,
+      "y": -300
+    },
+    "f3t2": {
+      "kind": "title1",
+      "maxW": 1400,
+      "page": "f3",
+      "text": "Áreas comunes · Residente y guardia (app)",
+      "w": 240,
+      "x": 0,
+      "y": 1000
+    },
+    "f4t1": {
+      "kind": "title1",
+      "maxW": 2960,
+      "page": "f4",
+      "text": "Comunicación · Administrador (web)",
+      "w": 240,
+      "x": 0,
+      "y": -300
+    },
+    "f4t2": {
+      "kind": "title1",
+      "maxW": 860,
+      "page": "f4",
+      "text": "Garita y visitas (app)",
+      "w": 240,
+      "x": 0,
+      "y": 1000
+    },
+    "f5t1": {
+      "kind": "title1",
+      "maxW": 2960,
+      "page": "f5",
+      "text": "Asambleas · Administración y presidente (web)",
+      "w": 240,
+      "x": 0,
+      "y": -300
+    },
+    "f5t2": {
+      "kind": "title1",
+      "maxW": 1200,
+      "page": "f5",
+      "text": "Asambleas · Propietario (app)",
+      "w": 240,
+      "x": 0,
+      "y": 1000
+    },
+    "f6t1": {
+      "kind": "title1",
+      "maxW": 4480,
+      "page": "f6",
+      "text": "Cobro de la plataforma · Super admin",
+      "w": 240,
+      "x": 0,
+      "y": -300
+    },
+    "f6t2": {
+      "kind": "title1",
+      "maxW": 2960,
+      "page": "f6",
+      "text": "Configuración y vista del condominio",
+      "w": 240,
+      "x": 0,
+      "y": 1000
+    },
+    "t0": {
+      "kind": "title1",
+      "maxW": 1440,
+      "page": "f1",
+      "text": "Acceso",
+      "w": 240,
+      "x": -1520,
+      "y": -300
+    },
+    "t1": {
+      "kind": "title1",
+      "maxW": 8000,
+      "page": "f1",
+      "text": "Administrador de condominio (web)",
+      "w": 240,
+      "x": 0,
+      "y": -300
+    },
+    "t2": {
+      "kind": "title1",
+      "maxW": 8000,
+      "page": "f1",
+      "text": "Super admin y apps móviles",
+      "w": 240,
+      "x": 0,
+      "y": 1000
+    }
+  },
+  "order": [
+    "Login.dc.html",
+    "Main.dc.html",
+    "UnidadDetalle.dc.html",
+    "Platform.dc.html",
+    "Residente.dc.html",
+    "Guardia.dc.html",
+    "F2Resumen.dc.html",
+    "F2PagosPorAprobar.dc.html",
+    "F2Conciliacion.dc.html",
+    "F2MiCuenta.dc.html",
+    "F2Pagar.dc.html",
+    "F3Agenda.dc.html",
+    "F3ConfigArea.dc.html",
+    "F3Reservar.dc.html",
+    "F3GuardiaHoy.dc.html",
+    "F4Tickets.dc.html",
+    "F4Anuncios.dc.html",
+    "F4Garita.dc.html",
+    "F4NuevaVisita.dc.html",
+    "F1Asistente.dc.html",
+    "F5Preparar.dc.html",
+    "F5Mesa.dc.html",
+    "F5Votar.dc.html",
+    "F6Cobranza.dc.html",
+    "F6CuentaCondominio.dc.html",
+    "F6Planes.dc.html",
+    "F6Configuracion.dc.html",
+    "F6MiSuscripcion.dc.html",
+    "F1Usuarios.dc.html",
+    "F2CuentasPorPagar.dc.html",
+    "F2PagoProveedor.dc.html",
+    "F1CatalogoAmenidades.dc.html",
+    "F1AmenidadesCondominio.dc.html",
+    "F1RolesCondominio.dc.html",
+    "F1PlataformaRoles.dc.html",
+    "F1PlataformaMenu.dc.html",
+    "F1Apariencia.dc.html"
+  ],
+  "pages": [
+    {
+      "id": "f1",
+      "name": "Fase 1 · Unidades y residentes"
+    },
+    {
+      "id": "f2",
+      "name": "Fase 2 · Finanzas"
+    },
+    {
+      "id": "f3",
+      "name": "Fase 3 · Áreas comunes"
+    },
+    {
+      "id": "f4",
+      "name": "Fase 4 · Seguridad y comunicación"
+    },
+    {
+      "id": "f5",
+      "name": "Fase 5 · Asambleas y votaciones"
+    },
+    {
+      "id": "f6",
+      "name": "Fase 6 · Cobro de la plataforma"
+    }
+  ],
+  "title": "SAFIC — Pantallas"
+}

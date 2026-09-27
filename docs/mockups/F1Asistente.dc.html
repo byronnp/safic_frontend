@@ -1,0 +1,973 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>Nuevo condominio</title>
+    <script src="./support.js"></script>
+  </head>
+  <body>
+    <x-dc>
+      <helmet>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap"
+          rel="stylesheet"
+        />
+        <style>
+          .ms {
+            font-family: 'Material Symbols Rounded';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 20px;
+            line-height: 1;
+            width: 20px;
+            height: 20px;
+            overflow: hidden;
+            flex-shrink: 0;
+            display: inline-block;
+            white-space: nowrap;
+            direction: ltr;
+            font-feature-settings: 'liga';
+            -webkit-font-smoothing: antialiased;
+            font-variation-settings:
+              'FILL' 0,
+              'wght' 400,
+              'GRAD' 0,
+              'opsz' 20;
+          }
+          .ms.on {
+            font-variation-settings:
+              'FILL' 1,
+              'wght' 500,
+              'GRAD' 0,
+              'opsz' 20;
+          }
+          body {
+            margin: 0;
+            font-family: Manrope, system-ui, sans-serif;
+            background: #f5f4ef;
+            color: #1c1b18;
+          }
+          a {
+            color: #0e5e5b;
+          }
+          a:hover {
+            color: #08403e;
+          }
+          button,
+          input,
+          select {
+            font-family: inherit;
+          }
+        </style>
+        <link
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,300..500,0..1,0"
+          rel="stylesheet"
+        />
+      </helmet>
+      <div
+        style="width: 1440px; height: 900px; display: flex; background: #f5f4ef; overflow: hidden"
+      >
+        <nav
+          aria-label="Menú de plataforma"
+          style="
+            width: 248px;
+            flex-shrink: 0;
+            background: #1c1b18;
+            color: #edeae2;
+            display: flex;
+            flex-direction: column;
+            padding: 20px 14px;
+            gap: 2px;
+            box-sizing: border-box;
+          "
+        >
+          <div style="display: flex; align-items: center; gap: 10px; padding: 4px 10px 6px 10px">
+            <div
+              style="
+                width: 34px;
+                height: 34px;
+                border-radius: 9px;
+                background: #f0b35a;
+                color: #1c1b18;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 800;
+                font-size: 16px;
+              "
+            >
+              S
+            </div>
+            <div style="font-weight: 800; font-size: 18px">SAFIC</div>
+          </div>
+          <div
+            style="
+              margin: 0 10px 18px 10px;
+              font-size: 11px;
+              font-weight: 800;
+              letter-spacing: 1px;
+              color: #f0b35a;
+            "
+          >
+            PLATAFORMA
+          </div>
+          <a
+            href="F6Cobranza.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #bdb8ac;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+              gap: 12px;
+            "
+            ><span class="ms" aria-hidden="true">paid</span>Cobranza</a
+          >
+          <a
+            href="Platform.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #ffffff;
+              background: #34322d;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 700;
+              gap: 12px;
+            "
+            ><span class="ms on" aria-hidden="true">location_city</span>Condominios</a
+          >
+          <a
+            href="F6Planes.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #bdb8ac;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+              gap: 12px;
+            "
+            ><span class="ms" aria-hidden="true">view_module</span>Planes y módulos</a
+          >
+          <a
+            href="F1CatalogoAmenidades.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #bdb8ac;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+              gap: 12px;
+            "
+            ><span class="ms" aria-hidden="true">category</span>Catálogo de amenidades</a
+          >
+          <div
+            style="
+              padding: 14px 12px 6px 12px;
+              font-size: 11px;
+              font-weight: 800;
+              letter-spacing: 1px;
+              color: #8a857a;
+            "
+          >
+            ACCESO
+          </div>
+          <a
+            href="F1PlataformaRoles.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              gap: 12px;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #bdb8ac;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+            "
+            ><span class="ms" aria-hidden="true">admin_panel_settings</span>Roles y permisos</a
+          >
+          <a
+            href="F1PlataformaMenu.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              gap: 12px;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #bdb8ac;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+            "
+            ><span class="ms" aria-hidden="true">menu_open</span>Menú del sistema</a
+          >
+          <a
+            href="F6Configuracion.dc.html"
+            style="
+              display: flex;
+              align-items: center;
+              padding: 10px 12px;
+              border-radius: 9px;
+              color: #bdb8ac;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+              gap: 12px;
+            "
+            ><span class="ms" aria-hidden="true">settings</span>Configuración</a
+          >
+        </nav>
+
+        <main
+          style="
+            flex-grow: 1;
+            padding: 28px 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            box-sizing: border-box;
+            min-width: 0;
+          "
+        >
+          <div>
+            <div style="font-size: 13px; color: #5f5b52; font-weight: 600">Condominios / Nuevo</div>
+            <h1
+              style="margin: 4px 0 0 0; font-size: 28px; font-weight: 800; letter-spacing: -0.4px"
+            >
+              Nuevo condominio
+            </h1>
+          </div>
+
+          <ol style="display: flex; gap: 10px; list-style: none; margin: 0; padding: 0">
+            <sc-for list="{{steps}}" as="s" hint-placeholder-count="4">
+              <li
+                style="flex-grow: 1; display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 12px; background: {{s.bg}}; border: 1px solid {{s.border}}"
+              >
+                <span style="{{s.dot}}">{{s.num}}</span>
+                <span
+                  ><span style="display: block; font-size: 14px; font-weight: 800; color: #1c1b18"
+                    >{{s.titulo}}</span
+                  ><span style="display: block; font-size: 12px; color: #5f5b52"
+                    >{{s.sub}}</span
+                  ></span
+                >
+              </li>
+            </sc-for>
+          </ol>
+
+          <section
+            style="
+              flex-grow: 1;
+              background: #ffffff;
+              border: 1px solid #e4e1d8;
+              border-radius: 14px;
+              padding: 24px 28px;
+              box-sizing: border-box;
+              min-height: 0;
+              overflow: hidden;
+            "
+          >
+            <sc-if value="{{p1}}" hint-placeholder-val="{{ true }}">
+              <div
+                style="
+                  display: grid;
+                  grid-template-columns: repeat(3, minmax(0, 1fr));
+                  gap: 16px 20px;
+                "
+              >
+                <label
+                  style="
+                    display: flex;
+                    flex-direction: column;
+                    gap: 6px;
+                    font-size: 13px;
+                    font-weight: 700;
+                    color: #3d3a33;
+                    grid-column: span 2;
+                  "
+                  >Nombre del condominio<input
+                    value="Conjunto Los Arupos"
+                    style="
+                      height: 44px;
+                      border: 1px solid #cfcbbf;
+                      border-radius: 9px;
+                      padding: 0 12px;
+                      font-size: 15px;
+                    "
+                /></label>
+                <label
+                  style="
+                    display: flex;
+                    flex-direction: column;
+                    gap: 6px;
+                    font-size: 13px;
+                    font-weight: 700;
+                    color: #3d3a33;
+                  "
+                  >Tipo<select
+                    style="
+                      height: 44px;
+                      border: 1px solid #cfcbbf;
+                      border-radius: 9px;
+                      padding: 0 10px;
+                      font-size: 15px;
+                      background: #ffffff;
+                    "
+                  >
+                    <option>Conjunto</option>
+                    <option>Edificio</option>
+                    <option>Urbanización</option>
+                    <option>Mixto</option>
+                  </select></label
+                >
+                <label
+                  style="
+                    display: flex;
+                    flex-direction: column;
+                    gap: 6px;
+                    font-size: 13px;
+                    font-weight: 700;
+                    color: #3d3a33;
+                  "
+                  >RUC<input
+                    value="1792456781001"
+                    style="
+                      height: 44px;
+                      border: 1px solid #cfcbbf;
+                      border-radius: 9px;
+                      padding: 0 12px;
+                      font-size: 15px;
+                    "
+                /></label>
+                <label
+                  style="
+                    display: flex;
+                    flex-direction: column;
+                    gap: 6px;
+                    font-size: 13px;
+                    font-weight: 700;
+                    color: #3d3a33;
+                    grid-column: span 2;
+                  "
+                  >Razón social<input
+                    value="Conjunto Habitacional Los Arupos"
+                    style="
+                      height: 44px;
+                      border: 1px solid #cfcbbf;
+                      border-radius: 9px;
+                      padding: 0 12px;
+                      font-size: 15px;
+                    "
+                /></label>
+                <label
+                  style="
+                    display: flex;
+                    flex-direction: column;
+                    gap: 6px;
+                    font-size: 13px;
+                    font-weight: 700;
+                    color: #3d3a33;
+                  "
+                  >Provincia<select
+                    style="
+                      height: 44px;
+                      border: 1px solid #cfcbbf;
+                      border-radius: 9px;
+                      padding: 0 10px;
+                      font-size: 15px;
+                      background: #ffffff;
+                    "
+                  >
+                    <option>Pichincha</option>
+                  </select></label
+                >
+                <label
+                  style="
+                    display: flex;
+                    flex-direction: column;
+                    gap: 6px;
+                    font-size: 13px;
+                    font-weight: 700;
+                    color: #3d3a33;
+                  "
+                  >Cantón<select
+                    style="
+                      height: 44px;
+                      border: 1px solid #cfcbbf;
+                      border-radius: 9px;
+                      padding: 0 10px;
+                      font-size: 15px;
+                      background: #ffffff;
+                    "
+                  >
+                    <option>Quito</option>
+                  </select></label
+                >
+                <label
+                  style="
+                    display: flex;
+                    flex-direction: column;
+                    gap: 6px;
+                    font-size: 13px;
+                    font-weight: 700;
+                    color: #3d3a33;
+                  "
+                  >Parroquia<select
+                    style="
+                      height: 44px;
+                      border: 1px solid #cfcbbf;
+                      border-radius: 9px;
+                      padding: 0 10px;
+                      font-size: 15px;
+                      background: #ffffff;
+                    "
+                  >
+                    <option>Conocoto</option>
+                  </select></label
+                >
+                <label
+                  style="
+                    display: flex;
+                    flex-direction: column;
+                    gap: 6px;
+                    font-size: 13px;
+                    font-weight: 700;
+                    color: #3d3a33;
+                    grid-column: span 2;
+                  "
+                  >Dirección<input
+                    value="Av. Ilaló y calle Los Arupos"
+                    style="
+                      height: 44px;
+                      border: 1px solid #cfcbbf;
+                      border-radius: 9px;
+                      padding: 0 12px;
+                      font-size: 15px;
+                    "
+                /></label>
+                <label
+                  style="
+                    display: flex;
+                    flex-direction: column;
+                    gap: 6px;
+                    font-size: 13px;
+                    font-weight: 700;
+                    color: #3d3a33;
+                  "
+                  >Teléfono / correo de administración<input
+                    value="02 234 5678 · admin@losarupos.ec"
+                    style="
+                      height: 44px;
+                      border: 1px solid #cfcbbf;
+                      border-radius: 9px;
+                      padding: 0 12px;
+                      font-size: 15px;
+                    "
+                /></label>
+                <div
+                  style="
+                    grid-column: span 3;
+                    border-top: 1px solid #ece9e0;
+                    padding-top: 16px;
+                    font-size: 13px;
+                    font-weight: 800;
+                    color: #5f5b52;
+                    letter-spacing: 0.4px;
+                  "
+                >
+                  CONTRATO CON LA PLATAFORMA
+                </div>
+                <label
+                  style="
+                    display: flex;
+                    flex-direction: column;
+                    gap: 6px;
+                    font-size: 13px;
+                    font-weight: 700;
+                    color: #3d3a33;
+                  "
+                  >Total de unidades<input
+                    type="number"
+                    value="{{unidades}}"
+                    onInput="{{setUnidades}}"
+                    style="
+                      height: 44px;
+                      border: 2px solid #0e5e5b;
+                      border-radius: 9px;
+                      padding: 0 12px;
+                      font-size: 16px;
+                      font-weight: 800;
+                    "
+                /></label>
+                <label
+                  style="
+                    display: flex;
+                    flex-direction: column;
+                    gap: 6px;
+                    font-size: 13px;
+                    font-weight: 700;
+                    color: #3d3a33;
+                  "
+                  >Plan<select
+                    onChange="{{setPlan}}"
+                    style="
+                      height: 44px;
+                      border: 1px solid #cfcbbf;
+                      border-radius: 9px;
+                      padding: 0 10px;
+                      font-size: 15px;
+                      background: #ffffff;
+                    "
+                  >
+                    <option value="b">Básico</option>
+                    <option value="p" selected>Profesional</option>
+                    <option value="c">Completo</option>
+                  </select></label
+                >
+                <label
+                  style="
+                    display: flex;
+                    flex-direction: column;
+                    gap: 6px;
+                    font-size: 13px;
+                    font-weight: 700;
+                    color: #3d3a33;
+                  "
+                  >Valor por unidad (USD)<input
+                    type="number"
+                    step="0.01"
+                    value="{{valor}}"
+                    onInput="{{setValor}}"
+                    style="
+                      height: 44px;
+                      border: 2px solid #0e5e5b;
+                      border-radius: 9px;
+                      padding: 0 12px;
+                      font-size: 16px;
+                      font-weight: 800;
+                    "
+                /></label>
+                <div
+                  style="
+                    grid-column: span 3;
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                    background: #f1f6f5;
+                    border-radius: 12px;
+                    padding: 14px 16px;
+                  "
+                >
+                  <div style="flex-grow: 1; font-size: 14px; color: #0b4a47">
+                    Mensualidad: <strong>{{unidades}} unidades × $ {{valorTxt}}</strong> =
+                    <strong style="font-size: 18px">{{totalTxt}}</strong> + IVA · Límite de
+                    registro: {{unidades}} unidades
+                  </div>
+                  <span
+                    style="
+                      padding: 5px 10px;
+                      border-radius: 999px;
+                      background: #ffffff;
+                      color: #0b4a47;
+                      font-size: 12px;
+                      font-weight: 800;
+                    "
+                    >Prueba 30 días</span
+                  >
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{p2}}" hint-placeholder-val="{{ false }}">
+              <div style="display: flex; gap: 20px; height: 100%">
+                <div
+                  style="
+                    flex-grow: 1;
+                    border-radius: 14px;
+                    overflow: hidden;
+                    position: relative;
+                    background: #e8ede6;
+                    border: 1px solid #d6dcd2;
+                  "
+                >
+                  <svg
+                    width="100%"
+                    height="100%"
+                    viewBox="0 0 800 460"
+                    preserveAspectRatio="xMidYMid slice"
+                    aria-label="Mapa de ubicación"
+                  >
+                    <rect width="800" height="460" fill="#E8EDE6"></rect>
+                    <path
+                      d="M0 300 C 200 260, 380 330, 800 250"
+                      stroke="#FFFFFF"
+                      stroke-width="22"
+                      fill="none"
+                    ></path>
+                    <path
+                      d="M300 0 L 360 460"
+                      stroke="#FFFFFF"
+                      stroke-width="14"
+                      fill="none"
+                    ></path>
+                    <path
+                      d="M560 0 C 520 160, 600 300, 540 460"
+                      stroke="#FFFFFF"
+                      stroke-width="10"
+                      fill="none"
+                    ></path>
+                    <rect x="390" y="120" width="130" height="100" rx="8" fill="#CFE0D4"></rect>
+                    <rect x="120" y="340" width="150" height="80" rx="8" fill="#D9D4C4"></rect>
+                    <g transform="translate(455 170)">
+                      <path
+                        d="M0 -42 C -18 -42 -28 -28 -28 -16 C -28 4 0 26 0 26 C 0 26 28 4 28 -16 C 28 -28 18 -42 0 -42 Z"
+                        fill="#0E5E5B"
+                      ></path>
+                      <circle cx="0" cy="-16" r="9" fill="#FFFFFF"></circle>
+                    </g>
+                  </svg>
+                  <div
+                    style="
+                      position: absolute;
+                      left: 16px;
+                      top: 16px;
+                      background: #ffffff;
+                      border-radius: 10px;
+                      padding: 8px 12px;
+                      font-size: 13px;
+                      font-weight: 700;
+                      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+                    "
+                  >
+                    Arrastra el pin hasta la entrada principal
+                  </div>
+                </div>
+                <div
+                  style="
+                    width: 300px;
+                    flex-shrink: 0;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 14px;
+                  "
+                >
+                  <label
+                    style="
+                      display: flex;
+                      flex-direction: column;
+                      gap: 6px;
+                      font-size: 13px;
+                      font-weight: 700;
+                      color: #3d3a33;
+                    "
+                    >Buscar dirección<input
+                      value="Av. Ilaló, Conocoto"
+                      style="
+                        height: 44px;
+                        border: 1px solid #cfcbbf;
+                        border-radius: 9px;
+                        padding: 0 12px;
+                        font-size: 15px;
+                      "
+                  /></label>
+                  <label
+                    style="
+                      display: flex;
+                      flex-direction: column;
+                      gap: 6px;
+                      font-size: 13px;
+                      font-weight: 700;
+                      color: #3d3a33;
+                    "
+                    >Latitud<input
+                      value="-0.285412"
+                      style="
+                        height: 44px;
+                        border: 1px solid #cfcbbf;
+                        border-radius: 9px;
+                        padding: 0 12px;
+                        font-size: 15px;
+                      "
+                  /></label>
+                  <label
+                    style="
+                      display: flex;
+                      flex-direction: column;
+                      gap: 6px;
+                      font-size: 13px;
+                      font-weight: 700;
+                      color: #3d3a33;
+                    "
+                    >Longitud<input
+                      value="-78.471236"
+                      style="
+                        height: 44px;
+                        border: 1px solid #cfcbbf;
+                        border-radius: 9px;
+                        padding: 0 12px;
+                        font-size: 15px;
+                      "
+                  /></label>
+                  <div style="font-size: 12px; color: #5f5b52; line-height: 1.5">
+                    Se usa para el enlace "Cómo llegar" que reciben las visitas y para el mapa de
+                    condominios.
+                  </div>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{p3}}" hint-placeholder-val="{{ false }}">
+              <div style="font-size: 14px; color: #5f5b52; margin-bottom: 14px">
+                Elige las amenidades del condominio. Las reservables pasan a la agenda de áreas
+                comunes; las esenciales nunca se restringen por mora.
+              </div>
+              <div
+                style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px"
+              >
+                <sc-for list="{{amenidades}}" as="a" hint-placeholder-count="9">
+                  <div style="{{a.box}}">
+                    <label
+                      style="
+                        display: flex;
+                        align-items: center;
+                        gap: 10px;
+                        flex-grow: 1;
+                        cursor: pointer;
+                        min-height: 44px;
+                      "
+                    >
+                      <input
+                        type="checkbox"
+                        checked="{{a.on}}"
+                        onChange="{{a.toggle}}"
+                        style="width: 18px; height: 18px; accent-color: #0e5e5b"
+                      />
+                      <span
+                        ><span style="display: block; font-size: 14px; font-weight: 800"
+                          >{{a.nombre}}</span
+                        ><span style="display: block; font-size: 12px; color: #5f5b52"
+                          >{{a.meta}}</span
+                        ></span
+                      >
+                    </label>
+                    <span style="font-size: 13px; font-weight: 800; color: #3d3a33"
+                      >× {{a.cant}}</span
+                    >
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{p4}}" hint-placeholder-val="{{ false }}">
+              <div
+                style="
+                  display: grid;
+                  grid-template-columns: repeat(2, minmax(0, 1fr));
+                  gap: 16px 20px;
+                  max-width: 820px;
+                "
+              >
+                <label
+                  style="
+                    display: flex;
+                    flex-direction: column;
+                    gap: 6px;
+                    font-size: 13px;
+                    font-weight: 700;
+                    color: #3d3a33;
+                  "
+                  >Cédula<input
+                    value="1712345678"
+                    style="
+                      height: 44px;
+                      border: 1px solid #cfcbbf;
+                      border-radius: 9px;
+                      padding: 0 12px;
+                      font-size: 15px;
+                    "
+                /></label>
+                <label
+                  style="
+                    display: flex;
+                    flex-direction: column;
+                    gap: 6px;
+                    font-size: 13px;
+                    font-weight: 700;
+                    color: #3d3a33;
+                  "
+                  >Nombres y apellidos<input
+                    value="María Rivas"
+                    style="
+                      height: 44px;
+                      border: 1px solid #cfcbbf;
+                      border-radius: 9px;
+                      padding: 0 12px;
+                      font-size: 15px;
+                    "
+                /></label>
+                <label
+                  style="
+                    display: flex;
+                    flex-direction: column;
+                    gap: 6px;
+                    font-size: 13px;
+                    font-weight: 700;
+                    color: #3d3a33;
+                  "
+                  >Correo<input
+                    value="maria.rivas@jardinesdelvalle.ec"
+                    style="
+                      height: 44px;
+                      border: 1px solid #cfcbbf;
+                      border-radius: 9px;
+                      padding: 0 12px;
+                      font-size: 15px;
+                    "
+                /></label>
+                <label
+                  style="
+                    display: flex;
+                    flex-direction: column;
+                    gap: 6px;
+                    font-size: 13px;
+                    font-weight: 700;
+                    color: #3d3a33;
+                  "
+                  >Celular<input
+                    value="099 412 7788"
+                    style="
+                      height: 44px;
+                      border: 1px solid #cfcbbf;
+                      border-radius: 9px;
+                      padding: 0 12px;
+                      font-size: 15px;
+                    "
+                /></label>
+                <div
+                  style="
+                    grid-column: span 2;
+                    background: #e6ecf7;
+                    color: #23407a;
+                    border-radius: 12px;
+                    padding: 14px 16px;
+                    font-size: 14px;
+                    line-height: 1.5;
+                  "
+                >
+                  <strong>Esta persona ya tiene cuenta</strong> (administra Jardines del Valle). Se
+                  le agregará Los Arupos como condominio secundario; no se enviará invitación de
+                  registro.
+                </div>
+                <div
+                  style="
+                    grid-column: span 2;
+                    border-top: 1px solid #ece9e0;
+                    padding-top: 16px;
+                    display: grid;
+                    grid-template-columns: repeat(4, minmax(0, 1fr));
+                    gap: 12px;
+                    font-size: 13px;
+                  "
+                >
+                  <div>
+                    <div style="color: #5f5b52">Unidades</div>
+                    <div style="font-size: 18px; font-weight: 800">{{unidades}}</div>
+                  </div>
+                  <div>
+                    <div style="color: #5f5b52">Plan</div>
+                    <div style="font-size: 18px; font-weight: 800">{{planTxt}}</div>
+                  </div>
+                  <div>
+                    <div style="color: #5f5b52">Mensualidad</div>
+                    <div style="font-size: 18px; font-weight: 800">{{totalTxt}} + IVA</div>
+                  </div>
+                  <div>
+                    <div style="color: #5f5b52">Amenidades</div>
+                    <div style="font-size: 18px; font-weight: 800">{{amenCount}}</div>
+                  </div>
+                </div>
+              </div>
+            </sc-if>
+          </section>
+
+          <div style="display: flex; gap: 12px; align-items: center">
+            <button onClick="{{back}}" style="{{backStyle}}">Anterior</button>
+            <div style="flex-grow: 1; font-size: 13px; color: #5f5b52">
+              Nada se guarda hasta el último paso; si algo falla, no queda un condominio a medias.
+            </div>
+            <button
+              onClick="{{next}}"
+              style="
+                height: 46px;
+                padding: 0 22px;
+                border-radius: 10px;
+                border: none;
+                background: #0e5e5b;
+                color: #ffffff;
+                font-size: 15px;
+                font-weight: 700;
+                cursor: pointer;
+              "
+            >
+              {{nextLabel}}
+            </button>
+          </div>
+        </main>
+      </div>
+    </x-dc>
+    <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+      class Component extends DCLogic {
+        constructor(props) {
+          super(props);
+          this.state = { step: 1, unidades: 130, valor: 2, plan: 'p', amen: { 0: 1, 1: 1, 2: 1, 3: 1, 5: 1, 6: 1, 7: 1 } };
+        }
+        renderVals() {
+          var self = this, S = this.state;
+          var titles = [['Datos generales', 'Contrato y legales'], ['Ubicación', 'Pin en el mapa'], ['Amenidades', 'Del catálogo'], ['Administrador', 'Invitación']];
+          var steps = titles.map(function (t, i) {
+            var n = i + 1, on = n === S.step, done = n < S.step;
+            return { num: done ? '✓' : n, titulo: t[0], sub: t[1],
+              bg: on ? '#FFFFFF' : (done ? '#F1F6F5' : '#FAF9F5'), border: on ? '#0E5E5B' : '#E4E1D8',
+              dot: 'width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;flex-shrink:0;' + (on || done ? 'background:#0E5E5B;color:#FFFFFF' : 'background:#E4E1D8;color:#5F5B52') };
+          });
+          var A = [['Piscina', 'Reservable · no esencial', 1], ['Gimnasio', 'Acceso libre', 1], ['Salón comunal', 'Reservable', 1], ['Área BBQ', 'Reservable', 2], ['Canchas', 'Reservable', 1], ['Parque infantil', 'Acceso libre', 1], ['Guardianía 24 h', 'Esencial', 1], ['Generador', 'Esencial', 1], ['Parqueadero de visitas', 'Acceso libre', 12]];
+          var amenidades = A.map(function (a, i) {
+            var on = !!S.amen[i];
+            return { nombre: a[0], meta: a[1], cant: a[2], on: on,
+              box: 'display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:12px;' + (on ? 'border:2px solid #0E5E5B;background:#F1F6F5' : 'border:1px solid #E4E1D8;background:#FFFFFF'),
+              toggle: function () { var n = Object.assign({}, self.state.amen); n[i] = !n[i]; self.setState({ amen: n }); } };
+          });
+          var total = (Number(S.unidades) || 0) * (Number(S.valor) || 0);
+          var money = function (n) { var s = n.toFixed(2).split('.'); return '$ ' + s[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ',' + s[1]; };
+          return {
+            steps: steps, amenidades: amenidades,
+            p1: S.step === 1, p2: S.step === 2, p3: S.step === 3, p4: S.step === 4,
+            unidades: S.unidades, valor: S.valor, valorTxt: (Number(S.valor) || 0).toFixed(2).replace('.', ','),
+            totalTxt: money(total), planTxt: { b: 'Básico', p: 'Profesional', c: 'Completo' }[S.plan],
+            amenCount: Object.keys(S.amen).filter(function (k) { return S.amen[k]; }).length,
+            setUnidades: function (e) { self.setState({ unidades: e.target.value }); },
+            setValor: function (e) { self.setState({ valor: e.target.value }); },
+            setPlan: function (e) { self.setState({ plan: e.target.value }); },
+            next: function () { if (self.state.step < 4) self.setState({ step: self.state.step + 1 }); },
+            back: function () { if (self.state.step > 1) self.setState({ step: self.state.step - 1 }); },
+            nextLabel: S.step === 4 ? 'Crear condominio y enviar acceso' : 'Siguiente',
+            backStyle: 'height:46px;padding:0 20px;border-radius:10px;border:1px solid #D8D4C8;background:#FFFFFF;font-size:15px;font-weight:700;cursor:pointer;' + (S.step === 1 ? 'visibility:hidden' : '')
+          };
+        }
+      }
+    </script>
+  </body>
+</html>
