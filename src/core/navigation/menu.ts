@@ -353,6 +353,20 @@ export interface OpcionesFiltro {
  * Deja solo los ítems permitidos. Un grupo sin hijos visibles desaparece.
  * Ocultar un ítem NO es seguridad: cada ruta de la API exige su permiso.
  */
+/** Primera pantalla del menú (ya filtrado) a la que puede entrar el usuario. */
+export function primeraRuta(items: readonly ItemMenu[]): string | null {
+  for (const item of items) {
+    if (item.ruta) {
+      return item.ruta;
+    }
+    const enHijos = item.hijos ? primeraRuta(item.hijos) : null;
+    if (enHijos) {
+      return enHijos;
+    }
+  }
+  return null;
+}
+
 export function filtrarMenu(
   items: ItemMenu[],
   permisos: readonly string[],

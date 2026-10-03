@@ -1,11 +1,17 @@
 import type { RouteRecordRaw } from 'vue-router';
 
+import { filtrarMenu, MENU_PLATAFORMA, primeraRuta } from '@/core/navigation/menu';
+import { MOSTRAR_VISTAS_PREVIAS } from '@/core/vista-previa';
+import { useSessionStore } from '@/stores/session';
+
 declare module 'vue-router' {
   interface RouteMeta {
     /** Accesible sin sesión (login). */
     publica?: boolean;
     /** Con sesión pero sin condominio elegido (selector, plataforma). Por defecto se exige condominio. */
     sinCondominio?: boolean;
+    /** Panel de plataforma: exige un rol de plataforma; `permiso` se mira en sus permisos. */
+    plataforma?: boolean;
     /** Permiso requerido en el condominio activo. */
     permiso?: string;
     titulo?: string;
@@ -209,9 +215,28 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/plataforma',
     component: () => import('@/layouts/PlataformaLayout.vue'),
-    meta: { sinCondominio: true },
+    meta: { sinCondominio: true, plataforma: true },
     children: [
-      { path: '', redirect: { name: 'plataforma-condominios' } },
+      {
+        // Entrada del panel: la primera pantalla que permite el perfil de plataforma.
+        path: '',
+        name: 'plataforma',
+        redirect: () => {
+          const session = useSessionStore();
+          const ruta = primeraRuta(
+            filtrarMenu(MENU_PLATAFORMA, session.permisosPlataforma, {
+              vistasPrevias: MOSTRAR_VISTAS_PREVIAS,
+            }),
+          );
+          return { name: ruta ?? 'plataforma-sin-permiso' };
+        },
+      },
+      {
+        path: 'sin-permiso',
+        name: 'plataforma-sin-permiso',
+        component: () => import('@/pages/SinPermisoPage.vue'),
+        meta: { titulo: 'Sin permiso' },
+      },
       previa(
         'cobranza',
         'plataforma-cobranza',

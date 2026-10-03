@@ -146,7 +146,13 @@ async function ingresar(): Promise<void> {
     await session.iniciarSesion(validacion.data.email, validacion.data.password);
 
     if (session.condominioId === null) {
-      await router.replace({ name: 'seleccionar-condominio', query: route.query });
+      // Equipo de la plataforma sin condominios → su panel; el resto elige condominio.
+      const soloPlataforma = session.esPlataforma && session.condominios.length === 0;
+      await router.replace(
+        soloPlataforma
+          ? { name: 'plataforma' }
+          : { name: 'seleccionar-condominio', query: route.query },
+      );
       return;
     }
     await router.replace(redireccionSegura(route.query.redirect) ?? { name: 'inicio' });

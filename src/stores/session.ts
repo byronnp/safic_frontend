@@ -49,9 +49,19 @@ export const useSessionStore = defineStore('session', () => {
     () => condominios.value.find((c) => c.id === condominioId.value) ?? null,
   );
 
+  /** Perfil de plataforma: no depende del condominio activo. */
+  const rolesPlataforma = computed<string[]>(() => usuario.value?.plataforma?.roles ?? []);
+  const permisosPlataforma = computed<string[]>(() => usuario.value?.plataforma?.permisos ?? []);
+  const esPlataforma = computed(() => rolesPlataforma.value.length > 0);
+
   function tienePermiso(permiso: string | string[]): boolean {
     const requeridos = Array.isArray(permiso) ? permiso : [permiso];
     return requeridos.every((p) => permisos.value.includes(p));
+  }
+
+  function tienePermisoPlataforma(permiso: string | string[]): boolean {
+    const requeridos = Array.isArray(permiso) ? permiso : [permiso];
+    return requeridos.every((p) => permisosPlataforma.value.includes(p));
   }
 
   function aplicarToken(respuesta: RespuestaToken): void {
@@ -150,7 +160,11 @@ export const useSessionStore = defineStore('session', () => {
     autenticado,
     condominios,
     condominioActivo,
+    rolesPlataforma,
+    permisosPlataforma,
+    esPlataforma,
     tienePermiso,
+    tienePermisoPlataforma,
     seleccionarCondominio,
     iniciarSesion,
     refrescar,

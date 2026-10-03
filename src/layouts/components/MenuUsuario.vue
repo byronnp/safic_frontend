@@ -14,6 +14,24 @@
           </q-item-section>
         </q-item>
 
+        <!-- Cambiar de ámbito: panel de plataforma ↔ condominios -->
+        <template v-if="irAPlataforma || irACondominios">
+          <q-separator class="q-my-xs" />
+          <q-item v-if="irAPlataforma" v-close-popup clickable :to="{ name: 'plataforma' }">
+            <q-item-section avatar><q-icon :name="ICONOS.plataforma" /></q-item-section>
+            <q-item-section>{{ t('condominio.panelPlataforma') }}</q-item-section>
+          </q-item>
+          <q-item
+            v-if="irACondominios"
+            v-close-popup
+            clickable
+            :to="{ name: session.condominioId ? 'inicio' : 'seleccionar-condominio' }"
+          >
+            <q-item-section avatar><q-icon :name="ICONOS.condominio" /></q-item-section>
+            <q-item-section>{{ t('condominio.misCondominios') }}</q-item-section>
+          </q-item>
+        </template>
+
         <!-- Solo en desarrollo: abrir las otras vistas para revisar los diseños -->
         <template v-if="MOSTRAR_VISTAS_PREVIAS">
           <q-separator class="q-my-xs" />
@@ -41,8 +59,9 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 import { queryClient } from '@/boot/vue-query';
 import { ICONOS } from '@/core/navigation/icons';
@@ -54,8 +73,13 @@ import { useSessionStore } from '@/stores/session';
 defineProps<{ rol?: string }>();
 
 const { t } = useI18n();
+const route = useRoute();
 const router = useRouter();
 const session = useSessionStore();
+
+const enPlataforma = computed(() => route.meta.plataforma === true);
+const irAPlataforma = computed(() => session.esPlataforma && !enPlataforma.value);
+const irACondominios = computed(() => enPlataforma.value && session.condominios.length > 0);
 
 const vistas = [
   { etiqueta: 'Administración del condominio', icono: ICONOS.condominio, ruta: 'inicio' },
