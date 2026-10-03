@@ -14,6 +14,7 @@
         <q-icon name="sym_r_error" size="24px" color="negative" />
         <span>{{ errorCatalogos }}</span>
         <q-btn
+          v-if="puedeCrear"
           unelevated
           no-caps
           class="safic-btn safic-btn--secundario"
@@ -310,6 +311,7 @@ import NuevoCondominioCampo from '@/modules/plataforma/components/NuevoCondomini
 import NuevoCondominioMapa from '@/modules/plataforma/components/NuevoCondominioMapa.vue';
 import NuevoCondominioPasos from '@/modules/plataforma/components/NuevoCondominioPasos.vue';
 import {
+  PERMISO,
   useCatalogos,
   usePlanes,
   useUbicaciones,
@@ -322,12 +324,14 @@ import {
 } from '@/modules/plataforma/demo/nuevo-condominio';
 import type { FormularioNuevoCondominio } from '@/modules/plataforma/demo/nuevo-condominio';
 import type { AmenidadCatalogo } from '@/modules/plataforma/services/catalogos.service';
+import { useSessionStore } from '@/stores/session';
 import { formatoMoneda } from '@/utils/formato';
 
 type Campo = keyof FormularioNuevoCondominio;
 
 const $q = useQuasar();
 const router = useRouter();
+const session = useSessionStore();
 
 const paso = ref(1);
 const f = reactive<FormularioNuevoCondominio>({ ...FORMULARIO_INICIAL });
@@ -350,10 +354,15 @@ const cargandoCatalogos = computed(
     consultaCatalogos.isLoading.value ||
     consultaUbicaciones.isLoading.value,
 );
-const errorCatalogos = computed(
-  () =>
-    (consultaPlanes.error.value ?? consultaCatalogos.error.value ?? consultaUbicaciones.error.value)
-      ?.mensaje,
+const puedeCrear = computed(() => session.tienePermisoPlataforma(PERMISO));
+const errorCatalogos = computed(() =>
+  puedeCrear.value
+    ? (
+        consultaPlanes.error.value ??
+        consultaCatalogos.error.value ??
+        consultaUbicaciones.error.value
+      )?.mensaje
+    : 'Tu perfil no tiene permiso para crear condominios.',
 );
 
 function recargarCatalogos(): void {

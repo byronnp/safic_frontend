@@ -21,6 +21,9 @@ export const clavesCatalogos = {
   ubicaciones: ['plataforma', 'ubicaciones'] as const,
 };
 
+/** Permiso que exigen /plataforma/planes, /catalogos y /ubicaciones (x-permiso del contrato). */
+export const PERMISO = 'plataforma.condominios';
+
 /** Los catálogos cambian poco: se reutilizan durante 30 minutos. */
 const VIGENCIA = 30 * 60_000;
 
@@ -29,7 +32,7 @@ export function usePlanes() {
   return useQuery<Plan[], ApiError>({
     queryKey: clavesCatalogos.planes,
     queryFn: () => catalogosService.planes(),
-    enabled: computed(() => session.esPlataforma),
+    enabled: computed(() => session.tienePermisoPlataforma(PERMISO)),
     staleTime: VIGENCIA,
   });
 }
@@ -39,7 +42,7 @@ export function useCatalogos() {
   return useQuery<CatalogosAlta, ApiError>({
     queryKey: clavesCatalogos.catalogos,
     queryFn: () => catalogosService.catalogos(),
-    enabled: computed(() => session.esPlataforma),
+    enabled: computed(() => session.tienePermisoPlataforma(PERMISO)),
     staleTime: VIGENCIA,
   });
 }
@@ -49,7 +52,7 @@ export function useUbicaciones() {
   return useQuery<Provincia[], ApiError>({
     queryKey: clavesCatalogos.ubicaciones,
     queryFn: () => catalogosService.ubicaciones(),
-    enabled: computed(() => session.esPlataforma),
+    enabled: computed(() => session.tienePermisoPlataforma(PERMISO)),
     staleTime: VIGENCIA,
   });
 }

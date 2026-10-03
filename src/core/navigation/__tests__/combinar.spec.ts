@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { ICONOS } from '../icons';
-import { combinarConVistasPrevias, type ItemMenu } from '../menu';
+import { combinarConVistasPrevias, normalizarMenu, type ItemMenu } from '../menu';
 
 const hoja = (id: string, extra: Partial<ItemMenu> = {}): ItemMenu => ({
   id,
@@ -64,5 +64,32 @@ describe('menú de la API con vistas previas', () => {
     const api = [hoja('inicio')];
 
     expect(combinarConVistasPrevias(api, [hoja('inicio'), hoja('bloques')])).toEqual(api);
+  });
+});
+
+describe('limpieza del menú de la API', () => {
+  const existe = (ruta: string) => ['inicio', 'bloques'].includes(ruta);
+
+  it('cambia íconos que no son Material Symbols por uno genérico', () => {
+    const menu = normalizarMenu(
+      [hoja('inicio', { icono: 'img:https://malicioso.com/x.png' })],
+      existe,
+    );
+
+    expect(menu[0]?.icono).toBe(ICONOS.vacio);
+  });
+
+  it('descarta hojas con rutas que el frontend no tiene y grupos vacíos', () => {
+    const menu = normalizarMenu(
+      [
+        hoja('inicio'),
+        { id: 'g', etiqueta: 'G', icono: ICONOS.unidades, hijos: [hoja('no-existe')] },
+        { id: 'u', etiqueta: 'U', icono: ICONOS.unidades, hijos: [hoja('bloques'), hoja('otra')] },
+      ],
+      existe,
+    );
+
+    expect(menu.map((i) => i.id)).toEqual(['inicio', 'u']);
+    expect(menu[1]?.hijos?.map((i) => i.id)).toEqual(['bloques']);
   });
 });

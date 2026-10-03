@@ -8,8 +8,11 @@ import type { ItemMenu } from './menu';
  * Contrato: GET /me/menu (condominio del header) y GET /plataforma/me/menu.
  */
 export const menuService = {
-  async condominio(): Promise<ItemMenu[]> {
-    const { data } = await api.get<ApiRespuesta<ItemMenu[]>>('/me/menu');
+  /** El condominio va explícito: la respuesta queda siempre bajo la clave de ese condominio. */
+  async condominio(condominioId: number): Promise<ItemMenu[]> {
+    const { data } = await api.get<ApiRespuesta<ItemMenu[]>>('/me/menu', {
+      headers: { 'X-Condominio-Id': String(condominioId) },
+    });
     return data.data;
   },
 

@@ -368,6 +368,38 @@ export function moduloDeRuta(items: readonly ItemMenu[], ruta: string | undefine
   return modulo?.id ?? null;
 }
 
+/** Íconos aceptados desde la API: solo Material Symbols Rounded (nunca `img:` u otra URL). */
+const ICONO_VALIDO = /^sym_r_[a-z0-9_]+$/;
+
+/**
+ * Limpia el menú que llega de la API antes de pintarlo:
+ * - un ícono que no es `sym_r_*` se cambia por uno genérico;
+ * - una hoja cuya ruta no existe en esta versión del frontend se descarta
+ *   (vue-router fallaría al pintar el enlace);
+ * - un grupo que queda sin hojas se descarta.
+ */
+export function normalizarMenu(
+  items: readonly ItemMenu[],
+  existeRuta: (nombre: string) => boolean,
+): ItemMenu[] {
+  const resultado: ItemMenu[] = [];
+
+  for (const item of items) {
+    const icono = ICONO_VALIDO.test(item.icono) ? item.icono : ICONOS.vacio;
+
+    if (item.hijos) {
+      const hijos = normalizarMenu(item.hijos, existeRuta);
+      if (hijos.length > 0) {
+        resultado.push({ ...item, icono, hijos });
+      }
+    } else if (item.ruta && existeRuta(item.ruta)) {
+      resultado.push({ ...item, icono });
+    }
+  }
+
+  return resultado;
+}
+
 /**
  * Menú de la API + pantallas en vista previa del menú local (solo desarrollo).
  * - El orden lo da el menú local; lo que la API trae y el local no conoce va al final.
