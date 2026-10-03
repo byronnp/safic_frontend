@@ -353,6 +353,20 @@ export interface OpcionesFiltro {
  * Deja solo los ítems permitidos. Un grupo sin hijos visibles desaparece.
  * Ocultar un ítem NO es seguridad: cada ruta de la API exige su permiso.
  */
+/**
+ * Módulo (ítem con hijos, no sección fija) que contiene la pantalla actual.
+ * Ese módulo se muestra desplegado en el menú lateral.
+ */
+export function moduloDeRuta(items: readonly ItemMenu[], ruta: string | undefined): string | null {
+  if (!ruta) {
+    return null;
+  }
+  const modulo = items.find(
+    (item) => !item.seccion && item.hijos?.some((hijo) => hijo.ruta === ruta),
+  );
+  return modulo?.id ?? null;
+}
+
 /** Primera pantalla del menú (ya filtrado) a la que puede entrar el usuario. */
 export function primeraRuta(items: readonly ItemMenu[]): string | null {
   for (const item of items) {
