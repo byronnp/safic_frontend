@@ -5,8 +5,26 @@
     <NuevoCondominioPasos :pasos="PASOS_NUEVO_CONDOMINIO" :actual="paso" @ir="irA" />
 
     <section class="asistente__panel" :aria-label="PASOS_NUEVO_CONDOMINIO[paso - 1]?.titulo">
+      <!-- Catálogos de la API: cargando / error -->
+      <div v-if="cargandoCatalogos" class="asistente__estado" aria-busy="true">
+        <q-spinner color="primary" size="28px" />
+        <span>Cargando planes y catálogos…</span>
+      </div>
+      <div v-else-if="errorCatalogos" class="asistente__estado" role="alert">
+        <q-icon name="sym_r_error" size="24px" color="negative" />
+        <span>{{ errorCatalogos }}</span>
+        <q-btn
+          unelevated
+          no-caps
+          class="safic-btn safic-btn--secundario"
+          :icon="ICONOS.refrescar"
+          label="Reintentar"
+          @click="recargarCatalogos"
+        />
+      </div>
+
       <!-- Paso 1 · Datos generales -->
-      <div v-if="paso === 1" class="asistente__grilla asistente__grilla--tres">
+      <div v-else-if="paso === 1" class="asistente__grilla asistente__grilla--tres">
         <NuevoCondominioCampo
           etiqueta="Nombre del condominio"
           :error="err('nombre')"
@@ -16,7 +34,7 @@
         </NuevoCondominioCampo>
         <NuevoCondominioCampo etiqueta="Tipo">
           <select v-model="f.tipo" class="control control--select">
-            <option v-for="t in TIPOS_CONDOMINIO" :key="t" :value="t">{{ t }}</option>
+            <option v-for="t in tipos" :key="t.valor" :value="t.valor">{{ t.etiqueta }}</option>
           </select>
         </NuevoCondominioCampo>
         <NuevoCondominioCampo etiqueta="RUC" :error="err('ruc')">
@@ -37,17 +55,34 @@
         </NuevoCondominioCampo>
         <NuevoCondominioCampo etiqueta="Provincia">
           <select v-model="f.provincia" class="control control--select" @change="cambiarProvincia">
-            <option v-for="p in provincias" :key="p" :value="p">{{ p }}</option>
+            <option v-for="p in provincias" :key="p.codigo" :value="p.codigo">
+              {{ p.nombre }}
+            </option>
           </select>
         </NuevoCondominioCampo>
-        <NuevoCondominioCampo etiqueta="Cantón">
-          <select v-model="f.canton" class="control control--select" @change="cambiarCanton">
-            <option v-for="c in cantones" :key="c" :value="c">{{ c }}</option>
+        <NuevoCondominioCampo etiqueta="Cantón" :error="err('canton')">
+          <select
+            v-model="f.canton"
+            class="control control--select"
+            :class="{ 'control--error': err('canton') }"
+            :disabled="!cantones.length"
+            @change="cambiarCanton"
+          >
+            <option v-if="!cantones.length" value="">Sin cantones cargados</option>
+            <option v-for="c in cantones" :key="c.codigo" :value="c.codigo">{{ c.nombre }}</option>
           </select>
         </NuevoCondominioCampo>
-        <NuevoCondominioCampo etiqueta="Parroquia">
-          <select v-model="f.parroquia" class="control control--select">
-            <option v-for="p in parroquias" :key="p" :value="p">{{ p }}</option>
+        <NuevoCondominioCampo etiqueta="Parroquia" :error="err('parroquia')">
+          <select
+            v-model="f.parroquia"
+            class="control control--select"
+            :class="{ 'control--error': err('parroquia') }"
+            :disabled="!parroquias.length"
+          >
+            <option v-if="!parroquias.length" value="">Sin parroquias cargadas</option>
+            <option v-for="p in parroquias" :key="p.codigo" :value="p.codigo">
+              {{ p.nombre }}
+            </option>
           </select>
         </NuevoCondominioCampo>
         <NuevoCondominioCampo etiqueta="Dirección" :error="err('direccion')" class="span-2">
@@ -83,8 +118,8 @@
         </NuevoCondominioCampo>
         <NuevoCondominioCampo etiqueta="Plan">
           <select v-model="f.plan" class="control control--select">
-            <option v-for="p in PLANES_ASISTENTE" :key="p.valor" :value="p.valor">
-              {{ p.etiqueta }}
+            <option v-for="p in planes" :key="p.clave" :value="p.clave">
+              {{ p.nombre }} · hasta {{ p.max_administrativos }} administrativos
             </option>
           </select>
         </NuevoCondominioCampo>
@@ -148,24 +183,24 @@
         </div>
         <div class="asistente__amenidades">
           <div
-            v-for="(a, i) in AMENIDADES_ASISTENTE"
-            :key="a.nombre"
+            v-for="a in catalogoAmenidades"
+            :key="a.clave"
             class="amenidad"
-            :class="{ 'amenidad--activa': amenidades.has(i) }"
+            :class="{ 'amenidad--activa': amenidades.has(a.clave) }"
           >
             <label class="amenidad__etiqueta">
               <input
                 type="checkbox"
                 class="amenidad__check"
-                :checked="amenidades.has(i)"
-                @change="alternarAmenidad(i)"
+                :checked="amenidades.has(a.clave)"
+                @change="alternarAmenidad(a.clave)"
               />
               <span>
                 <span class="amenidad__nombre">{{ a.nombre }}</span>
-                <span class="amenidad__meta">{{ a.meta }}</span>
+                <span class="amenidad__meta">{{ metaAmenidad(a) }}</span>
               </span>
             </label>
-            <span class="amenidad__cantidad">× {{ a.cantidad }}</span>
+            <q-icon :name="a.icono" size="20px" class="amenidad__icono" />
           </div>
         </div>
       </div>
@@ -266,24 +301,27 @@
 
 <script setup lang="ts">
 import { useQuasar } from 'quasar';
-import { computed, reactive, ref } from 'vue';
+import { computed, reactive, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
 import PaginaEncabezado from '@/components/PaginaEncabezado.vue';
+import { ICONOS } from '@/core/navigation/icons';
 import NuevoCondominioCampo from '@/modules/plataforma/components/NuevoCondominioCampo.vue';
 import NuevoCondominioMapa from '@/modules/plataforma/components/NuevoCondominioMapa.vue';
 import NuevoCondominioPasos from '@/modules/plataforma/components/NuevoCondominioPasos.vue';
 import {
-  AMENIDADES_ASISTENTE,
-  AMENIDADES_MARCADAS,
+  useCatalogos,
+  usePlanes,
+  useUbicaciones,
+} from '@/modules/plataforma/composables/useCatalogosAlta';
+import {
+  AMENIDADES_INICIALES,
   CUENTAS_EXISTENTES,
   FORMULARIO_INICIAL,
   PASOS_NUEVO_CONDOMINIO,
-  PLANES_ASISTENTE,
-  TIPOS_CONDOMINIO,
-  UBICACIONES,
 } from '@/modules/plataforma/demo/nuevo-condominio';
 import type { FormularioNuevoCondominio } from '@/modules/plataforma/demo/nuevo-condominio';
+import type { AmenidadCatalogo } from '@/modules/plataforma/services/catalogos.service';
 import { formatoMoneda } from '@/utils/formato';
 
 type Campo = keyof FormularioNuevoCondominio;
@@ -293,23 +331,61 @@ const router = useRouter();
 
 const paso = ref(1);
 const f = reactive<FormularioNuevoCondominio>({ ...FORMULARIO_INICIAL });
-const amenidades = ref(new Set<number>(AMENIDADES_MARCADAS));
+const amenidades = ref(new Set<string>(AMENIDADES_INICIALES));
 /** Pasos en los que ya se intentó avanzar: desde ahí los errores se muestran en vivo. */
 const intentados = ref(new Set<number>());
 
-// ---------- Ubicación en cascada ----------
-const provincias = Object.keys(UBICACIONES);
-const cantones = computed(() => Object.keys(UBICACIONES[f.provincia] ?? {}));
-const parroquias = computed(() => UBICACIONES[f.provincia]?.[f.canton] ?? []);
+// ---------- Catálogos de la API ----------
+const consultaPlanes = usePlanes();
+const consultaCatalogos = useCatalogos();
+const consultaUbicaciones = useUbicaciones();
+
+const planes = computed(() => consultaPlanes.data.value ?? []);
+const tipos = computed(() => consultaCatalogos.data.value?.tipos_condominio ?? []);
+const catalogoAmenidades = computed(() => consultaCatalogos.data.value?.amenidades ?? []);
+
+const cargandoCatalogos = computed(
+  () =>
+    consultaPlanes.isLoading.value ||
+    consultaCatalogos.isLoading.value ||
+    consultaUbicaciones.isLoading.value,
+);
+const errorCatalogos = computed(
+  () =>
+    (consultaPlanes.error.value ?? consultaCatalogos.error.value ?? consultaUbicaciones.error.value)
+      ?.mensaje,
+);
+
+function recargarCatalogos(): void {
+  void consultaPlanes.refetch();
+  void consultaCatalogos.refetch();
+  void consultaUbicaciones.refetch();
+}
+
+// ---------- Ubicación en cascada (códigos INEC) ----------
+const provincias = computed(() => consultaUbicaciones.data.value ?? []);
+const cantones = computed(
+  () => provincias.value.find((p) => p.codigo === f.provincia)?.cantones ?? [],
+);
+const parroquias = computed(
+  () => cantones.value.find((c) => c.codigo === f.canton)?.parroquias ?? [],
+);
 
 function cambiarProvincia(): void {
-  f.canton = cantones.value[0] ?? '';
+  f.canton = cantones.value[0]?.codigo ?? '';
   cambiarCanton();
 }
 
 function cambiarCanton(): void {
-  f.parroquia = parroquias.value[0] ?? '';
+  f.parroquia = parroquias.value[0]?.codigo ?? '';
 }
+
+// Al llegar las ubicaciones, completa cantón y parroquia si no son de la provincia.
+watch(provincias, () => {
+  if (!cantones.value.some((c) => c.codigo === f.canton)) {
+    cambiarProvincia();
+  }
+});
 
 // ---------- Contrato ----------
 function numero(evento: Event): number | null {
@@ -321,9 +397,7 @@ const unidades = computed(() => f.unidades ?? 0);
 const valor = computed(() => f.valorUnidad ?? 0);
 const valorTxt = computed(() => valor.value.toFixed(2).replace('.', ','));
 const totalTxt = computed(() => formatoMoneda(unidades.value * valor.value));
-const planTxt = computed(
-  () => PLANES_ASISTENTE.find((p) => p.valor === f.plan)?.etiqueta ?? 'Profesional',
-);
+const planTxt = computed(() => planes.value.find((p) => p.clave === f.plan)?.nombre ?? '—');
 
 // ---------- Mapa: el pin y las coordenadas son el mismo dato ----------
 const ORIGEN = { x: 455, y: 170, lat: -0.285412, lng: -78.471236 };
@@ -347,14 +421,21 @@ function moverPin(x: number, y: number): void {
 }
 
 // ---------- Amenidades ----------
-function alternarAmenidad(i: number): void {
+function alternarAmenidad(clave: string): void {
   const nuevo = new Set(amenidades.value);
-  if (nuevo.has(i)) {
-    nuevo.delete(i);
+  if (nuevo.has(clave)) {
+    nuevo.delete(clave);
   } else {
-    nuevo.add(i);
+    nuevo.add(clave);
   }
   amenidades.value = nuevo;
+}
+
+function metaAmenidad(a: AmenidadCatalogo): string {
+  if (a.esencial) {
+    return 'Esencial · nunca se restringe';
+  }
+  return a.reservable ? 'Reservable' : 'Acceso libre';
 }
 
 // ---------- Administrador ----------
@@ -363,7 +444,17 @@ const nombreCorto = computed(() => f.nombre.replace(/^(Conjunto|Edificio|Urbaniz
 
 // ---------- Validación por paso ----------
 const CAMPOS_POR_PASO: Record<number, Campo[]> = {
-  1: ['nombre', 'ruc', 'razonSocial', 'direccion', 'contacto', 'unidades', 'valorUnidad'],
+  1: [
+    'nombre',
+    'ruc',
+    'razonSocial',
+    'canton',
+    'parroquia',
+    'direccion',
+    'contacto',
+    'unidades',
+    'valorUnidad',
+  ],
   2: ['latitud', 'longitud'],
   3: [],
   4: ['cedula', 'nombreAdmin', 'correo', 'celular'],
@@ -380,6 +471,10 @@ function validar(campo: Campo): string | undefined {
         : 'El RUC tiene 13 dígitos y termina en 001.';
     case 'razonSocial':
       return texto(f.razonSocial) ? undefined : 'Escribe la razón social.';
+    case 'canton':
+      return !cantones.value.length || f.canton ? undefined : 'Elige el cantón.';
+    case 'parroquia':
+      return !parroquias.value.length || f.parroquia ? undefined : 'Elige la parroquia.';
     case 'direccion':
       return texto(f.direccion) ? undefined : 'Escribe la dirección.';
     case 'contacto':
@@ -482,6 +577,21 @@ function siguiente(): void {
 </script>
 
 <style scoped>
+.asistente__estado {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  min-height: 160px;
+  justify-content: center;
+  color: var(--safic-texto-suave);
+  font-size: 14px;
+}
+
+.amenidad__icono {
+  color: var(--safic-texto-suave);
+}
+
 .asistente.safic-main {
   padding: 28px 40px;
   gap: 18px;

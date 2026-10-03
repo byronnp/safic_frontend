@@ -23,7 +23,15 @@
         </div>
         <div class="lateral__ambito">PLATAFORMA</div>
 
-        <MenuLateral :items="menu" tono="plataforma" etiqueta="Menú de plataforma" class="col-grow">
+        <MenuLateral
+          :items="menu"
+          tono="plataforma"
+          etiqueta="Menú de plataforma"
+          :cargando="menuCargando"
+          :error="menuError"
+          class="col-grow"
+          @reintentar="void recargarMenu()"
+        >
           <template #pie>
             <div class="lateral__usuario">
               <MenuUsuario :rol="etiquetaRol(session.rolesPlataforma)" />
@@ -42,14 +50,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { ref } from 'vue';
 import { useRoute } from 'vue-router';
 
 import VistaPreviaAviso from '@/components/VistaPreviaAviso.vue';
 import { ICONOS } from '@/core/navigation/icons';
-import { filtrarMenu, MENU_PLATAFORMA } from '@/core/navigation/menu';
 import { etiquetaRol } from '@/core/navigation/roles';
-import { MOSTRAR_VISTAS_PREVIAS } from '@/core/vista-previa';
+import { useMenuPlataforma } from '@/core/navigation/useMenu';
 import MenuLateral from '@/layouts/components/MenuLateral.vue';
 import MenuUsuario from '@/layouts/components/MenuUsuario.vue';
 import { useSessionStore } from '@/stores/session';
@@ -58,11 +65,13 @@ const route = useRoute();
 const session = useSessionStore();
 const menuAbierto = ref(false);
 
-const menu = computed(() =>
-  filtrarMenu(MENU_PLATAFORMA, session.permisosPlataforma, {
-    vistasPrevias: MOSTRAR_VISTAS_PREVIAS,
-  }),
-);
+// Menú del perfil de plataforma (GET /plataforma/me/menu)
+const {
+  menu,
+  isLoading: menuCargando,
+  isError: menuError,
+  refetch: recargarMenu,
+} = useMenuPlataforma();
 </script>
 
 <style scoped>

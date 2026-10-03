@@ -1,9 +1,10 @@
 import { ICONOS } from './icons';
 
 /**
- * Ítem del menú. Mismo formato que devolverá GET /me/menu (menú administrable
- * por el super admin). Mientras ese endpoint no exista, se usan los menús de
- * este archivo filtrados por los permisos del condominio activo.
+ * Ítem del menú. Mismo formato que GET /me/menu y GET /plataforma/me/menu
+ * (menú por perfil, administrable por el super admin). Los menús de este
+ * archivo solo aportan, en desarrollo, las pantallas en vista previa
+ * (ver combinarConVistasPrevias) y los menús de las apps móviles.
  *
  * Estructura (igual que en los mockups):
  * - Ítem con `ruta`: enlace directo (Inicio).
@@ -365,6 +366,38 @@ export function moduloDeRuta(items: readonly ItemMenu[], ruta: string | undefine
     (item) => !item.seccion && item.hijos?.some((hijo) => hijo.ruta === ruta),
   );
   return modulo?.id ?? null;
+}
+
+/**
+ * Menú de la API + pantallas en vista previa del menú local (solo desarrollo).
+ * - El orden lo da el menú local; lo que la API trae y el local no conoce va al final.
+ * - De la API se respeta todo (ya viene filtrado por perfil y permisos).
+ * - Del local solo se agregan hojas con `vistaPrevia` (sin datos reales).
+ */
+export function combinarConVistasPrevias(
+  deApi: readonly ItemMenu[],
+  local: readonly ItemMenu[],
+): ItemMenu[] {
+  const porId = new Map(deApi.map((item) => [item.id, item]));
+  const resultado: ItemMenu[] = [];
+
+  for (const item of local) {
+    const remoto = porId.get(item.id);
+    porId.delete(item.id);
+
+    if (item.hijos) {
+      const hijos = combinarConVistasPrevias(remoto?.hijos ?? [], item.hijos);
+      if (hijos.length > 0) {
+        resultado.push({ ...(remoto ?? item), hijos });
+      }
+    } else if (remoto) {
+      resultado.push(remoto);
+    } else if (item.vistaPrevia) {
+      resultado.push(item);
+    }
+  }
+
+  return [...resultado, ...porId.values()];
 }
 
 /** Primera pantalla del menú (ya filtrado) a la que puede entrar el usuario. */

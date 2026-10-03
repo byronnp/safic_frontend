@@ -21,6 +21,10 @@
       </button>
     </div>
 
+    <div v-else-if="cargando" class="safic-indicadores" aria-busy="true">
+      <q-skeleton v-for="n in 3" :key="n" type="rect" height="64px" class="safic-indicador" />
+    </div>
+
     <div v-else class="safic-indicador text-suave">
       Todavía no tienes secciones habilitadas en este condominio.
     </div>
@@ -31,7 +35,8 @@
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 
-import { filtrarMenu, MENU_BASE, type ItemMenu } from '@/core/navigation/menu';
+import { hojasMenu } from '@/core/navigation/menu';
+import { useMenuCondominio } from '@/core/navigation/useMenu';
 import { useSessionStore } from '@/stores/session';
 
 const router = useRouter();
@@ -39,14 +44,9 @@ const session = useSessionStore();
 
 const primerNombre = computed(() => session.usuario?.nombre.split(' ')[0] ?? '');
 
-/** Accesos rápidos: las hojas del menú visibles para el usuario, sin "Inicio". */
-const accesos = computed(() => {
-  const hojas = (items: ItemMenu[]): ItemMenu[] =>
-    items.flatMap((item) => (item.hijos ? hojas(item.hijos) : [item]));
-  return hojas(filtrarMenu(MENU_BASE, session.permisos)).filter(
-    (item) => item.ruta && item.ruta !== 'inicio',
-  );
-});
+/** Accesos rápidos: las hojas del menú del perfil (las mismas del menú lateral), sin "Inicio". */
+const { menu, isLoading: cargando } = useMenuCondominio();
+const accesos = computed(() => hojasMenu(menu.value).filter((item) => item.ruta !== 'inicio'));
 
 function ir(ruta: string | undefined): void {
   if (ruta) {
