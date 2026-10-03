@@ -51,6 +51,18 @@ src/modules/<m>/      pages · components · composables (vue-query) · services
 4. Ítem en `core/navigation/menu.ts` con ícono de `ICONOS` y el mismo permiso.
 5. Pruebas en `__tests__/*.spec.ts` y `make check` sin errores.
 
+## Contrato con la API
+
+- El contrato es `docs/openapi.yaml` del backend (OpenAPI 3.1). Los tipos de cada service copian su schema y la ruta usa su `x-permiso`.
+- Si un endpoint no está en el contrato, la pantalla sigue en vista previa: no se inventa la API.
+
+## Claude Code en este repo (`.claude/`)
+
+- Skill `nueva-pantalla`: receta para una pantalla nueva o para pasar una de vista previa a datos reales.
+- Subagente `revisor-seguridad`: revisa el diff antes del PR (tokens, condominio en la caché, permisos, datos personales).
+- Hooks: Prettier y ESLint formatean cada archivo editado; al terminar, si hay cambios en `src/`, corren lint, tipos y pruebas y un fallo se devuelve a Claude.
+- `.claude/settings.local.json` es personal y no se sube.
+
 ## Definición de terminado
 
 Pantalla según mockup + permisos en ruta y botones + estados de carga/vacío/error + pruebas + `npm run lint:check`, `typecheck`, `test` y `build` sin errores.

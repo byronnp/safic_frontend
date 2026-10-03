@@ -166,7 +166,7 @@ async function ingresar(): Promise<void> {
 <style scoped>
 .login__titulo {
   margin: 0;
-  font-size: 30px;
+  font-size: 28px;
   line-height: 1.2;
   font-weight: 800;
   letter-spacing: -0.5px;

@@ -9,8 +9,8 @@
     "dev": "quasar dev",
     "build": "quasar build",
     "typecheck": "vue-tsc --noEmit",
-    "lint": "prettier --write \"**/*.{js,ts,vue,scss,html,md,json}\" --ignore-path .gitignore && eslint --fix -c ./eslint.config.js \"./src*/**/*.{ts,js,cjs,mjs,vue}\"",
-    "lint:check": "prettier --check \"**/*.{js,ts,vue,scss,html,md,json}\" --ignore-path .gitignore && eslint -c ./eslint.config.js \"./src*/**/*.{ts,js,cjs,mjs,vue}\"",
+    "lint": "prettier --write \"**/*.{js,ts,vue,scss,html,md,json}\" --ignore-path .gitignore --ignore-path .prettierignore && eslint --fix -c ./eslint.config.js \"./src*/**/*.{ts,js,cjs,mjs,vue}\"",
+    "lint:check": "prettier --check \"**/*.{js,ts,vue,scss,html,md,json}\" --ignore-path .gitignore --ignore-path .prettierignore && eslint -c ./eslint.config.js \"./src*/**/*.{ts,js,cjs,mjs,vue}\"",
     "test": "vitest run",
     "test:watch": "vitest",
     "postinstall": "quasar prepare --silent"

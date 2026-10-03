@@ -12,7 +12,9 @@
             </div>
           </div>
 
-          <div class="col-grow" />
+          <div class="auth__escena">
+            <AuthEscena />
+          </div>
 
           <h1 class="auth__lema">Las finanzas de tu condominio, claras y al día.</h1>
           <p class="auth__texto">
@@ -29,24 +31,6 @@
               Web y app móvil
             </div>
           </div>
-
-          <svg
-            class="auth__edificios"
-            width="420"
-            height="420"
-            viewBox="0 0 420 420"
-            fill="none"
-            stroke="#1E4A48"
-            stroke-width="2"
-            aria-hidden="true"
-          >
-            <rect x="60" y="120" width="110" height="260" />
-            <rect x="190" y="60" width="130" height="320" />
-            <rect x="340" y="180" width="70" height="200" />
-            <path
-              d="M80 150h70M80 190h70M80 230h70M80 270h70M210 100h90M210 140h90M210 180h90M210 220h90M210 260h90"
-            />
-          </svg>
         </aside>
 
         <main class="auth__contenido">
@@ -67,6 +51,8 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
 
+import AuthEscena from './components/AuthEscena.vue';
+
 const { t } = useI18n();
 </script>
 
@@ -77,12 +63,13 @@ const { t } = useI18n();
   background: var(--safic-fondo);
 }
 
+/* Mockup Login: 70 % marca y escena, 30 % formulario (el formulario nunca baja de 400px). */
 .auth__marca {
-  width: 620px;
-  flex-shrink: 0;
+  flex: 1 1 auto;
+  min-width: 0;
   background: var(--safic-tinta);
   color: #e8f0ee;
-  padding: 56px 64px;
+  padding: 64px 88px;
   display: flex;
   flex-direction: column;
   position: relative;
@@ -114,9 +101,18 @@ const { t } = useI18n();
   font-weight: 600;
 }
 
+.auth__escena {
+  flex-grow: 1;
+  min-height: 0;
+  margin: 24px 0;
+  display: flex;
+  align-items: center;
+}
+
 .auth__lema {
   margin: 0;
-  font-size: 46px;
+  max-width: 680px;
+  font-size: 48px;
   line-height: 1.08;
   font-weight: 800;
   letter-spacing: -1px;
@@ -128,13 +124,13 @@ const { t } = useI18n();
   font-size: 17px;
   line-height: 1.55;
   color: #b9cdc9;
-  max-width: 440px;
+  max-width: 560px;
 }
 
 .auth__rasgos {
   display: flex;
   gap: 28px;
-  margin-top: 40px;
+  margin-top: 32px;
   flex-wrap: wrap;
 }
 
@@ -151,23 +147,25 @@ const { t } = useI18n();
   color: var(--q-accent);
 }
 
-.auth__edificios {
-  position: absolute;
-  right: -120px;
-  top: -90px;
-  pointer-events: none;
-}
-
 .auth__contenido {
-  flex-grow: 1;
+  flex: 0 0 max(30%, 400px);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 32px 16px;
+  padding: 32px 36px;
+  box-sizing: border-box;
 }
 
 .auth__columna {
-  width: 440px;
-  max-width: 100%;
+  width: 100%;
+  max-width: 360px;
+}
+
+/* Celular y tablet: sin panel de marca, el formulario ocupa todo el ancho. */
+@media (max-width: 1023px) {
+  .auth__contenido {
+    flex: 1 1 auto;
+    padding: 32px 16px;
+  }
 }
 </style>
