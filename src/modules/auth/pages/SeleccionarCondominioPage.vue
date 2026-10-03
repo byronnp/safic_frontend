@@ -45,6 +45,16 @@
     <p class="selector__nota">Al iniciar sesión siempre entras a tu condominio principal.</p>
 
     <q-btn
+      v-if="session.esPlataforma"
+      unelevated
+      no-caps
+      class="safic-btn safic-btn--secundario self-start"
+      :icon="ICONOS.plataforma"
+      :label="t('condominio.panelPlataforma')"
+      :to="{ name: 'plataforma' }"
+    />
+
+    <q-btn
       unelevated
       no-caps
       class="safic-btn safic-btn--secundario self-start"

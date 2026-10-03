@@ -7,7 +7,7 @@
       unelevated
       no-caps
       class="safic-btn"
-      :to="{ name: 'inicio' }"
+      :to="{ name: route.meta.plataforma ? 'plataforma' : 'inicio' }"
       :label="t('errores.volverInicio')"
     />
   </q-page>
@@ -15,8 +15,10 @@
 
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
+import { useRoute } from 'vue-router';
 
 import { ICONOS } from '@/core/navigation/icons';
 
 const { t } = useI18n();
+const route = useRoute();
 </script>

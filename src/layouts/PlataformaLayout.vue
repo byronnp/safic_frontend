@@ -26,7 +26,7 @@
         <MenuLateral :items="menu" tono="plataforma" etiqueta="Menú de plataforma" class="col-grow">
           <template #pie>
             <div class="lateral__usuario">
-              <MenuUsuario rol="Super admin" />
+              <MenuUsuario :rol="etiquetaRol(session.rolesPlataforma)" />
             </div>
           </template>
         </MenuLateral>
@@ -48,6 +48,7 @@ import { useRoute } from 'vue-router';
 import VistaPreviaAviso from '@/components/VistaPreviaAviso.vue';
 import { ICONOS } from '@/core/navigation/icons';
 import { filtrarMenu, MENU_PLATAFORMA } from '@/core/navigation/menu';
+import { etiquetaRol } from '@/core/navigation/roles';
 import { MOSTRAR_VISTAS_PREVIAS } from '@/core/vista-previa';
 import MenuLateral from '@/layouts/components/MenuLateral.vue';
 import MenuUsuario from '@/layouts/components/MenuUsuario.vue';
@@ -58,7 +59,9 @@ const session = useSessionStore();
 const menuAbierto = ref(false);
 
 const menu = computed(() =>
-  filtrarMenu(MENU_PLATAFORMA, session.permisos, { vistasPrevias: MOSTRAR_VISTAS_PREVIAS }),
+  filtrarMenu(MENU_PLATAFORMA, session.permisosPlataforma, {
+    vistasPrevias: MOSTRAR_VISTAS_PREVIAS,
+  }),
 );
 </script>
 

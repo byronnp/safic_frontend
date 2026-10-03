@@ -28,6 +28,8 @@ export default {
     cambiar: 'Cambiar de condominio',
     principal: 'Principal',
     sinCondominios: 'Tu usuario no tiene condominios activos. Comunícate con la administración.',
+    panelPlataforma: 'Panel de la plataforma',
+    misCondominios: 'Ir a mis condominios',
   },
   errores: {
     noEncontrada: 'No encontramos esta página.',

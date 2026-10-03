@@ -50,6 +50,13 @@ export interface Usuario {
   nombre: string;
   email: string;
   condominios: CondominioResumen[];
+  /** Perfil de plataforma (super admin, soporte, cobranza…); null si no tiene. */
+  plataforma: ContextoPlataforma | null;
+}
+
+export interface ContextoPlataforma {
+  roles: string[];
+  permisos: string[];
 }
 
 export interface RespuestaToken {

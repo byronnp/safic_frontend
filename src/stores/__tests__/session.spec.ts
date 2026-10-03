@@ -6,7 +6,10 @@ import { authService } from '@/core/auth/auth.service';
 
 import { useSessionStore } from '../session';
 
-function token(condominios: number[]): RespuestaToken {
+function token(
+  condominios: number[],
+  plataforma: RespuestaToken['usuario']['plataforma'] = null,
+): RespuestaToken {
   return {
     access_token: 'jwt',
     token_type: 'Bearer',
@@ -23,6 +26,7 @@ function token(condominios: number[]): RespuestaToken {
         estado: 'activo',
         marca: null,
       })),
+      plataforma,
     },
   };
 }
@@ -62,6 +66,23 @@ describe('sesión', () => {
     const otra = useSessionStore();
     await otra.iniciarSesion('maria@jardinesdelvalle.ec', 'secreto');
     expect(otra.condominioId).toBe(9);
+  });
+
+  it('el super admin sin condominios tiene perfil de plataforma y no pide condominio', async () => {
+    vi.spyOn(authService, 'login').mockResolvedValue(
+      token([], { roles: ['super_admin'], permisos: ['plataforma.condominios'] }),
+    );
+    const contexto = vi.spyOn(authService, 'contexto');
+    const session = useSessionStore();
+
+    await session.iniciarSesion('admin@safic.ec', 'secreto');
+
+    expect(session.esPlataforma).toBe(true);
+    expect(session.condominioId).toBeNull();
+    expect(session.tienePermisoPlataforma('plataforma.condominios')).toBe(true);
+    // Los permisos de plataforma no sirven dentro de un condominio
+    expect(session.tienePermiso('plataforma.condominios')).toBe(false);
+    expect(contexto).not.toHaveBeenCalled();
   });
 
   it('no permite elegir un condominio ajeno', async () => {
