@@ -31,3 +31,6 @@ coverage
 
 # Claude Code: ajustes personales
 .claude/settings.local.json
+
+# codebase-memory-mcp: datos locales del índice
+.codebase-memory/
