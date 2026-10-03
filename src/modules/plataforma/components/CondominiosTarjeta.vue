@@ -3,54 +3,82 @@
     <div class="tarjeta__cabecera">
       <div
         class="tarjeta__avatar"
-        :style="{ background: condominio.fondo, color: condominio.texto }"
+        :style="{ background: color.fondo, color: color.texto }"
         aria-hidden="true"
       >
-        {{ condominio.iniciales }}
+        {{ iniciales(condominio.nombre) }}
       </div>
       <div class="tarjeta__nombres">
         <div class="tarjeta__nombre">{{ condominio.nombre }}</div>
-        <div class="tarjeta__ciudad">{{ condominio.ciudad }}</div>
+        <div class="tarjeta__ciudad">{{ lugar }}</div>
       </div>
-      <EstadoBadge :tono="TONO[condominio.estado]" :texto="condominio.estado" />
+      <EstadoBadge
+        :tono="ESTADO[condominio.estado].tono"
+        :texto="ESTADO[condominio.estado].texto"
+      />
     </div>
 
     <div class="tarjeta__cifras">
       <div>
-        <div class="tarjeta__valor">{{ condominio.unidades }}</div>
+        <div class="tarjeta__valor">{{ condominio.total_unidades }}</div>
         <div class="tarjeta__etiqueta">Unidades</div>
       </div>
       <div>
-        <div class="tarjeta__valor">{{ condominio.residentes }}</div>
-        <div class="tarjeta__etiqueta">Residentes</div>
+        <div class="tarjeta__valor">{{ mensualidad }}</div>
+        <div class="tarjeta__etiqueta">Mensualidad</div>
       </div>
       <div>
-        <div class="tarjeta__valor">{{ condominio.admins }}</div>
+        <div class="tarjeta__valor">{{ condominio.administradores.length }}</div>
         <div class="tarjeta__etiqueta">Admins</div>
       </div>
     </div>
 
     <div class="tarjeta__pie">
-      <div class="tarjeta__plan">Plan {{ condominio.plan }}</div>
-      <router-link :to="{ name: 'unidades' }" class="tarjeta__enlace">
-        Entrar como admin
-      </router-link>
+      <div class="tarjeta__plan">
+        Plan {{ condominio.plan?.nombre ?? '—' }} · {{ condominio.codigo }}
+      </div>
+      <div class="tarjeta__admin" :title="administrador?.email">{{ adminTxt }}</div>
     </div>
   </article>
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
+
 import EstadoBadge from '@/components/EstadoBadge.vue';
 import type { TonoEstado } from '@/components/EstadoBadge.vue';
-import type { CondominioPlataforma, EstadoCondominio } from '@/modules/plataforma/demo/condominios';
+import { colorAvatar, iniciales } from '@/core/theme/avatar';
+import type {
+  CondominioPlataforma,
+  EstadoCondominio,
+} from '@/modules/plataforma/services/plataforma.service';
+import { formatoMoneda } from '@/utils/formato';
 
-defineProps<{ condominio: CondominioPlataforma }>();
+const props = defineProps<{ condominio: CondominioPlataforma }>();
 
-const TONO: Record<EstadoCondominio, TonoEstado> = {
-  Activo: 'exito',
-  Prueba: 'info',
-  Suspendido: 'error',
+const ESTADO: Record<EstadoCondominio, { tono: TonoEstado; texto: string }> = {
+  activo: { tono: 'exito', texto: 'Activo' },
+  prueba: { tono: 'info', texto: 'Prueba' },
+  solo_lectura: { tono: 'alerta', texto: 'Solo lectura' },
+  suspendido: { tono: 'error', texto: 'Suspendido' },
 };
+
+const color = computed(() => colorAvatar(props.condominio.id));
+const lugar = computed(() => {
+  const u = props.condominio.ubicacion;
+  return [u.parroquia, u.provincia].filter(Boolean).join(', ') || 'Sin ubicación';
+});
+const mensualidad = computed(() =>
+  props.condominio.mensualidad ? formatoMoneda(props.condominio.mensualidad) : '—',
+);
+const administrador = computed(() => props.condominio.administradores[0] ?? null);
+const adminTxt = computed(() => {
+  const a = administrador.value;
+  if (!a) {
+    return 'Sin administrador';
+  }
+  return a.estado === 'invitado' ? `${a.nombre} · invitado` : a.nombre;
+});
 </script>
 
 <style scoped>
@@ -129,15 +157,13 @@ const TONO: Record<EstadoCondominio, TonoEstado> = {
   flex-grow: 1;
 }
 
-.tarjeta__enlace {
-  font-size: 14px;
+.tarjeta__admin {
+  font-size: 13px;
   font-weight: 700;
-  text-decoration: none;
-  padding: 10px 4px;
-  color: var(--q-primary);
-}
-
-.tarjeta__enlace:hover {
-  text-decoration: underline;
+  color: var(--safic-texto-2);
+  max-width: 50%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 </style>

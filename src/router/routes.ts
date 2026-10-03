@@ -54,6 +54,13 @@ const routes: RouteRecordRaw[] = [
         meta: { publica: true, titulo: 'Iniciar sesión' },
       },
       {
+        // Enlace del correo de invitación: crear la contraseña (primer ingreso)
+        path: 'invitacion/:token',
+        name: 'invitacion',
+        component: () => import('@/modules/auth/pages/InvitacionPage.vue'),
+        meta: { publica: true, titulo: 'Crear contraseña' },
+      },
+      {
         path: 'condominios',
         name: 'seleccionar-condominio',
         component: () => import('@/modules/auth/pages/SeleccionarCondominioPage.vue'),
@@ -243,19 +250,22 @@ const routes: RouteRecordRaw[] = [
         'Cobranza',
         () => import('@/modules/plataforma/pages/CobranzaPage.vue'),
       ),
-      previa(
-        'condominios',
-        'plataforma-condominios',
-        'Condominios',
-        () => import('@/modules/plataforma/pages/CondominiosPage.vue'),
-      ),
-      previa(
-        'condominios/nuevo',
-        'plataforma-nuevo-condominio',
-        'Nuevo condominio',
-        () => import('@/modules/plataforma/pages/NuevoCondominioPage.vue'),
-        { menuActivo: 'plataforma-condominios' },
-      ),
+      {
+        path: 'condominios',
+        name: 'plataforma-condominios',
+        component: () => import('@/modules/plataforma/pages/CondominiosPage.vue'),
+        meta: { permiso: 'plataforma.condominios', titulo: 'Condominios' },
+      },
+      {
+        path: 'condominios/nuevo',
+        name: 'plataforma-nuevo-condominio',
+        component: () => import('@/modules/plataforma/pages/NuevoCondominioPage.vue'),
+        meta: {
+          permiso: 'plataforma.condominios',
+          titulo: 'Nuevo condominio',
+          menuActivo: 'plataforma-condominios',
+        },
+      },
       previa(
         'condominios/:id/cuenta',
         'plataforma-cuenta-condominio',

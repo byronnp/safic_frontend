@@ -228,7 +228,6 @@ export const MENU_PLATAFORMA: ItemMenu[] = [
     icono: ICONOS.condominios,
     ruta: 'plataforma-condominios',
     permiso: 'plataforma.condominios',
-    vistaPrevia: true,
   },
   {
     id: 'plataforma.planes',

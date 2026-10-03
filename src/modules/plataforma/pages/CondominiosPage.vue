@@ -7,11 +7,12 @@
           <input
             v-model="busqueda"
             type="search"
-            placeholder="Buscar por nombre o RUC"
+            placeholder="Buscar por nombre, código o RUC"
             aria-label="Buscar condominios"
           />
         </label>
         <q-btn
+          v-if="session.tienePermisoPlataforma('plataforma.condominios')"
           unelevated
           no-caps
           color="primary"
@@ -22,34 +23,76 @@
       </template>
     </PaginaEncabezado>
 
-    <div v-if="filtrados.length" class="condominios__grilla">
-      <CondominiosTarjeta v-for="c in filtrados" :key="c.id" :condominio="c" />
+    <div
+      v-if="consulta.isError.value"
+      class="safic-alerta row items-center"
+      role="alert"
+      style="gap: 12px"
+    >
+      <span class="col-grow">{{ consulta.error.value?.mensaje }}</span>
+      <q-btn flat no-caps dense label="Reintentar" @click="consulta.refetch()" />
     </div>
+
+    <div v-else-if="consulta.isLoading.value" class="condominios__grilla" aria-busy="true">
+      <q-skeleton
+        v-for="n in 6"
+        :key="n"
+        type="rect"
+        height="190px"
+        class="condominios__esqueleto"
+      />
+    </div>
+
+    <template v-else-if="condominios.length">
+      <div class="condominios__grilla">
+        <CondominiosTarjeta v-for="c in condominios" :key="c.id" :condominio="c" />
+      </div>
+      <div v-if="paginacion && paginacion.last_page > 1" class="condominios__paginas">
+        <q-pagination
+          v-model="pagina"
+          :max="paginacion.last_page"
+          :max-pages="7"
+          direction-links
+          boundary-numbers
+          color="primary"
+        />
+      </div>
+    </template>
+
     <div v-else class="safic-card condominios__vacio">
-      <q-icon name="sym_r_search_off" size="28px" />
-      <div>No hay condominios que coincidan con «{{ busqueda }}».</div>
+      <q-icon :name="busquedaDiferida ? 'sym_r_search_off' : 'sym_r_location_city'" size="28px" />
+      <div v-if="busquedaDiferida">
+        No hay condominios que coincidan con «{{ busquedaDiferida }}».
+      </div>
+      <div v-else>Todavía no hay condominios. Crea el primero con «Nuevo condominio».</div>
     </div>
   </q-page>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 import PaginaEncabezado from '@/components/PaginaEncabezado.vue';
 import CondominiosTarjeta from '@/modules/plataforma/components/CondominiosTarjeta.vue';
-import { CONDOMINIOS_PLATAFORMA } from '@/modules/plataforma/demo/condominios';
+import { useSessionStore } from '@/stores/session';
+import { refDebounced } from '@/utils/debounce';
+
+import { useCondominiosPlataforma } from '../composables/usePlataforma';
+
+const session = useSessionStore();
 
 const busqueda = ref('');
+const busquedaDiferida = refDebounced(busqueda, 300);
+const pagina = ref(1);
 
-const filtrados = computed(() => {
-  const texto = busqueda.value.trim().toLowerCase();
-  if (!texto) {
-    return CONDOMINIOS_PLATAFORMA;
-  }
-  return CONDOMINIOS_PLATAFORMA.filter(
-    (c) => c.nombre.toLowerCase().includes(texto) || c.ruc.includes(texto),
-  );
+// Una búsqueda nueva vuelve a la primera página.
+watch(busquedaDiferida, () => {
+  pagina.value = 1;
 });
+
+const consulta = useCondominiosPlataforma(busquedaDiferida, pagina);
+const condominios = computed(() => consulta.data.value?.condominios ?? []);
+const paginacion = computed(() => consulta.data.value?.paginacion ?? null);
 </script>
 
 <style scoped>
@@ -99,6 +142,15 @@ const filtrados = computed(() => {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 18px;
+}
+
+.condominios__paginas {
+  display: flex;
+  justify-content: center;
+}
+
+.condominios__esqueleto {
+  border-radius: 16px;
 }
 
 .condominios__vacio {
