@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<title>Unidades del condominio</title>
+<title>Nueva unidad</title>
 <script src="./support.js"></script>
 </head>
 <body>
@@ -18,7 +18,7 @@ button,input,select{font-family:inherit}
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,300..500,0..1,0" rel="stylesheet">
 </helmet>
-<div style="width: 1440px; height: 900px; display: flex; background: #F5F4EF; overflow: hidden">
+<div style="width: 1440px; height: 900px; display: flex; background: #F5F4EF; overflow: hidden; position: relative">
 
 <nav aria-label="Menú principal" style="width: 248px; flex-shrink: 0; background: #12302F; color: #E8F0EE; display: flex; flex-direction: column; padding: 20px 14px; gap: 4px; box-sizing: border-box">
 <div style="display: flex; align-items: center; gap: 10px; padding: 4px 10px 22px 10px">
@@ -177,11 +177,101 @@ button,input,select{font-family:inherit}
 </section>
 </main>
 </div>
+
+<a href="Main.dc.html" aria-label="Cerrar y volver a unidades" style="position: absolute; inset: 0; background: rgba(18, 48, 47, 0.42); display: block"></a>
+<aside role="dialog" aria-modal="true" aria-labelledby="nu-titulo" style="position: absolute; top: 0; right: 0; width: 540px; height: 900px; background: #FFFFFF; box-shadow: -12px 0 40px rgba(18, 48, 47, 0.18); display: flex; flex-direction: column; box-sizing: border-box">
+
+<div style="display: flex; align-items: flex-start; gap: 12px; padding: 24px 28px 18px 28px; border-bottom: 1px solid #ECE9E0">
+<div style="flex-grow: 1">
+<h2 id="nu-titulo" style="margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -0.3px">Nueva unidad</h2>
+<div style="font-size: 13px; color: #5F5B52; margin-top: 4px">Conjunto Jardines del Valle</div>
+</div>
+<a href="Main.dc.html" aria-label="Cerrar" style="width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #3D3A33">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg></a>
+</div>
+
+<div style="flex-grow: 1; overflow-y: auto; padding: 20px 28px 24px 28px; display: flex; flex-direction: column; gap: 22px">
+
+<div style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 12px; background: #F1F6F5; border: 1px solid #D3E3E0">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0E5E5B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"></path><path d="M5 21V7l7-4 7 4v14"></path></svg>
+<div style="flex-grow: 1; font-size: 13px; color: #1C1B18"><strong>148 de 150</strong> unidades del plan Profesional. Al crearla quedará 1 disponible.</div>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 14px">
+<div style="font-size: 12px; font-weight: 800; letter-spacing: 0.6px; color: #5F5B52">IDENTIFICACIÓN</div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="nu-codigo" style="font-size: 13px; font-weight: 700; color: #3D3A33">Código <span style="color: #9B1C12">*</span></label>
+<input id="nu-codigo" value="{{codigo}}" onChange="{{setCodigo}}" style="{{codigoStyle}}">
+<sc-if value="{{codigoRepetido}}" hint-placeholder-val="{{ false }}"><div role="alert" style="font-size: 12px; font-weight: 700; color: #9B1C12">Ya existe una unidad con el código {{codigo}}.</div></sc-if>
+<sc-if value="{{codigoLibre}}" hint-placeholder-val="{{ true }}"><div style="font-size: 12px; color: #5F5B52">Único en el condominio, ej. A-104.</div></sc-if>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="nu-bloque" style="font-size: 13px; font-weight: 700; color: #3D3A33">Bloque <span style="color: #9B1C12">*</span></label>
+<select id="nu-bloque" style="height: 46px; padding: 0 12px; border: 1px solid #CFCBBF; border-radius: 10px; font-size: 15px; background: #FFFFFF; box-sizing: border-box; width: 100%; outline-color: #0E5E5B">
+<option>Torre A</option><option>Torre B</option><option>Torre C</option><option>Casas</option>
+</select>
+<div style="font-size: 12px; color: #5F5B52">Los bloques se crean en Unidades › Bloques.</div>
+</div>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 8px">
+<div id="nu-tipo" style="font-size: 13px; font-weight: 700; color: #3D3A33">Tipo <span style="color: #9B1C12">*</span></div>
+<div role="radiogroup" aria-labelledby="nu-tipo" style="display: flex; flex-wrap: wrap; gap: 8px">
+<sc-for list="{{tipos}}" as="t" hint-placeholder-count="5">
+<button role="radio" aria-checked="{{t.activo}}" onClick="{{t.pick}}" style="{{t.estilo}}">{{t.nombre}}</button>
+</sc-for>
+</div>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="nu-piso" style="font-size: 13px; font-weight: 700; color: #3D3A33">Piso</label>
+<input id="nu-piso" type="number" value="1" style="height: 46px; padding: 0 12px; border: 1px solid #CFCBBF; border-radius: 10px; font-size: 15px; background: #FFFFFF; box-sizing: border-box; width: 100%; outline-color: #0E5E5B">
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="nu-area" style="font-size: 13px; font-weight: 700; color: #3D3A33">Área (m²) <span style="color: #9B1C12">*</span></label>
+<input id="nu-area" inputmode="decimal" value="84" style="height: 46px; padding: 0 12px; border: 1px solid #CFCBBF; border-radius: 10px; font-size: 15px; background: #FFFFFF; box-sizing: border-box; width: 100%; outline-color: #0E5E5B">
+</div>
+</div>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 14px">
+<div style="font-size: 12px; font-weight: 800; letter-spacing: 0.6px; color: #5F5B52">COBRO</div>
+<div role="note" style="display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-radius: 12px; background: #F1F6F5; border: 1px solid #D3E3E0">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0E5E5B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v5M12 8h.01"></path></svg>
+<div style="flex-grow: 1">
+<div style="font-size: 13px; font-weight: 700; color: #0B4A47">Esta unidad pagará el valor general</div>
+<div style="font-size: 12px; color: #3D3A33; margin-top: 2px">Igual para casas y departamentos. Se cambia en <a href="F1CobroCuotas.dc.html" style="font-weight: 700">Configuración › Cobro de cuotas</a>.</div>
+</div>
+<div style="font-size: 22px; font-weight: 800; color: #0B4A47">$ 80,00</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<div id="nu-resp" style="font-size: 13px; font-weight: 700; color: #3D3A33">Responsable de pago <span style="color: #9B1C12">*</span></div>
+<div role="radiogroup" aria-labelledby="nu-resp" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+<sc-for list="{{responsables}}" as="r" hint-placeholder-count="2">
+<button role="radio" aria-checked="{{r.activo}}" onClick="{{r.pick}}" style="{{r.estilo}}">
+<span style="{{r.punto}}"></span>
+<span style="display: flex; flex-direction: column; text-align: left"><span style="font-size: 14px; font-weight: 700; color: #1C1B18">{{r.nombre}}</span><span style="font-size: 12px; color: #5F5B52">{{r.detalle}}</span></span>
+</button>
+</sc-for>
+</div>
+</div>
+</div>
+</div>
+
+<div style="display: flex; align-items: center; gap: 10px; padding: 16px 28px; border-top: 1px solid #ECE9E0; background: #FAF9F5">
+<a href="Main.dc.html" style="height: 46px; padding: 0 16px; border-radius: 10px; font-size: 14px; font-weight: 700; color: #3D3A33; display: flex; align-items: center; text-decoration: none">Cancelar</a>
+<div style="flex-grow: 1"></div>
+<button style="height: 46px; padding: 0 16px; border-radius: 10px; border: 1px solid #D8D4C8; background: #FFFFFF; font-size: 14px; font-weight: 700; color: #1C1B18; cursor: pointer">Guardar y crear otra</button>
+<button disabled="{{noGuardar}}" style="{{guardarEstilo}}">Crear unidad</button>
+</div>
+</aside>
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"variosCondominios":{"editor":"boolean","default":true},"$preview":{"width":1440,"height":900}}'>
 class Component extends DCLogic {
-  constructor(props) { super(props); this.state = { menuOpen: false, active: 0 }; }
+  constructor(props) { super(props); this.state = { menuOpen: false, active: 0, codigo: 'A-104', tipo: 0, alicuota: '', resp: 0 }; }
   renderVals() {
     var self = this;
     var multi = this.props.variosCondominios ?? true;
@@ -203,6 +293,52 @@ class Component extends DCLogic {
       principal: condos.filter(function (c) { return c.principal; }),
       secundarios: condos.filter(function (c) { return !c.principal; })
     };
+    var st = this.state;
+    var existentes = ['A-101','A-102','A-201','B-305','B-306','C-110','CS-04','CS-07'];
+    var repetido = existentes.indexOf(String(st.codigo).trim().toUpperCase()) !== -1;
+    var inputBase = 'height:46px;padding:0 12px;border-radius:10px;font-size:15px;background:#FFFFFF;box-sizing:border-box;width:100%;outline-color:#0E5E5B;border:1px solid ';
+    var TIPOS = [['Departamento','$ 80,00'],['Casa','$ 120,00'],['Local','$ 150,00'],['Parqueadero','$ 15,00'],['Bodega','$ 10,00']];
+    var tipos = TIPOS.map(function (t, i) {
+      var on = i === st.tipo;
+      return { nombre: t[0], activo: on ? 'true' : 'false', pick: function () { self.setState({ tipo: i }); },
+        estilo: 'height:44px;padding:0 16px;border-radius:999px;font-size:14px;font-weight:700;cursor:pointer;' + (on ? 'border:1px solid #0E5E5B;background:#0E5E5B;color:#FFFFFF' : 'border:1px solid #D8D4C8;background:#FFFFFF;color:#3D3A33') };
+    });
+    var RESP = [['Propietario','Recibe las cuotas (por defecto)'],['Inquilino','Paga mientras haya contrato']];
+    var responsables = RESP.map(function (r, i) {
+      var on = i === st.resp;
+      return { nombre: r[0], detalle: r[1], activo: on ? 'true' : 'false', pick: function () { self.setState({ resp: i }); },
+        estilo: 'display:flex;align-items:center;gap:12px;min-height:60px;padding:10px 14px;border-radius:12px;cursor:pointer;background:' + (on ? '#F1F6F5;border:2px solid #0E5E5B' : '#FFFFFF;border:1px solid #D8D4C8'),
+        punto: 'width:18px;height:18px;border-radius:50%;flex-shrink:0;box-sizing:border-box;' + (on ? 'border:6px solid #0E5E5B' : 'border:2px solid #A9A498') };
+    });
+    var ali = parseFloat(String(st.alicuota).replace(',', '.'));
+    var aliVacia = String(st.alicuota).trim() === '';
+    var aliOk = true;
+    var suma = 99.62 + (aliOk ? ali : 0);
+    var dif = Math.round((100 - suma) * 10000) / 10000;
+    var fmt = function (x) { return x.toFixed(4).replace('.', ','); };
+    var estado = Math.abs(dif) < 0.00005 ? 'ok' : (dif > 0 ? 'falta' : 'exceso');
+    var tonos = { ok: ['#E3EFEC','#B9D8D1','#0B4A47','#0E5E5B'], falta: ['#FFF7EC','#F1D6AE','#8A3F0A','#C98A2E'], exceso: ['#FDE8E6','#F2C1BB','#9B1C12','#C0392B'] }[estado];
+    var form = {
+      codigo: st.codigo,
+      setCodigo: function (e) { self.setState({ codigo: e.target.value }); },
+      codigoRepetido: repetido,
+      codigoLibre: !repetido,
+      codigoStyle: inputBase + (repetido ? '#9B1C12;background:#FFF8F7' : '#CFCBBF'),
+      tipos: tipos,
+      responsables: responsables,
+      valorTipo: TIPOS[st.tipo][1] + ' para ' + TIPOS[st.tipo][0].toLowerCase(),
+      alicuota: st.alicuota,
+      setAlicuota: function (e) { self.setState({ alicuota: e.target.value }); },
+      alicuotaTexto: (!aliVacia && aliOk) ? fmt(ali) : '—',
+      cuotaTexto: '$ 80,00',
+      alicuotaNota: aliVacia ? 'Sin alícuota, la unidad vota en partes iguales: con 149 unidades, 0,6711 % cada una. Si el condominio tiene la tabla de la escritura, cárgala aquí o con Importar Excel.' : (aliOk ? 'En las asambleas esta unidad votará con ' + fmt(ali) + ' %. La suma del condominio se revisa en Unidades.' : 'Escribe un porcentaje mayor que 0 y menor que 100, con hasta 4 decimales.'),
+      sumaTexto: fmt(suma) + ' %',
+      sumaNota: estado === 'ok' ? 'Cuadra en 100 %' : (estado === 'falta' ? 'Faltan ' + fmt(dif) + ' %' : 'Excede en ' + fmt(-dif) + ' %'),
+      sumaCaja: 'padding:14px 16px;border-radius:12px;background:' + tonos[0] + ';border:1px solid ' + tonos[1] + ';color:' + tonos[2],
+      sumaBarra: 'height:8px;border-radius:4px;background:' + tonos[3] + ';width:' + Math.min(100, suma) + '%',
+      noGuardar: repetido || !aliOk || String(st.codigo).trim() === '',
+      guardarEstilo: 'height:46px;padding:0 20px;border-radius:10px;border:none;font-size:14px;font-weight:700;color:#FFFFFF;cursor:pointer;background:' + ((repetido || !aliOk || String(st.codigo).trim() === '') ? '#9DB8B5' : '#0E5E5B')
+    };
     var b = {
       ocupada: 'display:inline-block;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:700;background:#E3EFEC;color:#0B4A47',
       arrendada: 'display:inline-block;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:700;background:#E6ECF7;color:#23407A',
@@ -218,7 +354,7 @@ class Component extends DCLogic {
       ['CS-04','Casas','Casa','Gabriela Torres','Gabriela Torres','180 m²','1,33 %','Ocupada','ocupada'],
       ['CS-07','Casas','Casa','Ramiro Espinosa','Ramiro Espinosa','165 m²','1,22 %','Ocupada','ocupada']
     ].map(function (x) { return { codigo:x[0], bloque:x[1], tipo:x[2], propietario:x[3], ocupante:x[4], area:x[5], alicuota:x[6], estado:x[7], badge:b[x[8]], paga: x[8] === 'arrendada' ? 'Inquilino' : 'Propietario' }; });
-    return Object.assign(extra, {
+    return Object.assign(extra, form, {
       rows: rows,
       filters: [{ label: 'Bloque: Todos' }, { label: 'Tipo: Todos' }, { label: 'Estado: Todos' }]
     });

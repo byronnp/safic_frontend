@@ -12,8 +12,10 @@ tamaños, colores, espaciados e íconos (Material Symbols Rounded, `sym_r_<nombr
 | --- | --- | --- | --- |
 | Login.dc.html | Iniciar sesión | `/login` | modules/auth/pages/LoginPage.vue |
 | Main.dc.html | Admin · Unidades | `/unidades` | modules/unidades/pages/UnidadesPage.vue |
+| F1NuevaUnidad.dc.html | Admin · Nueva unidad (panel lateral) | `/unidades` (panel) | modules/unidades/components/UnidadPanel.vue (pendiente, S2) |
 | UnidadDetalle.dc.html | Admin · Detalle de unidad | `/unidades/:codigo` | modules/unidades/pages/UnidadDetallePage.vue |
 | F1Apariencia.dc.html | Admin · Datos del condominio (Apariencia) | `/configuracion/condominio` | modules/configuracion/pages/DatosCondominioPage.vue |
+| F1CobroCuotas.dc.html | Admin · Configuración › Cobro de cuotas | `/configuracion/cobro` | modules/configuracion/pages/CobroCuotasPage.vue (pendiente, S2) |
 | F1AmenidadesCondominio.dc.html | Admin · Amenidades | `/configuracion/amenidades` | modules/configuracion/pages/AmenidadesPage.vue |
 | F1Usuarios.dc.html | Admin · Usuarios, cupo y bitácora | `/configuracion/usuarios` | modules/configuracion/pages/UsuariosPage.vue |
 | F1RolesCondominio.dc.html | Admin · Roles del condominio | `/configuracion/roles` | modules/configuracion/pages/RolesPage.vue |
@@ -30,7 +32,7 @@ tamaños, colores, espaciados e íconos (Material Symbols Rounded, `sym_r_<nombr
 | F5Preparar.dc.html | Admin · Preparar asamblea | `/asambleas/preparar` | modules/asambleas/pages/PrepararAsambleaPage.vue |
 | F5Mesa.dc.html | Presidente · Mesa de la asamblea | `/asambleas/mesa` | modules/asambleas/pages/MesaAsambleaPage.vue |
 | Platform.dc.html | Super admin · Condominios | `/plataforma/condominios` | modules/plataforma/pages/CondominiosPage.vue |
-| F1Asistente.dc.html | Super admin · Nuevo condominio | `/plataforma/condominios/nuevo` | modules/plataforma/pages/NuevoCondominioPage.vue |
+| F1Asistente.dc.html | Super admin · Nuevo condominio (5 pasos, incluye cobro de cuotas) | `/plataforma/condominios/nuevo` | modules/plataforma/pages/NuevoCondominioPage.vue |
 | F1CatalogoAmenidades.dc.html | Super admin · Catálogo de amenidades | `/plataforma/amenidades` | modules/plataforma/pages/CatalogoAmenidadesPage.vue |
 | F1PlataformaRoles.dc.html | Super admin · Roles y permisos | `/plataforma/roles` | modules/plataforma/pages/RolesPermisosPage.vue |
 | F1PlataformaMenu.dc.html | Super admin · Menú del sistema | `/plataforma/menu` | modules/plataforma/pages/MenuSistemaPage.vue |
