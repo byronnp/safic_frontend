@@ -1,5 +1,24 @@
 <template>
-  <nav :aria-label="etiqueta" class="menu" :class="`menu--${tono}`">
+  <nav :aria-label="etiqueta" class="menu" :class="`menu--${tono}`" :aria-busy="cargando">
+    <!-- Cargando: líneas de esqueleto con el alto de un enlace -->
+    <template v-if="cargando && !items.length">
+      <q-skeleton
+        v-for="n in 4"
+        :key="n"
+        type="rect"
+        height="40px"
+        class="menu__esqueleto"
+        animation="fade"
+      />
+    </template>
+
+    <!-- Error: el menú no se pudo cargar -->
+    <div v-else-if="error && !items.length" class="menu__error" role="alert">
+      <q-icon name="sym_r_error" size="20px" />
+      <span>No pudimos cargar el menú.</span>
+      <button type="button" class="menu__reintentar" @click="emit('reintentar')">Reintentar</button>
+    </div>
+
     <template v-for="item in items" :key="item.id">
       <!-- Grupo siempre desplegado (CONFIGURACIÓN, ACCESO) -->
       <template v-if="item.seccion && item.hijos?.length">
@@ -58,9 +77,17 @@ import { type ItemMenu, moduloDeRuta } from '@/core/navigation/menu';
 import EnlaceMenu from './EnlaceMenu.vue';
 
 const props = withDefaults(
-  defineProps<{ items: ItemMenu[]; tono?: 'condominio' | 'plataforma'; etiqueta?: string }>(),
-  { tono: 'condominio', etiqueta: 'Menú principal' },
+  defineProps<{
+    items: ItemMenu[];
+    tono?: 'condominio' | 'plataforma';
+    etiqueta?: string;
+    cargando?: boolean;
+    error?: boolean;
+  }>(),
+  { tono: 'condominio', etiqueta: 'Menú principal', cargando: false, error: false },
 );
+
+const emit = defineEmits<{ reintentar: [] }>();
 
 const route = useRoute();
 
@@ -127,6 +154,39 @@ function esActual(item: ItemMenu): boolean {
   --menu-texto: #bdb8ac;
   --menu-activo: #34322d;
   --menu-seccion: #8a857a;
+}
+
+.menu__esqueleto {
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.menu__error {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--menu-texto);
+  font-size: 13px;
+}
+
+.menu__reintentar {
+  border: none;
+  background: transparent;
+  color: #ffffff;
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+}
+
+.menu__reintentar:focus-visible {
+  outline: 2px solid var(--q-accent);
+  outline-offset: 2px;
 }
 
 .menu__seccion {

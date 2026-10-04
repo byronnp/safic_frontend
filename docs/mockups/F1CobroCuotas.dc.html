@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Cobro de cuotas</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+.ms{font-family:"Material Symbols Rounded";font-weight:normal;font-style:normal;font-size:20px;line-height:1;width:20px;height:20px;overflow:hidden;flex-shrink:0;display:inline-block;white-space:nowrap;direction:ltr;font-feature-settings:"liga";-webkit-font-smoothing:antialiased;font-variation-settings:"FILL" 0,"wght" 400,"GRAD" 0,"opsz" 20}.ms.on{font-variation-settings:"FILL" 1,"wght" 500,"GRAD" 0,"opsz" 20}
+body{margin:0;font-family:Manrope,system-ui,sans-serif;background:#F5F4EF;color:#1C1B18}
+a{color:#0E5E5B}a:hover{color:#08403E}
+button,input,select{font-family:inherit}
+</style>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,300..500,0..1,0" rel="stylesheet">
+</helmet>
+<div style="width: 1440px; height: 900px; display: flex; background: #F5F4EF; overflow: hidden">
+
+<nav aria-label="Menú principal" style="width: 248px; flex-shrink: 0; background: #12302F; color: #E8F0EE; display: flex; flex-direction: column; padding: 20px 14px; gap: 2px; box-sizing: border-box">
+<div style="display: flex; align-items: center; gap: 10px; padding: 4px 10px 20px 10px">
+<div style="width: 34px; height: 34px; border-radius: 9px; background: #F0B35A; color: #12302F; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px">JV</div>
+<div style="font-weight: 800; font-size: 16px; line-height: 1.15">Jardines<br>del Valle</div>
+</div>
+<a href="Main.dc.html" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #C6D6D3; text-decoration: none; font-size: 14px; font-weight: 600"><span class="ms" aria-hidden="true">apartment</span>Unidades</a>
+<a href="F2Resumen.dc.html" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #C6D6D3; text-decoration: none; font-size: 14px; font-weight: 600"><span class="ms" aria-hidden="true">account_balance_wallet</span>Finanzas</a>
+<a href="F3Agenda.dc.html" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #C6D6D3; text-decoration: none; font-size: 14px; font-weight: 600"><span class="ms" aria-hidden="true">event_available</span>Áreas comunes</a>
+<a href="F4Tickets.dc.html" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #C6D6D3; text-decoration: none; font-size: 14px; font-weight: 600"><span class="ms" aria-hidden="true">shield_person</span>Seguridad y comunicación</a>
+<div style="padding: 16px 12px 6px 12px; font-size: 11px; font-weight: 800; letter-spacing: 1px; color: #8FB0AB">CONFIGURACIÓN</div>
+<a href="F1Apariencia.dc.html" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #C6D6D3; text-decoration: none; font-size: 14px; font-weight: 600"><span class="ms" aria-hidden="true">domain</span>Datos del condominio</a>
+<a href="F1CobroCuotas.dc.html" aria-current="page" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #FFFFFF; background: #1E4A48; text-decoration: none; font-size: 14px; font-weight: 700"><span class="ms on" aria-hidden="true">request_quote</span>Cobro de cuotas</a>
+<a href="F1AmenidadesCondominio.dc.html" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #C6D6D3; text-decoration: none; font-size: 14px; font-weight: 600"><span class="ms" aria-hidden="true">pool</span>Amenidades</a>
+<a href="F1Usuarios.dc.html" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #C6D6D3; text-decoration: none; font-size: 14px; font-weight: 600"><span class="ms" aria-hidden="true">manage_accounts</span>Usuarios</a>
+<a href="F1RolesCondominio.dc.html" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #C6D6D3; text-decoration: none; font-size: 14px; font-weight: 600"><span class="ms" aria-hidden="true">admin_panel_settings</span>Roles</a>
+<a href="F6MiSuscripcion.dc.html" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #C6D6D3; text-decoration: none; font-size: 14px; font-weight: 600"><span class="ms" aria-hidden="true">card_membership</span>Mi suscripción</a>
+</nav>
+
+<div style="flex-grow: 1; display: flex; flex-direction: column; min-width: 0">
+<header style="height: 64px; flex-shrink: 0; background: #FFFFFF; border-bottom: 1px solid #E4E1D8; display: flex; align-items: center; padding: 0 32px; gap: 12px; box-sizing: border-box">
+<div style="font-size: 15px; font-weight: 700; flex-grow: 1">Conjunto Jardines del Valle</div>
+<div style="width: 38px; height: 38px; border-radius: 50%; background: #F0B35A; color: #12302F; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px">MR</div>
+</header>
+
+<main style="flex-grow: 1; padding: 20px 32px; display: flex; flex-direction: column; gap: 16px; box-sizing: border-box; min-height: 0">
+<div style="display: flex; align-items: flex-end; gap: 16px">
+<div style="flex-grow: 1">
+<div style="font-size: 13px; color: #5F5B52; font-weight: 600">Configuración / Cobro de cuotas</div>
+<h1 style="margin: 4px 0 0 0; font-size: 26px; font-weight: 800; letter-spacing: -0.4px">Cobro de cuotas</h1>
+</div>
+<sc-if value="{{guardado}}" hint-placeholder-val="{{ false }}"><div role="status" style="padding: 8px 12px; border-radius: 10px; background: #E3EFEC; color: #0B4A47; font-size: 13px; font-weight: 700">Cambios guardados · aplican desde noviembre 2026</div></sc-if>
+</div>
+
+<div style="display: flex; gap: 18px; flex-grow: 1; min-height: 0">
+<section style="flex-grow: 1; min-width: 0; background: #FFFFFF; border: 1px solid #E4E1D8; border-radius: 14px; padding: 22px 24px; display: flex; flex-direction: column; gap: 18px; box-sizing: border-box; overflow-y: auto">
+<div style="font-size: 12px; font-weight: 800; letter-spacing: 0.6px; color: #5F5B52">CÓMO SE COBRA</div>
+<div style="display: flex; flex-direction: column; gap: 10px">
+<div id="mc-metodo" style="font-size: 13px; font-weight: 700; color: #3D3A33">Método de cobro</div>
+<div role="radiogroup" aria-labelledby="mc-metodo" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px">
+<sc-for list="{{metodos}}" as="m" hint-placeholder-count="4">
+<button role="radio" aria-checked="{{m.activo}}" onClick="{{m.pick}}" style="{{m.estilo}}">
+<span style="display: flex; align-items: center; gap: 8px"><span style="{{m.punto}}"></span><span style="font-size: 14px; font-weight: 800; color: #1C1B18">{{m.nombre}}</span></span>
+<span style="font-size: 12px; color: #5F5B52; text-align: left; line-height: 1.4">{{m.detalle}}</span>
+</button>
+</sc-for>
+</div>
+</div>
+
+<sc-if value="{{esGeneral}}" hint-placeholder-val="{{ true }}">
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="mc-cuota" style="font-size: 13px; font-weight: 700; color: #3D3A33">Cuota mensual por unidad</label>
+<div style="display: flex; align-items: center; height: 46px; border: 2px solid #0E5E5B; border-radius: 10px; padding: 0 12px; box-sizing: border-box; gap: 6px">
+<span style="font-size: 16px; font-weight: 800; color: #5F5B52">$</span>
+<input id="mc-cuota" inputmode="decimal" value="{{cuota}}" onChange="{{setCuota}}" style="border: none; outline: none; font-size: 16px; font-weight: 800; flex-grow: 1; background: transparent; min-width: 0">
+</div>
+<div style="font-size: 12px; color: #5F5B52">La pagan todas por igual: casas, departamentos y locales.</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{esTipo}}" hint-placeholder-val="{{ false }}">
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px">
+<sc-for list="{{tiposValor}}" as="t" hint-placeholder-count="5">
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 700; color: #3D3A33">{{t.nombre}}
+<span style="display: flex; align-items: center; height: 44px; border: 1px solid #CFCBBF; border-radius: 10px; padding: 0 12px; box-sizing: border-box; gap: 6px; font-weight: 700"><span style="color: #5F5B52">$</span><input value="{{t.valor}}" inputmode="decimal" style="border: none; outline: none; font-size: 15px; flex-grow: 1; background: transparent; min-width: 0"></span>
+</label>
+</sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{esAlicuota}}" hint-placeholder-val="{{ false }}">
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="mc-presupuesto" style="font-size: 13px; font-weight: 700; color: #3D3A33">Presupuesto mensual del condominio</label>
+<div style="display: flex; align-items: center; height: 46px; border: 1px solid #CFCBBF; border-radius: 10px; padding: 0 12px; box-sizing: border-box; gap: 6px"><span style="font-weight: 700; color: #5F5B52">$</span><input id="mc-presupuesto" inputmode="decimal" value="12.000,00" style="border: none; outline: none; font-size: 15px; flex-grow: 1; background: transparent; min-width: 0"></div>
+<div style="font-size: 12px; color: #5F5B52">Cada unidad paga su alícuota de este total. Ej.: 0,62 % → $ 74,40.</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{esUnidad}}" hint-placeholder-val="{{ false }}">
+<div style="padding: 14px 16px; border-radius: 12px; background: #FAF9F5; border: 1px solid #ECE9E0; font-size: 13px; color: #3D3A33; line-height: 1.5">La cuota se escribe en cada unidad al crearla o en la columna <strong>cuota</strong> del Excel de unidades. Una unidad sin cuota no se puede guardar.</div>
+</sc-if>
+
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="mc-vence" style="font-size: 13px; font-weight: 700; color: #3D3A33">Día de vencimiento</label>
+<select id="mc-vence" style="height: 46px; padding: 0 12px; border: 1px solid #CFCBBF; border-radius: 10px; font-size: 15px; background: #FFFFFF; box-sizing: border-box; width: 100%"><option>Día 5 de cada mes</option><option selected>Día 10 de cada mes</option><option>Día 15 de cada mes</option><option>Último día del mes</option></select>
+<div style="font-size: 12px; color: #5F5B52">Pasada esta fecha la cuota queda vencida.</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="mc-desde" style="font-size: 13px; font-weight: 700; color: #3D3A33">{{desdeEtiqueta}}</label>
+<select id="mc-desde" style="height: 46px; padding: 0 12px; border: 1px solid #CFCBBF; border-radius: 10px; font-size: 15px; background: #FFFFFF; box-sizing: border-box; width: 100%"><option>Noviembre 2026</option><option>Diciembre 2026</option><option>Enero 2027</option></select>
+<div style="font-size: 12px; color: #5F5B52">{{desdeAyuda}}</div>
+</div>
+</div>
+
+<div style="flex-grow: 1"></div>
+<div style="display: flex; align-items: center; gap: 12px; border-top: 1px solid #ECE9E0; padding-top: 16px">
+<div style="flex-grow: 1; font-size: 13px; color: #5F5B52">Las cuotas ya emitidas no cambian. El cambio queda en la auditoría.</div>
+<button onClick="{{descartar}}" style="height: 46px; padding: 0 16px; border-radius: 10px; border: 1px solid #D8D4C8; background: #FFFFFF; font-size: 14px; font-weight: 700; cursor: pointer">Descartar</button>
+<button onClick="{{guardar}}" disabled="{{noGuardar}}" style="{{guardarEstilo}}">Guardar cambios</button>
+</div>
+</section>
+
+<aside style="width: 380px; flex-shrink: 0; display: flex; flex-direction: column; gap: 16px">
+<div style="background: #12302F; color: #E8F0EE; border-radius: 14px; padding: 18px 20px">
+<div style="font-size: 12px; font-weight: 800; letter-spacing: 0.6px; color: #8FB0AB">PRÓXIMA EMISIÓN · NOVIEMBRE 2026</div>
+<div style="font-size: 32px; font-weight: 800; color: #FFFFFF; margin-top: 8px">{{totalTxt}}</div>
+<div style="font-size: 13px; color: #B9CDC9; margin-top: 2px">{{totalDetalle}}</div>
+<div style="height: 1px; background: #1E4A48; margin: 14px 0"></div>
+<div style="display: flex; flex-direction: column; gap: 8px; font-size: 13px">
+<div style="display: flex"><span style="flex-grow: 1; color: #B9CDC9">Método</span><strong>{{metodoTxt}}</strong></div>
+<div style="display: flex"><span style="flex-grow: 1; color: #B9CDC9">Cuota por unidad</span><strong>{{cuotaUnidad}}</strong></div>
+<div style="display: flex"><span style="flex-grow: 1; color: #B9CDC9">Vence</span><strong>10 nov 2026</strong></div>
+</div>
+</div>
+
+<div style="background: #FFFFFF; border: 1px solid #E4E1D8; border-radius: 14px; padding: 18px 20px; display: flex; flex-direction: column; gap: 12px; min-height: 0">
+<div style="font-size: 12px; font-weight: 800; letter-spacing: 0.6px; color: #5F5B52">HISTORIAL DE CAMBIOS</div>
+<sc-for list="{{historial}}" as="h" hint-placeholder-count="3">
+<div style="display: flex; gap: 12px">
+<div style="width: 8px; height: 8px; border-radius: 50%; background: #0E5E5B; margin-top: 6px; flex-shrink: 0"></div>
+<div>
+<div style="font-size: 13px; font-weight: 700">{{h.cambio}}</div>
+<div style="font-size: 12px; color: #5F5B52; margin-top: 2px">{{h.quien}}</div>
+</div>
+</div>
+</sc-for>
+</div>
+</aside>
+</div>
+</main>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { metodo: 'general', cuota: '80,00', guardado: false };
+  }
+  renderVals() {
+    var self = this, S = this.state;
+    var M = [
+      ['general', 'Valor general', 'Todas pagan lo mismo'],
+      ['tipo', 'Por tipo', 'Casa, departamento, local…'],
+      ['alicuota', 'Por alícuota', '% del presupuesto mensual'],
+      ['unidad', 'Por unidad', 'Cada unidad su valor']
+    ];
+    var metodos = M.map(function (m) {
+      var on = m[0] === S.metodo;
+      return { nombre: m[1], detalle: m[2], activo: on ? 'true' : 'false',
+        pick: function () { self.setState({ metodo: m[0] }); },
+        estilo: 'display:flex;flex-direction:column;gap:6px;align-items:flex-start;min-height:76px;padding:12px 14px;border-radius:12px;cursor:pointer;box-sizing:border-box;background:' + (on ? '#F1F6F5;border:2px solid #0E5E5B' : '#FFFFFF;border:1px solid #D8D4C8'),
+        punto: 'width:16px;height:16px;border-radius:50%;flex-shrink:0;box-sizing:border-box;' + (on ? 'border:5px solid #0E5E5B' : 'border:2px solid #A9A498') };
+    });
+    var tiposValor = [['Departamento','80,00'],['Casa','120,00'],['Local','150,00'],['Parqueadero','15,00'],['Bodega','10,00']].map(function (t) { return { nombre: t[0], valor: t[1] }; });
+    var cuotaNum = parseFloat(String(S.cuota).replace(/\./g, '').replace(',', '.'));
+    var cuotaOk = !isNaN(cuotaNum) && cuotaNum > 0;
+    var money = function (n) { var s = n.toFixed(2).split('.'); return '$ ' + s[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ',' + s[1]; };
+
+    var unidades = 148;
+    var porMetodo = {
+      general: [cuotaOk ? money(cuotaNum * unidades) : '—', unidades + ' unidades × ' + (cuotaOk ? money(cuotaNum) : '—'), cuotaOk ? money(cuotaNum) : '—'],
+      tipo: ['$ 13.240,00', '136 departamentos y 12 casas', '$ 80,00 a $ 120,00'],
+      alicuota: ['$ 12.000,00', 'Presupuesto repartido por alícuota', 'Según su %'],
+      unidad: ['$ 12.615,00', 'Suma de las cuotas de 148 unidades', 'Según cada unidad']
+    }[S.metodo];
+    return {
+      metodos: metodos, tiposValor: tiposValor,
+      esGeneral: S.metodo === 'general', esTipo: S.metodo === 'tipo', esAlicuota: S.metodo === 'alicuota', esUnidad: S.metodo === 'unidad',
+      cuota: S.cuota, setCuota: function (e) { self.setState({ cuota: e.target.value }); },
+      cuotaTxt: cuotaOk ? money(cuotaNum) : '—',
+      metodoTxt: { general: 'Valor general', tipo: 'Por tipo', alicuota: 'Por alícuota', unidad: 'Por unidad' }[S.metodo],
+      totalTxt: porMetodo[0], totalDetalle: porMetodo[1], cuotaUnidad: porMetodo[2],
+      desdeEtiqueta: 'Aplicar desde', desdeAyuda: 'Primer mes que se emite con la nueva configuración.',
+      guardado: S.guardado,
+      guardar: function () { self.setState({ guardado: true }); },
+      descartar: function () { self.setState({ metodo: 'general', cuota: '80,00', guardado: false }); },
+      noGuardar: S.metodo === 'general' && !cuotaOk,
+      guardarEstilo: 'height:46px;padding:0 20px;border-radius:10px;border:none;font-size:14px;font-weight:700;color:#FFFFFF;cursor:pointer;background:' + ((S.metodo === 'general' && !cuotaOk) ? '#9DB8B5' : '#0E5E5B'),
+      historial: [
+        { cambio: 'Valor general: $ 75,00 → $ 80,00 desde octubre 2026', quien: 'María Rivas · Administradora · 15 sep 2026' },
+        { cambio: 'Vencimiento: día 5 → día 10', quien: 'María Rivas · Administradora · 2 mar 2026' },
+        { cambio: 'Configuración inicial: valor general $ 75,00', quien: 'Plataforma SAFIC · alta del condominio · 10 ene 2026' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>
