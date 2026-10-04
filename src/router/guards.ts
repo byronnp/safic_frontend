@@ -1,5 +1,14 @@
 import type { RouteLocationNormalized, RouteLocationRaw } from 'vue-router';
 
+import {
+  MENU_BASE,
+  MENU_PLATAFORMA,
+  permisoDeRuta,
+  puedeVerVistaPrevia,
+  ROL_ACCESO_TOTAL_CONDOMINIO,
+  ROL_ACCESO_TOTAL_PLATAFORMA,
+} from '@/core/navigation/menu';
+
 /** Lo mínimo de la sesión que necesita la guarda (facilita las pruebas). */
 export interface SesionParaGuarda {
   autenticado: boolean;
@@ -8,6 +17,9 @@ export interface SesionParaGuarda {
   condominios: readonly unknown[];
   /** Tiene un rol de plataforma (super admin, soporte, cobranza…). */
   esPlataforma: boolean;
+  /** Roles en el condominio activo y en la plataforma (para las vistas previas). */
+  roles: readonly string[];
+  rolesPlataforma: readonly string[];
   restaurar: () => Promise<void>;
   tienePermiso: (permiso: string) => boolean;
   tienePermisoPlataforma: (permiso: string) => boolean;
@@ -39,8 +51,8 @@ export interface OpcionesGuarda {
  * 5. Sin condominio elegido → selector de condominio (o el panel de plataforma
  *    si el usuario es solo de la plataforma).
  * 6. Sin el permiso de la ruta → página "sin permiso".
- *    Las pantallas en vista previa no piden permiso (no muestran datos reales),
- *    pero solo se abren en desarrollo.
+ *    Las pantallas en vista previa solo se abren en desarrollo y para el perfil
+ *    que las vería (el permiso de su ítem de menú o acceso total), igual que el menú.
  */
 export async function guardaDeSesion(
   destino: RouteLocationNormalized,
@@ -70,7 +82,14 @@ export async function guardaDeSesion(
       return true;
     }
     if (destino.meta.vistaPrevia) {
-      return opciones.vistasPrevias ? true : { name: 'plataforma-sin-permiso' };
+      const permiso = destino.meta.permiso ?? permisoDeRuta(MENU_PLATAFORMA, String(destino.name));
+      const acceso = {
+        accesoTotal: sesion.rolesPlataforma.includes(ROL_ACCESO_TOTAL_PLATAFORMA),
+        tienePermiso: (p: string) => sesion.tienePermisoPlataforma(p),
+      };
+      return opciones.vistasPrevias && puedeVerVistaPrevia(permiso, acceso)
+        ? true
+        : { name: 'plataforma-sin-permiso' };
     }
     return !destino.meta.permiso || sesion.tienePermisoPlataforma(destino.meta.permiso)
       ? true
@@ -91,7 +110,14 @@ export async function guardaDeSesion(
   }
 
   if (destino.meta.vistaPrevia) {
-    return opciones.vistasPrevias ? true : { name: 'sin-permiso' };
+    const permiso = destino.meta.permiso ?? permisoDeRuta(MENU_BASE, String(destino.name));
+    const acceso = {
+      accesoTotal: sesion.roles.includes(ROL_ACCESO_TOTAL_CONDOMINIO),
+      tienePermiso: (p: string) => sesion.tienePermiso(p),
+    };
+    return opciones.vistasPrevias && puedeVerVistaPrevia(permiso, acceso)
+      ? true
+      : { name: 'sin-permiso' };
   }
 
   if (destino.meta.permiso && !sesion.tienePermiso(destino.meta.permiso)) {

@@ -400,14 +400,57 @@ export function normalizarMenu(
 }
 
 /**
+ * Perfiles que en producción tendrán todos los permisos de su ámbito
+ * (Rol::permisosPorDefecto del backend): ven todas las vistas previas.
+ */
+export const ROL_ACCESO_TOTAL_CONDOMINIO = 'administrador';
+export const ROL_ACCESO_TOTAL_PLATAFORMA = 'super_admin';
+
+/** Lo que hace falta saber del usuario para mostrarle una vista previa. */
+export interface AccesoVistaPrevia {
+  /** Perfil que en producción tendrá todos los permisos del ámbito (administrador, super admin). */
+  accesoTotal: boolean;
+  tienePermiso: (permiso: string) => boolean;
+}
+
+/**
+ * ¿El usuario vería esta pantalla en vista previa? Las vistas previas no tienen
+ * datos reales, pero se muestran como las verá cada perfil: con su permiso, o a
+ * quien tendrá acceso total. Una pantalla sin permiso declarado solo la ve el
+ * acceso total (así un residente no ve el menú de la administración).
+ */
+export function puedeVerVistaPrevia(
+  permiso: string | undefined,
+  acceso: AccesoVistaPrevia,
+): boolean {
+  return acceso.accesoTotal || (permiso !== undefined && acceso.tienePermiso(permiso));
+}
+
+/** Permiso del ítem del menú que lleva a una ruta (para las rutas en vista previa). */
+export function permisoDeRuta(items: readonly ItemMenu[], ruta: string): string | undefined {
+  for (const item of items) {
+    if (item.ruta === ruta) {
+      return item.permiso;
+    }
+    const enHijos = item.hijos ? permisoDeRuta(item.hijos, ruta) : undefined;
+    if (enHijos !== undefined) {
+      return enHijos;
+    }
+  }
+  return undefined;
+}
+
+/**
  * Menú de la API + pantallas en vista previa del menú local (solo desarrollo).
  * - El orden lo da el menú local; lo que la API trae y el local no conoce va al final.
  * - De la API se respeta todo (ya viene filtrado por perfil y permisos).
- * - Del local solo se agregan hojas con `vistaPrevia` (sin datos reales).
+ * - Del local solo se agregan hojas con `vistaPrevia` (sin datos reales) que el
+ *   perfil vería (`puedeVer`, ver puedeVerVistaPrevia).
  */
 export function combinarConVistasPrevias(
   deApi: readonly ItemMenu[],
   local: readonly ItemMenu[],
+  puedeVer: (item: ItemMenu) => boolean = () => true,
 ): ItemMenu[] {
   const porId = new Map(deApi.map((item) => [item.id, item]));
   const resultado: ItemMenu[] = [];
@@ -417,13 +460,13 @@ export function combinarConVistasPrevias(
     porId.delete(item.id);
 
     if (item.hijos) {
-      const hijos = combinarConVistasPrevias(remoto?.hijos ?? [], item.hijos);
+      const hijos = combinarConVistasPrevias(remoto?.hijos ?? [], item.hijos, puedeVer);
       if (hijos.length > 0) {
         resultado.push({ ...(remoto ?? item), hijos });
       }
     } else if (remoto) {
       resultado.push(remoto);
-    } else if (item.vistaPrevia) {
+    } else if (item.vistaPrevia && puedeVer(item)) {
       resultado.push(item);
     }
   }

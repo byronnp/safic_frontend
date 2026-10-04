@@ -13,6 +13,8 @@ function sesion(parcial: Partial<SesionParaGuarda> = {}): SesionParaGuarda {
     condominioId: 1,
     condominios: [{ id: 1 }],
     esPlataforma: false,
+    roles: ['administrador'],
+    rolesPlataforma: [],
     restaurar: () => Promise.resolve(),
     tienePermiso: () => true,
     tienePermisoPlataforma: () => false,
@@ -112,10 +114,28 @@ describe('perfil de plataforma', () => {
 });
 
 describe('vista previa', () => {
-  it('en desarrollo abre la pantalla aunque falte el permiso', async () => {
+  it('en desarrollo el administrador la abre aunque el permiso aún no exista', async () => {
     const destino = await guardaDeSesion(
-      ruta('/finanzas', { vistaPrevia: true }),
+      ruta('/finanzas', { vistaPrevia: true }, 'finanzas-resumen'),
       sesion({ tienePermiso: () => false }),
+      { vistasPrevias: true },
+    );
+    expect(destino).toBe(true);
+  });
+
+  it('un residente no abre las vistas previas de la administración', async () => {
+    const destino = await guardaDeSesion(
+      ruta('/finanzas', { vistaPrevia: true }, 'finanzas-resumen'),
+      sesion({ roles: ['residente'], tienePermiso: () => false }),
+      { vistasPrevias: true },
+    );
+    expect(destino).toEqual({ name: 'sin-permiso' });
+  });
+
+  it('otro perfil la abre si tiene el permiso de su ítem de menú', async () => {
+    const destino = await guardaDeSesion(
+      ruta('/unidades', { vistaPrevia: true }, 'unidades'),
+      sesion({ roles: ['presidente'], tienePermiso: (p) => p === 'unidades.ver' }),
       { vistasPrevias: true },
     );
     expect(destino).toBe(true);

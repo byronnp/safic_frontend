@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
 import { ICONOS } from '../icons';
-import { combinarConVistasPrevias, normalizarMenu, type ItemMenu } from '../menu';
+import {
+  combinarConVistasPrevias,
+  normalizarMenu,
+  permisoDeRuta,
+  puedeVerVistaPrevia,
+  type ItemMenu,
+} from '../menu';
 
 const hoja = (id: string, extra: Partial<ItemMenu> = {}): ItemMenu => ({
   id,
@@ -64,6 +70,59 @@ describe('menú de la API con vistas previas', () => {
     const api = [hoja('inicio')];
 
     expect(combinarConVistasPrevias(api, [hoja('inicio'), hoja('bloques')])).toEqual(api);
+  });
+});
+
+describe('vistas previas por perfil', () => {
+  const conPermisos = [
+    hoja('inicio'),
+    {
+      id: 'finanzas',
+      etiqueta: 'Finanzas',
+      icono: ICONOS.finanzas,
+      hijos: [
+        hoja('finanzas.resumen', { vistaPrevia: true, permiso: 'finanzas.ver' }),
+        hoja('finanzas.pagos', { vistaPrevia: true, permiso: 'pagos.aprobar' }),
+      ],
+    },
+  ];
+
+  it('un residente (sin permisos) solo ve lo que da la API', () => {
+    const acceso = { accesoTotal: false, tienePermiso: () => false };
+    const menu = combinarConVistasPrevias([hoja('inicio')], conPermisos, (i) =>
+      puedeVerVistaPrevia(i.permiso, acceso),
+    );
+
+    expect(menu.map((i) => i.id)).toEqual(['inicio']);
+  });
+
+  it('el administrador ve todas las vistas previas', () => {
+    const acceso = { accesoTotal: true, tienePermiso: () => false };
+    const menu = combinarConVistasPrevias([hoja('inicio')], conPermisos, (i) =>
+      puedeVerVistaPrevia(i.permiso, acceso),
+    );
+
+    expect(menu[1]?.hijos?.map((i) => i.id)).toEqual(['finanzas.resumen', 'finanzas.pagos']);
+  });
+
+  it('otro perfil ve solo las vistas previas de sus permisos', () => {
+    const acceso = { accesoTotal: false, tienePermiso: (p: string) => p === 'pagos.aprobar' };
+    const menu = combinarConVistasPrevias([hoja('inicio')], conPermisos, (i) =>
+      puedeVerVistaPrevia(i.permiso, acceso),
+    );
+
+    expect(menu[1]?.hijos?.map((i) => i.id)).toEqual(['finanzas.pagos']);
+  });
+
+  it('una vista previa sin permiso declarado es solo para acceso total', () => {
+    expect(puedeVerVistaPrevia(undefined, { accesoTotal: false, tienePermiso: () => true })).toBe(
+      false,
+    );
+  });
+
+  it('encuentra el permiso del ítem por su ruta', () => {
+    expect(permisoDeRuta(conPermisos, 'finanzas.pagos')).toBe('pagos.aprobar');
+    expect(permisoDeRuta(conPermisos, 'no.existe')).toBeUndefined();
   });
 });
 
