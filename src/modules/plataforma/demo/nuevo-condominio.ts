@@ -12,63 +12,35 @@ export const PASOS_NUEVO_CONDOMINIO: PasoAsistente[] = [
   { titulo: 'Administrador', sub: 'Invitación' },
 ];
 
-export const TIPOS_CONDOMINIO = ['Conjunto', 'Edificio', 'Urbanización', 'Mixto'] as const;
-
-export type CodigoPlan = 'b' | 'p' | 'c';
-
-export const PLANES_ASISTENTE: { valor: CodigoPlan; etiqueta: string }[] = [
-  { valor: 'b', etiqueta: 'Básico' },
-  { valor: 'p', etiqueta: 'Profesional' },
-  { valor: 'c', etiqueta: 'Completo' },
+/**
+ * Amenidades marcadas al abrir el asistente (claves del catálogo global).
+ * Planes, tipos, ubicaciones y amenidades vienen de la API (/plataforma/*).
+ */
+export const AMENIDADES_INICIALES = [
+  'piscina',
+  'gimnasio',
+  'salon_comunal',
+  'area_bbq',
+  'parque_infantil',
+  'guardiania',
+  'generador',
 ];
-
-/** Provincia → cantón → parroquias (muestra reducida para la vista previa). */
-export const UBICACIONES: Record<string, Record<string, string[]>> = {
-  Pichincha: {
-    Quito: ['Conocoto', 'Cumbayá', 'Tumbaco', 'Calderón', 'Pomasqui'],
-    Rumiñahui: ['Sangolquí', 'San Rafael'],
-  },
-  Guayas: {
-    Samborondón: ['La Puntilla', 'Samborondón'],
-    Guayaquil: ['Tarqui', 'Ximena'],
-  },
-  Azuay: { Cuenca: ['El Batán', 'Yanuncay'] },
-  'Santa Elena': { Salinas: ['Salinas', 'José Luis Tamayo'] },
-};
-
-export interface AmenidadAsistente {
-  nombre: string;
-  meta: string;
-  cantidad: number;
-}
-
-export const AMENIDADES_ASISTENTE: AmenidadAsistente[] = [
-  { nombre: 'Piscina', meta: 'Reservable · no esencial', cantidad: 1 },
-  { nombre: 'Gimnasio', meta: 'Acceso libre', cantidad: 1 },
-  { nombre: 'Salón comunal', meta: 'Reservable', cantidad: 1 },
-  { nombre: 'Área BBQ', meta: 'Reservable', cantidad: 2 },
-  { nombre: 'Canchas', meta: 'Reservable', cantidad: 1 },
-  { nombre: 'Parque infantil', meta: 'Acceso libre', cantidad: 1 },
-  { nombre: 'Guardianía 24 h', meta: 'Esencial', cantidad: 1 },
-  { nombre: 'Generador', meta: 'Esencial', cantidad: 1 },
-  { nombre: 'Parqueadero de visitas', meta: 'Acceso libre', cantidad: 12 },
-];
-
-/** Índices de AMENIDADES_ASISTENTE marcados al abrir el asistente. */
-export const AMENIDADES_MARCADAS = [0, 1, 2, 3, 5, 6, 7];
 
 export interface FormularioNuevoCondominio {
   nombre: string;
+  /** Valor del tipo (GET /plataforma/catalogos). */
   tipo: string;
   ruc: string;
   razonSocial: string;
+  /** Códigos INEC (GET /plataforma/ubicaciones). */
   provincia: string;
   canton: string;
   parroquia: string;
   direccion: string;
   contacto: string;
   unidades: number | null;
-  plan: CodigoPlan;
+  /** Clave del plan (GET /plataforma/planes). */
+  plan: string;
   valorUnidad: number | null;
   buscarDireccion: string;
   latitud: string;
@@ -81,16 +53,16 @@ export interface FormularioNuevoCondominio {
 
 export const FORMULARIO_INICIAL: FormularioNuevoCondominio = {
   nombre: 'Conjunto Los Arupos',
-  tipo: 'Conjunto',
+  tipo: 'conjunto',
   ruc: '1792456781001',
   razonSocial: 'Conjunto Habitacional Los Arupos',
-  provincia: 'Pichincha',
-  canton: 'Quito',
-  parroquia: 'Conocoto',
+  provincia: '17',
+  canton: '',
+  parroquia: '',
   direccion: 'Av. Ilaló y calle Los Arupos',
   contacto: '02 234 5678 · admin@losarupos.ec',
   unidades: 130,
-  plan: 'p',
+  plan: 'profesional',
   valorUnidad: 2,
   buscarDireccion: 'Av. Ilaló, Conocoto',
   latitud: '-0.285412',

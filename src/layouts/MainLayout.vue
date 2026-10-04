@@ -121,7 +121,13 @@
           <div class="lateral__nombre">SAFIC</div>
         </div>
 
-        <MenuLateral :items="menu" class="col-grow" />
+        <MenuLateral
+          :items="menu"
+          :cargando="menuCargando"
+          :error="menuError"
+          class="col-grow"
+          @reintentar="void recargarMenu()"
+        />
       </div>
     </q-drawer>
 
@@ -141,10 +147,9 @@ import { useRouter } from 'vue-router';
 import { queryClient } from '@/boot/vue-query';
 import { aApiError } from '@/core/api/errors';
 import { ICONOS } from '@/core/navigation/icons';
-import { filtrarMenu, MENU_BASE } from '@/core/navigation/menu';
+import { useMenuCondominio } from '@/core/navigation/useMenu';
 import { colorAvatar, iniciales } from '@/core/theme/avatar';
 import VistaPreviaAviso from '@/components/VistaPreviaAviso.vue';
-import { MOSTRAR_VISTAS_PREVIAS } from '@/core/vista-previa';
 import MenuLateral from '@/layouts/components/MenuLateral.vue';
 import MenuUsuario from '@/layouts/components/MenuUsuario.vue';
 import { useSessionStore } from '@/stores/session';
@@ -156,9 +161,13 @@ const session = useSessionStore();
 const menuAbierto = ref(false);
 const busqueda = ref('');
 
-const menu = computed(() =>
-  filtrarMenu(MENU_BASE, session.permisos, { vistasPrevias: MOSTRAR_VISTAS_PREVIAS }),
-);
+// Menú del perfil en el condominio activo (GET /me/menu)
+const {
+  menu,
+  isLoading: menuCargando,
+  isError: menuError,
+  refetch: recargarMenu,
+} = useMenuCondominio();
 
 const gruposCondominios = computed(() => {
   const texto = busqueda.value.trim().toLowerCase();
