@@ -25,20 +25,6 @@ export const ESTADOS_UNIDAD: Record<EstadoUnidad, { texto: string; tono: TonoEst
   vacia: { texto: 'Vacía', tono: 'neutro' },
 };
 
-export const INDICADORES_UNIDADES = {
-  unidades: 148,
-  unidadesNota: '3 torres · 12 casas',
-  ocupadas: 131,
-  ocupadasPorcentaje: 88,
-  residentes: 412,
-  residentesNota: '287 con cuenta activa',
-  alicuotas: '99,62 %',
-  alicuotasNota: 'Faltan 0,38 % para cuadrar',
-} as const;
-
-/** Total de unidades del condominio (la muestra trae solo la primera página). */
-export const TOTAL_UNIDADES = 148;
-
 function unidad(
   codigo: string,
   bloque: string,

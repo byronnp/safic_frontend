@@ -43,7 +43,6 @@ export const MENU_BASE: ItemMenu[] = [
         icono: ICONOS.unidades,
         ruta: 'unidades',
         permiso: 'unidades.ver',
-        vistaPrevia: true,
       },
       {
         id: 'unidades.bloques',
