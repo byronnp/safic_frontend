@@ -8,12 +8,16 @@ import {
   unidadesService,
   type AsignarOcupante,
   type FiltroUnidades,
+  type GuardarMascota,
   type GuardarUnidad,
+  type GuardarVehiculo,
+  type Mascota,
   type Ocupante,
   type PaginaUnidades,
   type ResumenUnidades,
   type Unidad,
   type UnidadDetalle,
+  type Vehiculo,
 } from '../services/unidades.service';
 
 /** Claves de caché: siempre incluyen el condominio activo. */
@@ -105,6 +109,43 @@ export function useFinalizarOcupante() {
   return useMutation<Ocupante, ApiError, { ocupanteId: number; fechaFin: string }>({
     mutationFn: ({ ocupanteId, fechaFin }) =>
       unidadesService.finalizarOcupante(ocupanteId, fechaFin),
+    onSuccess: invalidar,
+  });
+}
+
+/** Alta o edición de un vehículo (con `id` edita). Refresca el detalle y la búsqueda por placa. */
+export function useGuardarVehiculo(unidadId: Ref<number>) {
+  const invalidar = useInvalidarUnidades();
+
+  return useMutation<Vehiculo, ApiError, { id?: number; datos: GuardarVehiculo }>({
+    mutationFn: ({ id, datos }) =>
+      id === undefined
+        ? unidadesService.crearVehiculo(unidadId.value, datos)
+        : unidadesService.editarVehiculo(id, datos),
+    onSuccess: invalidar,
+  });
+}
+
+export function useGuardarMascota(unidadId: Ref<number>) {
+  const invalidar = useInvalidarUnidades();
+
+  return useMutation<Mascota, ApiError, { id?: number; datos: GuardarMascota }>({
+    mutationFn: ({ id, datos }) =>
+      id === undefined
+        ? unidadesService.crearMascota(unidadId.value, datos)
+        : unidadesService.editarMascota(id, datos),
+    onSuccess: invalidar,
+  });
+}
+
+export function useEliminarRegistro() {
+  const invalidar = useInvalidarUnidades();
+
+  return useMutation<void, ApiError, { tipo: 'vehiculo' | 'mascota'; id: number }>({
+    mutationFn: ({ tipo, id }) =>
+      tipo === 'vehiculo'
+        ? unidadesService.eliminarVehiculo(id)
+        : unidadesService.eliminarMascota(id),
     onSuccess: invalidar,
   });
 }
