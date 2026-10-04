@@ -826,6 +826,7 @@ async function siguiente(): Promise<void> {
 .asistente__ubicacion {
   display: flex;
   gap: 20px;
+  min-height: 460px;
 }
 
 .asistente__ubicacion-campos {
@@ -923,7 +924,7 @@ async function siguiente(): Promise<void> {
   border-top: 1px solid var(--safic-linea);
   padding-top: 16px;
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 12px;
   font-size: 13px;
 }

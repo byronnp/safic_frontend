@@ -136,7 +136,9 @@ onBeforeUnmount(() => {
 <style scoped>
 .mapa-ubicacion {
   position: relative;
-  height: 100%;
+  flex: 1 1 auto;
+  min-width: 0;
+  align-self: stretch;
   min-height: 320px;
   border-radius: 14px;
   overflow: hidden;
@@ -151,8 +153,10 @@ onBeforeUnmount(() => {
 
 .mapa-ubicacion__ayuda {
   position: absolute;
-  left: 16px;
-  top: 16px;
+  left: 60px;
+  right: 16px;
+  top: 12px;
+  width: fit-content;
   z-index: 500;
   background: #ffffff;
   border-radius: 10px;
