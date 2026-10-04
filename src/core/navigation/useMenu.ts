@@ -11,6 +11,9 @@ import {
   MENU_BASE,
   MENU_PLATAFORMA,
   normalizarMenu,
+  puedeVerVistaPrevia,
+  ROL_ACCESO_TOTAL_CONDOMINIO,
+  ROL_ACCESO_TOTAL_PLATAFORMA,
   type ItemMenu,
 } from './menu';
 import { menuService } from './menu.service';
@@ -23,7 +26,7 @@ export const clavesMenu = {
 
 /**
  * Menú del perfil en el condominio activo. En desarrollo se le suman las
- * pantallas en vista previa del menú local (MENU_BASE).
+ * pantallas en vista previa del menú local (MENU_BASE) que ese perfil vería.
  */
 export function useMenuCondominio() {
   const session = useSessionStore();
@@ -39,7 +42,16 @@ export function useMenuCondominio() {
 
   const menu = computed(() => {
     const deApi = normalizarMenu(consulta.data.value ?? [], (ruta) => router.hasRoute(ruta));
-    return MOSTRAR_VISTAS_PREVIAS ? combinarConVistasPrevias(deApi, MENU_BASE) : deApi;
+    if (!MOSTRAR_VISTAS_PREVIAS) {
+      return deApi;
+    }
+    const acceso = {
+      accesoTotal: session.roles.includes(ROL_ACCESO_TOTAL_CONDOMINIO),
+      tienePermiso: (p: string) => session.tienePermiso(p),
+    };
+    return combinarConVistasPrevias(deApi, MENU_BASE, (item) =>
+      puedeVerVistaPrevia(item.permiso, acceso),
+    );
   });
 
   return { ...consulta, menu };
@@ -59,7 +71,16 @@ export function useMenuPlataforma() {
 
   const menu = computed(() => {
     const deApi = normalizarMenu(consulta.data.value ?? [], (ruta) => router.hasRoute(ruta));
-    return MOSTRAR_VISTAS_PREVIAS ? combinarConVistasPrevias(deApi, MENU_PLATAFORMA) : deApi;
+    if (!MOSTRAR_VISTAS_PREVIAS) {
+      return deApi;
+    }
+    const acceso = {
+      accesoTotal: session.rolesPlataforma.includes(ROL_ACCESO_TOTAL_PLATAFORMA),
+      tienePermiso: (p: string) => session.tienePermisoPlataforma(p),
+    };
+    return combinarConVistasPrevias(deApi, MENU_PLATAFORMA, (item) =>
+      puedeVerVistaPrevia(item.permiso, acceso),
+    );
   });
 
   return { ...consulta, menu };
