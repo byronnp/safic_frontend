@@ -29,9 +29,47 @@ export interface Unidad {
   ocupante_principal: { nombre: string; relacion: RelacionOcupante } | null;
 }
 
-/** GET /unidades/{id}: la unidad con sus ocupantes vigentes (principal primero). */
+/** GET /unidades/{id}: la unidad con sus ocupantes vigentes (principal primero), vehículos y mascotas. */
 export interface UnidadDetalle extends Unidad {
   ocupantes: Ocupante[];
+  vehiculos: Vehiculo[];
+  mascotas: Mascota[];
+}
+
+export type TipoVehiculo = 'auto' | 'moto';
+export type Especie = 'perro' | 'gato' | 'ave' | 'otro';
+
+export interface Vehiculo {
+  id: number;
+  unidad_id: number;
+  /** Normalizada: "PBA-1234" o "IA-123B". */
+  placa: string;
+  tipo: TipoVehiculo;
+  marca: string | null;
+  modelo: string | null;
+  color: string | null;
+}
+
+export interface GuardarVehiculo {
+  placa: string;
+  tipo: TipoVehiculo;
+  marca: string | null;
+  modelo: string | null;
+  color: string | null;
+}
+
+export interface Mascota {
+  id: number;
+  unidad_id: number;
+  nombre: string;
+  especie: Especie;
+  raza: string | null;
+}
+
+export interface GuardarMascota {
+  nombre: string;
+  especie: Especie;
+  raza: string | null;
 }
 
 export interface Ocupante {
@@ -147,6 +185,37 @@ export const unidadesService = {
       datos,
     );
     return data.data;
+  },
+
+  async crearVehiculo(unidadId: number, datos: GuardarVehiculo): Promise<Vehiculo> {
+    const { data } = await api.post<ApiRespuesta<Vehiculo>>(
+      `/unidades/${unidadId}/vehiculos`,
+      datos,
+    );
+    return data.data;
+  },
+
+  async editarVehiculo(id: number, datos: GuardarVehiculo): Promise<Vehiculo> {
+    const { data } = await api.patch<ApiRespuesta<Vehiculo>>(`/vehiculos/${id}`, datos);
+    return data.data;
+  },
+
+  async eliminarVehiculo(id: number): Promise<void> {
+    await api.delete(`/vehiculos/${id}`);
+  },
+
+  async crearMascota(unidadId: number, datos: GuardarMascota): Promise<Mascota> {
+    const { data } = await api.post<ApiRespuesta<Mascota>>(`/unidades/${unidadId}/mascotas`, datos);
+    return data.data;
+  },
+
+  async editarMascota(id: number, datos: GuardarMascota): Promise<Mascota> {
+    const { data } = await api.patch<ApiRespuesta<Mascota>>(`/mascotas/${id}`, datos);
+    return data.data;
+  },
+
+  async eliminarMascota(id: number): Promise<void> {
+    await api.delete(`/mascotas/${id}`);
   },
 
   async finalizarOcupante(ocupanteId: number, fechaFin: string): Promise<Ocupante> {

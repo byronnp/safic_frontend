@@ -52,78 +52,184 @@
         </button>
       </div>
 
-      <div class="unidad-detalle-principal">
-        <template v-if="pestana === 'ocupantes'">
-          <div class="unidad-detalle-seccion">OCUPANTES VIGENTES</div>
-          <UnidadDetalleOcupante
-            v-for="(o, i) in unidad.ocupantes"
-            :key="o.id"
-            :ocupante="o"
-            :indice="i"
-            :puede-editar="puedeEditar"
-            @finalizar="darDeBaja"
-          />
-          <div
-            v-if="unidad.ocupantes.length === 0"
-            class="unidad-detalle-vacio column items-start"
-            style="gap: 10px"
-          >
-            <span>Esta unidad no tiene ocupantes registrados.</span>
-            <button v-if="puedeEditar" type="button" class="unidad-detalle-boton" @click="asignar">
-              Asignar el primer ocupante
-            </button>
-          </div>
-        </template>
-
-        <template v-else-if="pestana === 'historial'">
-          <div class="unidad-detalle-seccion">HISTORIAL DE OCUPANTES</div>
-          <div
-            v-if="historial.isError.value"
-            class="safic-alerta row items-center"
-            role="alert"
-            style="gap: 12px"
-          >
-            <span class="col-grow">{{ historial.error.value?.mensaje }}</span>
-            <q-btn flat no-caps dense label="Reintentar" @click="historial.refetch()" />
-          </div>
-          <div v-else class="unidad-detalle-lista" :aria-busy="historial.isLoading.value">
-            <q-skeleton v-if="historial.isLoading.value" type="text" class="q-ma-md" />
-            <div
-              v-for="o in historial.data.value ?? []"
+      <div class="unidad-detalle-cuerpo">
+        <div class="unidad-detalle-principal">
+          <template v-if="pestana === 'ocupantes'">
+            <div class="unidad-detalle-seccion">OCUPANTES VIGENTES</div>
+            <UnidadDetalleOcupante
+              v-for="(o, i) in unidad.ocupantes"
               :key="o.id"
-              class="unidad-detalle-lista__fila unidad-detalle-lista__fila--arriba"
+              :ocupante="o"
+              :indice="i"
+              :puede-editar="puedeEditar"
+              @finalizar="darDeBaja"
+            />
+            <div
+              v-if="unidad.ocupantes.length === 0"
+              class="unidad-detalle-vacio column items-start"
+              style="gap: 10px"
             >
-              <div class="unidad-detalle-historial__fecha">{{ formatoFecha(o.fecha_inicio) }}</div>
-              <div class="unidad-detalle-lista__texto">
-                {{ o.persona.nombre_completo }} · {{ textoRelacion(o.relacion) }}
-                <template v-if="o.es_principal"> (principal)</template>
-                <template v-if="o.fecha_fin"> · hasta {{ formatoFecha(o.fecha_fin) }}</template>
-                <template v-else> · vigente</template>
+              <span>Esta unidad no tiene ocupantes registrados.</span>
+              <button
+                v-if="puedeEditar"
+                type="button"
+                class="unidad-detalle-boton"
+                @click="asignar"
+              >
+                Asignar el primer ocupante
+              </button>
+            </div>
+          </template>
+
+          <template v-else-if="pestana === 'historial'">
+            <div class="unidad-detalle-seccion">HISTORIAL DE OCUPANTES</div>
+            <div
+              v-if="historial.isError.value"
+              class="safic-alerta row items-center"
+              role="alert"
+              style="gap: 12px"
+            >
+              <span class="col-grow">{{ historial.error.value?.mensaje }}</span>
+              <q-btn flat no-caps dense label="Reintentar" @click="historial.refetch()" />
+            </div>
+            <div v-else class="unidad-detalle-lista" :aria-busy="historial.isLoading.value">
+              <q-skeleton v-if="historial.isLoading.value" type="text" class="q-ma-md" />
+              <div
+                v-for="o in historial.data.value ?? []"
+                :key="o.id"
+                class="unidad-detalle-lista__fila unidad-detalle-lista__fila--arriba"
+              >
+                <div class="unidad-detalle-historial__fecha">
+                  {{ formatoFecha(o.fecha_inicio) }}
+                </div>
+                <div class="unidad-detalle-lista__texto">
+                  {{ o.persona.nombre_completo }} · {{ textoRelacion(o.relacion) }}
+                  <template v-if="o.es_principal"> (principal)</template>
+                  <template v-if="o.fecha_fin"> · hasta {{ formatoFecha(o.fecha_fin) }}</template>
+                  <template v-else> · vigente</template>
+                </div>
+              </div>
+              <div
+                v-if="!historial.isLoading.value && (historial.data.value ?? []).length === 0"
+                class="unidad-detalle-lista__vacio"
+              >
+                Sin movimientos registrados.
               </div>
             </div>
-            <div
-              v-if="!historial.isLoading.value && (historial.data.value ?? []).length === 0"
-              class="unidad-detalle-lista__vacio"
-            >
-              Sin movimientos registrados.
-            </div>
-          </div>
-        </template>
+          </template>
 
-        <template v-else>
-          <div class="unidad-detalle-seccion">
-            {{ pestana === 'vehiculos' ? 'VEHÍCULOS Y MASCOTAS' : 'DOCUMENTOS' }}
-          </div>
-          <div class="unidad-detalle-lista">
-            <div class="unidad-detalle-lista__vacio">
-              {{
-                pestana === 'vehiculos'
-                  ? 'El registro de vehículos y mascotas llega en la próxima versión.'
-                  : 'La carga de documentos (escrituras, contratos de arriendo) llega en una próxima versión.'
-              }}
+          <template v-else-if="pestana === 'vehiculos'">
+            <div class="row items-center justify-between">
+              <div class="unidad-detalle-seccion">VEHÍCULOS</div>
+              <button
+                v-if="puedeEditar"
+                type="button"
+                class="unidad-detalle-enlace unidad-detalle-agregar"
+                @click="editarVehiculo()"
+              >
+                + Registrar vehículo
+              </button>
+            </div>
+            <div class="unidad-detalle-lista">
+              <div v-for="v in unidad.vehiculos" :key="v.id" class="unidad-detalle-lista__fila">
+                <UnidadDetallePlaca :placa="v.placa" />
+                <div class="unidad-detalle-lista__texto unidad-detalle-lista__crece">
+                  {{ descripcionVehiculo(v) }}
+                </div>
+                <template v-if="puedeEditar">
+                  <button type="button" class="unidad-detalle-enlace" @click="editarVehiculo(v)">
+                    Editar
+                  </button>
+                  <button
+                    type="button"
+                    class="unidad-detalle-enlace unidad-detalle-enlace--quitar"
+                    @click="quitar('vehiculo', v.id, `el vehículo ${v.placa}`)"
+                  >
+                    Quitar
+                  </button>
+                </template>
+              </div>
+              <div v-if="unidad.vehiculos.length === 0" class="unidad-detalle-lista__vacio">
+                Sin vehículos registrados.
+              </div>
+            </div>
+
+            <div class="row items-center justify-between">
+              <div class="unidad-detalle-seccion">MASCOTAS</div>
+              <button
+                v-if="puedeEditar"
+                type="button"
+                class="unidad-detalle-enlace unidad-detalle-agregar"
+                @click="editarMascota()"
+              >
+                + Registrar mascota
+              </button>
+            </div>
+            <div class="unidad-detalle-lista">
+              <div v-for="m in unidad.mascotas" :key="m.id" class="unidad-detalle-lista__fila">
+                <div class="unidad-detalle-lista__crece">
+                  <div class="unidad-detalle-lista__nombre">{{ m.nombre }}</div>
+                  <div class="unidad-detalle-lista__detalle">
+                    {{ [textoEspecie(m.especie), m.raza].filter(Boolean).join(' · ') }}
+                  </div>
+                </div>
+                <template v-if="puedeEditar">
+                  <button type="button" class="unidad-detalle-enlace" @click="editarMascota(m)">
+                    Editar
+                  </button>
+                  <button
+                    type="button"
+                    class="unidad-detalle-enlace unidad-detalle-enlace--quitar"
+                    @click="quitar('mascota', m.id, m.nombre)"
+                  >
+                    Quitar
+                  </button>
+                </template>
+              </div>
+              <div v-if="unidad.mascotas.length === 0" class="unidad-detalle-lista__vacio">
+                Sin mascotas registradas.
+              </div>
+            </div>
+          </template>
+
+          <template v-else>
+            <div class="unidad-detalle-seccion">DOCUMENTOS</div>
+            <div class="unidad-detalle-lista">
+              <div class="unidad-detalle-lista__vacio">
+                La carga de documentos (escrituras, contratos de arriendo) llega con el
+                almacenamiento de archivos.
+              </div>
+            </div>
+          </template>
+        </div>
+
+        <!-- Resumen siempre visible, como en el mockup -->
+        <aside class="unidad-detalle-lateral">
+          <div class="unidad-detalle-tarjeta">
+            <div class="unidad-detalle-tarjeta__titulo unidad-detalle-tarjeta__titulo--amplio">
+              VEHÍCULOS
+            </div>
+            <div v-for="v in unidad.vehiculos" :key="v.id" class="unidad-detalle-vehiculo">
+              <UnidadDetallePlaca :placa="v.placa" />
+              <div class="unidad-detalle-vehiculo__texto">{{ descripcionVehiculo(v) }}</div>
+            </div>
+            <div v-if="unidad.vehiculos.length === 0" class="unidad-detalle-tarjeta__vacio">
+              Sin vehículos registrados.
             </div>
           </div>
-        </template>
+          <div class="unidad-detalle-tarjeta">
+            <div class="unidad-detalle-tarjeta__titulo">MASCOTAS</div>
+            <div v-for="m in unidad.mascotas" :key="m.id">
+              <div class="unidad-detalle-mascota__nombre">{{ m.nombre }}</div>
+              <div class="unidad-detalle-mascota__detalle">
+                {{ [textoEspecie(m.especie), m.raza].filter(Boolean).join(' · ') }}
+              </div>
+            </div>
+            <div v-if="unidad.mascotas.length === 0" class="unidad-detalle-tarjeta__vacio">
+              Sin mascotas registradas.
+            </div>
+          </div>
+        </aside>
       </div>
     </template>
 
@@ -152,11 +258,15 @@ import { formatoFecha } from '@/utils/formato';
 
 import AsignarOcupanteDialog from '../components/AsignarOcupanteDialog.vue';
 import FinalizarOcupanteDialog from '../components/FinalizarOcupanteDialog.vue';
+import MascotaDialog from '../components/MascotaDialog.vue';
+import UnidadDetallePlaca from '../components/UnidadDetallePlaca.vue';
+import VehiculoDialog from '../components/VehiculoDialog.vue';
 import UnidadDetalleOcupante from '../components/UnidadDetalleOcupante.vue';
-import { useHistorialOcupantes, useUnidad } from '../composables/useUnidades';
+import { useEliminarRegistro, useHistorialOcupantes, useUnidad } from '../composables/useUnidades';
 import { textoRelacion } from '../persona.formulario';
-import type { Ocupante } from '../services/unidades.service';
+import type { Mascota, Ocupante, Vehiculo } from '../services/unidades.service';
 import { ESTADOS_UNIDAD, TIPO_LARGO } from '../unidad.textos';
+import { descripcionVehiculo, textoEspecie } from '../vehiculo.formulario';
 
 type Pestana = 'ocupantes' | 'vehiculos' | 'documentos' | 'historial';
 
@@ -208,6 +318,46 @@ function asignar(): void {
     componentProps: { unidadId: unidad.value.id, codigo: unidad.value.codigo },
   }).onOk((o: Ocupante) => {
     $q.notify({ type: 'positive', message: `${o.persona.nombre_completo} asignado a la unidad.` });
+  });
+}
+
+const eliminar = useEliminarRegistro();
+
+function editarVehiculo(vehiculo?: Vehiculo): void {
+  if (!unidad.value) return;
+  $q.dialog({
+    component: VehiculoDialog,
+    componentProps: { unidadId: unidad.value.id, vehiculo: vehiculo ?? null },
+  }).onOk((v: Vehiculo) => {
+    $q.notify({ type: 'positive', message: `Vehículo ${v.placa} guardado.` });
+  });
+}
+
+function editarMascota(mascota?: Mascota): void {
+  if (!unidad.value) return;
+  $q.dialog({
+    component: MascotaDialog,
+    componentProps: { unidadId: unidad.value.id, mascota: mascota ?? null },
+  }).onOk((m: Mascota) => {
+    $q.notify({ type: 'positive', message: `${m.nombre} guardada.` });
+  });
+}
+
+function quitar(tipo: 'vehiculo' | 'mascota', id: number, nombre: string): void {
+  $q.dialog({
+    title: tipo === 'vehiculo' ? 'Quitar vehículo' : 'Quitar mascota',
+    message: `¿Quitar ${nombre} de esta unidad?`,
+    cancel: { label: 'Cancelar', flat: true, noCaps: true },
+    ok: { label: 'Quitar', color: 'negative', unelevated: true, noCaps: true },
+    persistent: true,
+  }).onOk(() => {
+    eliminar.mutate(
+      { tipo, id },
+      {
+        onSuccess: () => $q.notify({ type: 'positive', message: 'Listo, se quitó de la unidad.' }),
+        onError: (error) => $q.notify({ type: 'negative', message: error.mensaje }),
+      },
+    );
   });
 }
 
@@ -497,6 +647,32 @@ function darDeBaja(o: Ocupante): void {
 .unidad-detalle-contrato__enlace {
   display: inline-block;
   margin-top: 8px;
+}
+
+.unidad-detalle-agregar {
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.unidad-detalle-enlace--quitar {
+  color: #9b1c12;
+}
+
+button.unidad-detalle-enlace {
+  border: none;
+  background: none;
+  padding: 0 4px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+}
+
+button.unidad-detalle-enlace:focus-visible {
+  outline: 2px solid var(--q-primary);
+  outline-offset: 2px;
 }
 
 .unidad-detalle-no-encontrada {
