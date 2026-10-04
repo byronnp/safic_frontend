@@ -51,4 +51,26 @@ describe('servicio de plataforma', () => {
     expect(creado.condominio.id).toBe(9);
     expect(creado.mensaje).toBe('Condominio creado.');
   });
+
+  it('reenvía la invitación y solo manda el correo cuando se corrige', async () => {
+    const post = vi
+      .spyOn(api, 'post')
+      .mockResolvedValue({ data: { data: { id: 4, email: 'nuevo@correo.ec' } } });
+
+    await plataformaService.reenviarInvitacion(2, 4, null);
+    await plataformaService.reenviarInvitacion(2, 4, 'nuevo@correo.ec');
+
+    expect(post).toHaveBeenNthCalledWith(
+      1,
+      '/plataforma/condominios/2/administradores/4/invitacion',
+      {},
+    );
+    expect(post).toHaveBeenNthCalledWith(
+      2,
+      '/plataforma/condominios/2/administradores/4/invitacion',
+      {
+        email: 'nuevo@correo.ec',
+      },
+    );
+  });
 });

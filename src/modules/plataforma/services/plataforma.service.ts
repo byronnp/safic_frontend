@@ -136,6 +136,22 @@ export const plataformaService = {
     };
   },
 
+  /**
+   * Reenvía la invitación a un administrador que aún no crea su contraseña (anula el
+   * enlace anterior). Con `email` corrige antes su correo.
+   */
+  async reenviarInvitacion(
+    condominioId: number,
+    usuarioId: number,
+    email: string | null,
+  ): Promise<AdministradorCondominio> {
+    const { data } = await api.post<ApiRespuesta<AdministradorCondominio>>(
+      `/plataforma/condominios/${condominioId}/administradores/${usuarioId}/invitacion`,
+      email === null ? {} : { email },
+    );
+    return data.data;
+  },
+
   async crear(datos: NuevoCondominio): Promise<CondominioCreado> {
     const { data } = await api.post<
       ApiRespuesta<CondominioPlataforma> & { meta: { administrador_existente: boolean } }
