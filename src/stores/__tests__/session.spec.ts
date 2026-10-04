@@ -52,20 +52,45 @@ describe('sesión', () => {
     expect(session.tienePermiso('unidades.editar')).toBe(false);
   });
 
-  it('con varios condominios pide elegir, salvo que haya uno recordado', async () => {
+  it('al iniciar sesión entra al condominio principal aunque haya otro recordado', async () => {
     vi.spyOn(authService, 'login').mockResolvedValue(token([5, 9]));
+    localStorage.setItem('safic.condominio', '9');
     const session = useSessionStore();
 
     await session.iniciarSesion('maria@jardinesdelvalle.ec', 'secreto');
+
+    expect(session.condominioId).toBe(5);
+    expect(localStorage.getItem('safic.condominio')).toBe('5');
+  });
+
+  it('al recargar la página vuelve al último condominio elegido', async () => {
+    vi.spyOn(authService, 'refrescar').mockResolvedValue(token([5, 9]));
+    localStorage.setItem('safic.condominio', '9');
+    const session = useSessionStore();
+
+    await session.restaurar();
+
+    expect(session.condominioId).toBe(9);
+  });
+
+  it('al recargar sin condominio recordado usa el principal', async () => {
+    vi.spyOn(authService, 'refrescar').mockResolvedValue(token([5, 9]));
+    const session = useSessionStore();
+
+    await session.restaurar();
+
+    expect(session.condominioId).toBe(5);
+  });
+
+  it('con varios condominios y ninguno principal pide elegir', async () => {
+    const respuesta = token([5, 9]);
+    respuesta.usuario.condominios.forEach((c) => (c.es_principal = false));
+    vi.spyOn(authService, 'login').mockResolvedValue(respuesta);
+    const session = useSessionStore();
+
+    await session.iniciarSesion('maria@jardinesdelvalle.ec', 'secreto');
+
     expect(session.condominioId).toBeNull();
-
-    await session.seleccionarCondominio(9);
-    expect(localStorage.getItem('safic.condominio')).toBe('9');
-
-    setActivePinia(createPinia());
-    const otra = useSessionStore();
-    await otra.iniciarSesion('maria@jardinesdelvalle.ec', 'secreto');
-    expect(otra.condominioId).toBe(9);
   });
 
   it('el super admin sin condominios tiene perfil de plataforma y no pide condominio', async () => {

@@ -82,14 +82,19 @@ export const useSessionStore = defineStore('session', () => {
   }
 
   /**
-   * Tras login o refresh: si hay un condominio recordado (o uno solo, o el
-   * principal cuando se inicia sesión) lo selecciona. Si no, el usuario lo elige.
+   * Condominio con el que arranca la sesión.
+   * - Al iniciar sesión: siempre el principal (el usuario cambia desde el selector).
+   * - Al recargar la página: el último elegido, para no sacarlo de donde trabajaba.
+   * En ambos casos, si falta el preferido se usa el principal o el único; si no
+   * hay ninguno, el usuario lo elige.
    */
-  async function resolverCondominioInicial(): Promise<void> {
+  async function resolverCondominioInicial(origen: 'login' | 'recarga'): Promise<void> {
     const lista = condominios.value;
-    const recordado = leerCondominioRecordado();
+    const recordado = origen === 'recarga' ? leerCondominioRecordado() : null;
     const candidato =
-      lista.find((c) => c.id === recordado) ?? (lista.length === 1 ? lista[0] : undefined);
+      lista.find((c) => c.id === recordado) ??
+      lista.find((c) => c.es_principal) ??
+      (lista.length === 1 ? lista[0] : undefined);
 
     if (candidato) {
       await seleccionarCondominio(candidato.id);
@@ -103,7 +108,7 @@ export const useSessionStore = defineStore('session', () => {
   async function iniciarSesion(email: string, password: string): Promise<void> {
     aplicarToken(await authService.login(email, password));
     restaurada.value = true;
-    await resolverCondominioInicial();
+    await resolverCondominioInicial('login');
   }
 
   /** Renueva el access token. Lo usa el cliente HTTP ante un 401. */
@@ -126,7 +131,7 @@ export const useSessionStore = defineStore('session', () => {
 
     if ((await refrescar()) !== null) {
       try {
-        await resolverCondominioInicial();
+        await resolverCondominioInicial('recarga');
       } catch {
         condominioId.value = null;
       }
