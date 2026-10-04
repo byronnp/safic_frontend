@@ -2,40 +2,41 @@
   <q-page class="safic-main asistente">
     <PaginaEncabezado miga="Condominios / Nuevo" titulo="Nuevo condominio" />
 
-    <NuevoCondominioPasos :pasos="PASOS_NUEVO_CONDOMINIO" :actual="paso" @ir="irA" />
+    <NuevoCondominioPasos :pasos="PASOS" :actual="paso" @ir="irA" />
 
-    <section class="asistente__panel" :aria-label="PASOS_NUEVO_CONDOMINIO[paso - 1]?.titulo">
-      <!-- Catálogos de la API: cargando / error -->
-      <div v-if="cargandoCatalogos" class="asistente__estado" aria-busy="true">
-        <q-spinner color="primary" size="28px" />
-        <span>Cargando planes y catálogos…</span>
-      </div>
-      <div v-else-if="errorCatalogos" class="asistente__estado" role="alert">
-        <q-icon name="sym_r_error" size="24px" color="negative" />
-        <span>{{ errorCatalogos }}</span>
-        <q-btn
-          v-if="puedeCrear"
-          unelevated
-          no-caps
-          class="safic-btn safic-btn--secundario"
-          :icon="ICONOS.refrescar"
-          label="Reintentar"
-          @click="recargarCatalogos"
-        />
-      </div>
+    <div v-if="cargaFallida" class="safic-alerta row items-center" role="alert" style="gap: 12px">
+      <span class="col-grow">{{ cargaFallida }}</span>
+      <q-btn flat no-caps dense label="Reintentar" @click="reintentarCatalogos" />
+    </div>
 
+    <section
+      v-else-if="cargando"
+      class="asistente__panel asistente__panel--cargando"
+      aria-busy="true"
+    >
+      <q-skeleton v-for="n in 6" :key="n" type="rect" height="44px" />
+    </section>
+
+    <section v-else class="asistente__panel" :aria-label="PASOS[paso - 1]?.titulo">
       <!-- Paso 1 · Datos generales -->
-      <div v-else-if="paso === 1" class="asistente__grilla asistente__grilla--tres">
+      <div v-if="paso === 1" class="asistente__grilla asistente__grilla--tres">
         <NuevoCondominioCampo
           etiqueta="Nombre del condominio"
           :error="err('nombre')"
           class="span-2"
         >
-          <input v-model="f.nombre" class="control" :class="{ 'control--error': err('nombre') }" />
+          <input
+            v-model="f.nombre"
+            class="control"
+            :class="{ 'control--error': err('nombre') }"
+            maxlength="120"
+          />
         </NuevoCondominioCampo>
         <NuevoCondominioCampo etiqueta="Tipo">
           <select v-model="f.tipo" class="control control--select">
-            <option v-for="t in tipos" :key="t.valor" :value="t.valor">{{ t.etiqueta }}</option>
+            <option v-for="t in TIPOS_CONDOMINIO" :key="t.valor" :value="t.valor">
+              {{ t.etiqueta }}
+            </option>
           </select>
         </NuevoCondominioCampo>
         <NuevoCondominioCampo etiqueta="RUC" :error="err('ruc')">
@@ -52,10 +53,17 @@
             v-model="f.razonSocial"
             class="control"
             :class="{ 'control--error': err('razonSocial') }"
+            maxlength="160"
           />
         </NuevoCondominioCampo>
-        <NuevoCondominioCampo etiqueta="Provincia">
-          <select v-model="f.provincia" class="control control--select" @change="cambiarProvincia">
+        <NuevoCondominioCampo etiqueta="Provincia" :error="err('provincia')">
+          <select
+            v-model="f.provincia"
+            class="control control--select"
+            :class="{ 'control--error': err('provincia') }"
+            @change="cambiarProvincia"
+          >
+            <option value="" disabled>Elige…</option>
             <option v-for="p in provincias" :key="p.codigo" :value="p.codigo">
               {{ p.nombre }}
             </option>
@@ -66,10 +74,10 @@
             v-model="f.canton"
             class="control control--select"
             :class="{ 'control--error': err('canton') }"
-            :disabled="!cantones.length"
+            :disabled="!f.provincia"
             @change="cambiarCanton"
           >
-            <option v-if="!cantones.length" value="">Sin cantones cargados</option>
+            <option value="" disabled>Elige…</option>
             <option v-for="c in cantones" :key="c.codigo" :value="c.codigo">{{ c.nombre }}</option>
           </select>
         </NuevoCondominioCampo>
@@ -78,29 +86,44 @@
             v-model="f.parroquia"
             class="control control--select"
             :class="{ 'control--error': err('parroquia') }"
-            :disabled="!parroquias.length"
+            :disabled="!f.canton"
           >
-            <option v-if="!parroquias.length" value="">Sin parroquias cargadas</option>
-            <option v-for="p in parroquias" :key="p.codigo" :value="p.codigo">
-              {{ p.nombre }}
+            <option value="" disabled>Elige…</option>
+            <option v-for="q in parroquias" :key="q.codigo" :value="q.codigo">
+              {{ q.nombre }}
             </option>
           </select>
         </NuevoCondominioCampo>
-        <NuevoCondominioCampo etiqueta="Dirección" :error="err('direccion')" class="span-2">
+        <NuevoCondominioCampo etiqueta="Dirección" :error="err('direccion')" class="span-3">
           <input
             v-model="f.direccion"
             class="control"
             :class="{ 'control--error': err('direccion') }"
+            maxlength="200"
           />
         </NuevoCondominioCampo>
         <NuevoCondominioCampo
-          etiqueta="Teléfono / correo de administración"
-          :error="err('contacto')"
+          etiqueta="Teléfono de la administración (opcional)"
+          :error="err('telefono')"
         >
           <input
-            v-model="f.contacto"
+            v-model="f.telefono"
+            type="tel"
             class="control"
-            :class="{ 'control--error': err('contacto') }"
+            :class="{ 'control--error': err('telefono') }"
+            inputmode="tel"
+          />
+        </NuevoCondominioCampo>
+        <NuevoCondominioCampo
+          etiqueta="Correo de la administración (opcional)"
+          :error="err('emailContacto')"
+          class="span-2"
+        >
+          <input
+            v-model="f.emailContacto"
+            type="email"
+            class="control"
+            :class="{ 'control--error': err('emailContacto') }"
           />
         </NuevoCondominioCampo>
 
@@ -108,39 +131,33 @@
 
         <NuevoCondominioCampo etiqueta="Total de unidades" :error="err('unidades')">
           <input
-            type="number"
-            min="1"
-            step="1"
+            v-model="f.unidades"
             class="control control--destacado"
             :class="{ 'control--error': err('unidades') }"
-            :value="f.unidades ?? ''"
-            @input="f.unidades = numero($event)"
+            inputmode="numeric"
           />
         </NuevoCondominioCampo>
         <NuevoCondominioCampo etiqueta="Plan">
-          <select v-model="f.plan" class="control control--select">
-            <option v-for="p in planes" :key="p.clave" :value="p.clave">
-              {{ p.nombre }} · hasta {{ p.max_administrativos }} administrativos
+          <select v-model="f.plan" class="control control--select" @change="sugerirValor">
+            <option v-for="p in planes" :key="p.codigo" :value="p.codigo">
+              {{ p.nombre }} · {{ p.limite_administrativos }} administrativos
             </option>
           </select>
         </NuevoCondominioCampo>
         <NuevoCondominioCampo etiqueta="Valor por unidad (USD)" :error="err('valorUnidad')">
           <input
-            type="number"
-            min="0"
-            step="0.01"
+            v-model="f.valorUnidad"
             class="control control--destacado"
             :class="{ 'control--error': err('valorUnidad') }"
-            :value="f.valorUnidad ?? ''"
-            @input="f.valorUnidad = numero($event)"
+            inputmode="decimal"
           />
         </NuevoCondominioCampo>
 
         <div class="asistente__mensualidad span-3">
           <div class="asistente__mensualidad-texto">
-            Mensualidad: <strong>{{ unidades }} unidades × $ {{ valorTxt }}</strong> =
+            Mensualidad: <strong>{{ unidadesNum }} unidades × {{ valorTxt }}</strong> =
             <strong class="asistente__mensualidad-total">{{ totalTxt }}</strong> + IVA · Límite de
-            registro: {{ unidades }} unidades
+            registro: {{ unidadesNum }} unidades
           </div>
           <span class="asistente__prueba">Prueba 30 días</span>
         </div>
@@ -148,11 +165,17 @@
 
       <!-- Paso 2 · Ubicación -->
       <div v-else-if="paso === 2" class="asistente__ubicacion">
-        <NuevoCondominioMapa :x="pin.x" :y="pin.y" @mover="moverPin" />
+        <MapaUbicacion
+          v-model:latitud="f.latitud"
+          v-model:longitud="f.longitud"
+          :centro="centroMapa"
+        />
         <div class="asistente__ubicacion-campos">
-          <NuevoCondominioCampo etiqueta="Buscar dirección">
-            <input v-model="f.buscarDireccion" class="control" />
-          </NuevoCondominioCampo>
+          <div class="asistente__nota">
+            <strong>{{ ubicacionTxt || 'Elige la ubicación en el paso 1' }}</strong
+            ><br />
+            {{ f.direccion }}
+          </div>
           <NuevoCondominioCampo etiqueta="Latitud" :error="err('latitud')">
             <input
               v-model="f.latitud"
@@ -176,38 +199,154 @@
         </div>
       </div>
 
-      <!-- Paso 3 · Amenidades -->
-      <div v-else-if="paso === 3">
+      <!-- Paso 3 · Cobro de cuotas -->
+      <div v-else-if="paso === 3" class="asistente__cobro">
+        <div class="asistente__intro">
+          Cómo cobra este condominio sus cuotas a los residentes. El administrador puede cambiarlo
+          después en Configuración › Cobro de cuotas.
+        </div>
+        <div id="metodo-cobro" class="campo-etiqueta">Método de cobro</div>
+        <div role="radiogroup" aria-labelledby="metodo-cobro" class="metodos">
+          <button
+            v-for="m in METODOS_COBRO"
+            :key="m.valor"
+            type="button"
+            role="radio"
+            class="metodo"
+            :class="{ 'metodo--activo': f.metodo === m.valor }"
+            :aria-checked="f.metodo === m.valor"
+            @click="f.metodo = m.valor"
+          >
+            <span class="metodo__titulo"><span class="metodo__punto" />{{ m.nombre }}</span>
+            <span class="metodo__detalle">{{ m.detalle }}</span>
+          </button>
+        </div>
+
+        <div v-if="f.metodo === 'general'" class="asistente__grilla asistente__grilla--dos">
+          <NuevoCondominioCampo
+            etiqueta="Cuota mensual por unidad (USD)"
+            :error="err('cuotaGeneral')"
+          >
+            <input
+              v-model="f.cuotaGeneral"
+              class="control control--destacado"
+              :class="{ 'control--error': err('cuotaGeneral') }"
+              inputmode="decimal"
+              placeholder="80,00"
+            />
+          </NuevoCondominioCampo>
+          <div class="asistente__nota asistente__nota--centrada">
+            La pagan todas por igual: casas, departamentos y locales.
+          </div>
+        </div>
+        <div v-else-if="f.metodo === 'tipo'">
+          <div class="asistente__grilla asistente__grilla--cinco">
+            <NuevoCondominioCampo
+              v-for="t in TIPOS_UNIDAD"
+              :key="t.valor"
+              :etiqueta="`${t.etiqueta} (USD)`"
+            >
+              <input
+                v-model="f.valoresTipo[t.valor]"
+                class="control"
+                :class="{ 'control--error': err('valoresTipo') }"
+                inputmode="decimal"
+              />
+            </NuevoCondominioCampo>
+          </div>
+          <div v-if="err('valoresTipo')" class="campo-error" role="alert">
+            {{ err('valoresTipo') }}
+          </div>
+        </div>
+        <div v-else-if="f.metodo === 'alicuota'" class="asistente__grilla asistente__grilla--dos">
+          <NuevoCondominioCampo
+            etiqueta="Presupuesto mensual del condominio (USD)"
+            :error="err('presupuesto')"
+          >
+            <input
+              v-model="f.presupuesto"
+              class="control control--destacado"
+              :class="{ 'control--error': err('presupuesto') }"
+              inputmode="decimal"
+            />
+          </NuevoCondominioCampo>
+          <div class="asistente__nota asistente__nota--centrada">
+            Cada unidad paga su alícuota de este total. Ej.: 0,62 % → 0,62 % del presupuesto.
+          </div>
+        </div>
+        <div v-else class="asistente__aviso asistente__aviso--neutro">
+          La cuota se escribe en cada unidad al crearla o en la columna <strong>cuota</strong> del
+          Excel de unidades.
+        </div>
+
+        <div class="asistente__grilla asistente__grilla--dos">
+          <NuevoCondominioCampo etiqueta="Día de vencimiento">
+            <select v-model="f.diaVencimiento" class="control control--select">
+              <option v-for="d in DIAS_VENCIMIENTO" :key="d.valor" :value="d.valor">
+                {{ d.etiqueta }}
+              </option>
+            </select>
+          </NuevoCondominioCampo>
+          <NuevoCondominioCampo etiqueta="Primera cuota" :error="err('primeraCuota')">
+            <select v-model="f.primeraCuota" class="control control--select">
+              <option v-for="m in meses" :key="m.valor" :value="m.valor">{{ m.etiqueta }}</option>
+            </select>
+          </NuevoCondominioCampo>
+        </div>
+      </div>
+
+      <!-- Paso 4 · Amenidades -->
+      <div v-else-if="paso === 4">
         <div class="asistente__intro">
           Elige las amenidades del condominio. Las reservables pasan a la agenda de áreas comunes;
           las esenciales nunca se restringen por mora.
         </div>
         <div class="asistente__amenidades">
           <div
-            v-for="a in catalogoAmenidades"
-            :key="a.clave"
+            v-for="a in catalogo"
+            :key="a.id"
             class="amenidad"
-            :class="{ 'amenidad--activa': amenidades.has(a.clave) }"
+            :class="{ 'amenidad--activa': amenidades.has(a.id) }"
           >
             <label class="amenidad__etiqueta">
               <input
                 type="checkbox"
                 class="amenidad__check"
-                :checked="amenidades.has(a.clave)"
-                @change="alternarAmenidad(a.clave)"
+                :checked="amenidades.has(a.id)"
+                @change="alternarAmenidad(a.id)"
               />
               <span>
                 <span class="amenidad__nombre">{{ a.nombre }}</span>
                 <span class="amenidad__meta">{{ metaAmenidad(a) }}</span>
               </span>
             </label>
-            <q-icon :name="a.icono" size="20px" class="amenidad__icono" />
+            <label v-if="amenidades.has(a.id)" class="amenidad__cantidad">
+              <span class="sr-only">Cantidad de {{ a.nombre }}</span>
+              ×
+              <input
+                type="number"
+                min="1"
+                max="999"
+                class="amenidad__numero"
+                :value="amenidades.get(a.id)"
+                @input="cambiarCantidad(a.id, $event)"
+              />
+            </label>
           </div>
         </div>
       </div>
 
-      <!-- Paso 4 · Administrador -->
+      <!-- Paso 5 · Administrador -->
       <div v-else class="asistente__grilla asistente__grilla--dos">
+        <NuevoCondominioCampo etiqueta="Correo" :error="err('correo')">
+          <input
+            v-model="f.correo"
+            type="email"
+            class="control"
+            :class="{ 'control--error': err('correo') }"
+            autocomplete="off"
+          />
+        </NuevoCondominioCampo>
         <NuevoCondominioCampo etiqueta="Cédula" :error="err('cedula')">
           <input
             v-model="f.cedula"
@@ -222,17 +361,10 @@
             v-model="f.nombreAdmin"
             class="control"
             :class="{ 'control--error': err('nombreAdmin') }"
+            maxlength="120"
           />
         </NuevoCondominioCampo>
-        <NuevoCondominioCampo etiqueta="Correo" :error="err('correo')">
-          <input
-            v-model="f.correo"
-            type="email"
-            class="control"
-            :class="{ 'control--error': err('correo') }"
-          />
-        </NuevoCondominioCampo>
-        <NuevoCondominioCampo etiqueta="Celular" :error="err('celular')">
+        <NuevoCondominioCampo etiqueta="Celular (opcional)" :error="err('celular')">
           <input
             v-model="f.celular"
             type="tel"
@@ -241,10 +373,12 @@
           />
         </NuevoCondominioCampo>
 
-        <div v-if="cuentaExistente" class="asistente__aviso span-2">
-          <strong>Esta persona ya tiene cuenta</strong> (administra {{ cuentaExistente }}). Se le
-          agregará {{ nombreCorto }} como condominio secundario; no se enviará invitación de
-          registro.
+        <div v-if="usuario.data.value" class="asistente__aviso span-2">
+          <strong>Esta persona ya tiene cuenta</strong> ({{ usuario.data.value.nombre }}, miembro de
+          {{ usuario.data.value.condominios }} condominio{{
+            usuario.data.value.condominios === 1 ? '' : 's'
+          }}). Se le agregará {{ f.nombre || 'este condominio' }} como administrador; no se enviará
+          invitación de registro.
         </div>
         <div v-else class="asistente__aviso asistente__aviso--neutro span-2">
           <strong>Persona nueva en SAFIC.</strong> Al crear el condominio se enviará una invitación
@@ -254,7 +388,7 @@
         <div class="asistente__resumen span-2">
           <div>
             <div class="asistente__resumen-etiqueta">Unidades</div>
-            <div class="asistente__resumen-valor">{{ unidades }}</div>
+            <div class="asistente__resumen-valor">{{ unidadesNum }}</div>
           </div>
           <div>
             <div class="asistente__resumen-etiqueta">Plan</div>
@@ -265,12 +399,18 @@
             <div class="asistente__resumen-valor">{{ totalTxt }} + IVA</div>
           </div>
           <div>
+            <div class="asistente__resumen-etiqueta">Cuota a residentes</div>
+            <div class="asistente__resumen-valor">{{ cuotaTxt }}</div>
+          </div>
+          <div>
             <div class="asistente__resumen-etiqueta">Amenidades</div>
             <div class="asistente__resumen-valor">{{ amenidades.size }}</div>
           </div>
         </div>
       </div>
     </section>
+
+    <div v-if="errorGeneral" class="safic-alerta" role="alert">{{ errorGeneral }}</div>
 
     <div class="asistente__pie">
       <button
@@ -293,247 +433,202 @@
           Nada se guarda hasta el último paso; si algo falla, no queda un condominio a medias.
         </template>
       </div>
-      <button type="button" class="asistente__boton" @click="siguiente">
-        {{ paso === 4 ? 'Crear condominio y enviar acceso' : 'Siguiente' }}
-      </button>
+      <q-btn
+        unelevated
+        no-caps
+        color="primary"
+        class="asistente__boton"
+        :loading="crear.isPending.value"
+        :disable="cargando || !!cargaFallida"
+        :label="paso === TOTAL_PASOS ? 'Crear condominio y enviar acceso' : 'Siguiente'"
+        @click="siguiente"
+      />
     </div>
   </q-page>
 </template>
 
 <script setup lang="ts">
 import { useQuasar } from 'quasar';
-import { computed, reactive, ref, watch } from 'vue';
+import { computed, reactive, ref, toRef } from 'vue';
 import { useRouter } from 'vue-router';
 
+import MapaUbicacion from '@/components/MapaUbicacion.vue';
 import PaginaEncabezado from '@/components/PaginaEncabezado.vue';
-import { ICONOS } from '@/core/navigation/icons';
+import { aApiError } from '@/core/api/errors';
+import { useUbicaciones } from '@/core/catalogos/ubicaciones';
 import NuevoCondominioCampo from '@/modules/plataforma/components/NuevoCondominioCampo.vue';
-import NuevoCondominioMapa from '@/modules/plataforma/components/NuevoCondominioMapa.vue';
 import NuevoCondominioPasos from '@/modules/plataforma/components/NuevoCondominioPasos.vue';
-import {
-  PERMISO,
-  useCatalogos,
-  usePlanes,
-  useUbicaciones,
-} from '@/modules/plataforma/composables/useCatalogosAlta';
-import {
-  AMENIDADES_INICIALES,
-  CUENTAS_EXISTENTES,
-  FORMULARIO_INICIAL,
-  PASOS_NUEVO_CONDOMINIO,
-} from '@/modules/plataforma/demo/nuevo-condominio';
-import type { FormularioNuevoCondominio } from '@/modules/plataforma/demo/nuevo-condominio';
-import type { AmenidadCatalogo } from '@/modules/plataforma/services/catalogos.service';
-import { useSessionStore } from '@/stores/session';
+import { refDebounced } from '@/utils/debounce';
 import { formatoMoneda } from '@/utils/formato';
 
-type Campo = keyof FormularioNuevoCondominio;
+import {
+  aPayload,
+  campoDeApi,
+  DIAS_VENCIMIENTO,
+  formularioInicial,
+  mesesPrimeraCuota,
+  METODOS_COBRO,
+  multiplicarMonto,
+  normalizarMonto,
+  PASOS,
+  TIPOS_CONDOMINIO,
+  TIPOS_UNIDAD,
+  TOTAL_PASOS,
+  validarPaso,
+  type CampoFormulario,
+} from '../asistente';
+import {
+  useBuscarUsuario,
+  useCatalogoAmenidades,
+  useCrearCondominio,
+  usePlanes,
+} from '../composables/usePlataforma';
+import type { AmenidadCatalogo } from '../services/plataforma.service';
 
 const $q = useQuasar();
 const router = useRouter();
-const session = useSessionStore();
 
 const paso = ref(1);
-const f = reactive<FormularioNuevoCondominio>({ ...FORMULARIO_INICIAL });
-const amenidades = ref(new Set<string>(AMENIDADES_INICIALES));
+const f = reactive(formularioInicial());
+const meses = mesesPrimeraCuota();
+/** amenidad_id → cantidad */
+const amenidades = ref(new Map<number, number>());
 /** Pasos en los que ya se intentó avanzar: desde ahí los errores se muestran en vivo. */
 const intentados = ref(new Set<number>());
+/** Errores que devolvió la API (422) hasta que el campo cambie. */
+const erroresApi = ref<Partial<Record<CampoFormulario, string>>>({});
+const errorGeneral = ref<string | null>(null);
 
-// ---------- Catálogos de la API ----------
-const consultaPlanes = usePlanes();
-const consultaCatalogos = useCatalogos();
-const consultaUbicaciones = useUbicaciones();
+// ---------- Catálogos ----------
+const ubicaciones = useUbicaciones();
+const planesQuery = usePlanes();
+const amenidadesQuery = useCatalogoAmenidades();
 
-const planes = computed(() => consultaPlanes.data.value ?? []);
-const tipos = computed(() => consultaCatalogos.data.value?.tipos_condominio ?? []);
-const catalogoAmenidades = computed(() => consultaCatalogos.data.value?.amenidades ?? []);
-
-const cargandoCatalogos = computed(
+const cargando = computed(
   () =>
-    consultaPlanes.isLoading.value ||
-    consultaCatalogos.isLoading.value ||
-    consultaUbicaciones.isLoading.value,
+    ubicaciones.isLoading.value || planesQuery.isLoading.value || amenidadesQuery.isLoading.value,
 );
-const puedeCrear = computed(() => session.tienePermisoPlataforma(PERMISO));
-const errorCatalogos = computed(() =>
-  puedeCrear.value
-    ? (
-        consultaPlanes.error.value ??
-        consultaCatalogos.error.value ??
-        consultaUbicaciones.error.value
-      )?.mensaje
-    : 'Tu perfil no tiene permiso para crear condominios.',
+const cargaFallida = computed(
+  () =>
+    (ubicaciones.error.value ?? planesQuery.error.value ?? amenidadesQuery.error.value)?.mensaje ??
+    null,
 );
 
-function recargarCatalogos(): void {
-  void consultaPlanes.refetch();
-  void consultaCatalogos.refetch();
-  void consultaUbicaciones.refetch();
+function reintentarCatalogos(): void {
+  void ubicaciones.refetch();
+  void planesQuery.refetch();
+  void amenidadesQuery.refetch();
 }
 
-// ---------- Ubicación en cascada (códigos INEC) ----------
-const provincias = computed(() => consultaUbicaciones.data.value ?? []);
-const cantones = computed(
-  () => provincias.value.find((p) => p.codigo === f.provincia)?.cantones ?? [],
-);
-const parroquias = computed(
-  () => cantones.value.find((c) => c.codigo === f.canton)?.parroquias ?? [],
-);
+const planes = computed(() => planesQuery.data.value ?? []);
+const catalogo = computed(() => amenidadesQuery.data.value ?? []);
+const provincias = computed(() => ubicaciones.data.value ?? []);
+const provincia = computed(() => provincias.value.find((p) => p.codigo === f.provincia));
+const cantones = computed(() => provincia.value?.cantones ?? []);
+const canton = computed(() => cantones.value.find((c) => c.codigo === f.canton));
+const parroquias = computed(() => canton.value?.parroquias ?? []);
 
 function cambiarProvincia(): void {
-  f.canton = cantones.value[0]?.codigo ?? '';
-  cambiarCanton();
+  f.canton = '';
+  f.parroquia = '';
 }
 
 function cambiarCanton(): void {
-  f.parroquia = parroquias.value[0]?.codigo ?? '';
+  f.parroquia = '';
 }
 
-// Al llegar las ubicaciones, completa cantón y parroquia si no son de la provincia.
-watch(provincias, () => {
-  if (!cantones.value.some((c) => c.codigo === f.canton)) {
-    cambiarProvincia();
+/** Al elegir plan, propone su valor sugerido si aún no se escribió uno. */
+function sugerirValor(): void {
+  const plan = planes.value.find((p) => p.codigo === f.plan);
+  if (plan && f.valorUnidad.trim() === '') {
+    f.valorUnidad = plan.valor_unidad_sugerido.replace('.', ',');
   }
+}
+
+// ---------- Contrato y resumen ----------
+const unidadesNum = computed(() => (/^\d+$/.test(f.unidades.trim()) ? Number(f.unidades) : 0));
+const valorNormalizado = computed(() => normalizarMonto(f.valorUnidad));
+const valorTxt = computed(() =>
+  valorNormalizado.value ? formatoMoneda(valorNormalizado.value) : '$ —',
+);
+const totalTxt = computed(() => {
+  const total = multiplicarMonto(unidadesNum.value, valorNormalizado.value);
+  return total ? formatoMoneda(total) : '$ —';
+});
+const planTxt = computed(() => planes.value.find((p) => p.codigo === f.plan)?.nombre ?? '—');
+const cuotaTxt = computed(() => {
+  if (f.metodo === 'general') {
+    const cuota = normalizarMonto(f.cuotaGeneral);
+    return cuota ? formatoMoneda(cuota) : '—';
+  }
+  return METODOS_COBRO.find((m) => m.valor === f.metodo)?.nombre ?? '—';
 });
 
-// ---------- Contrato ----------
-function numero(evento: Event): number | null {
-  const texto = (evento.target as HTMLInputElement).value;
-  return texto === '' ? null : Number(texto);
-}
-
-const unidades = computed(() => f.unidades ?? 0);
-const valor = computed(() => f.valorUnidad ?? 0);
-const valorTxt = computed(() => valor.value.toFixed(2).replace('.', ','));
-const totalTxt = computed(() => formatoMoneda(unidades.value * valor.value));
-const planTxt = computed(() => planes.value.find((p) => p.clave === f.plan)?.nombre ?? '—');
-
-// ---------- Mapa: el pin y las coordenadas son el mismo dato ----------
-const ORIGEN = { x: 455, y: 170, lat: -0.285412, lng: -78.471236 };
-const GRADOS_POR_UNIDAD = 0.00002;
-
-const pin = computed(() => {
-  const lat = Number(f.latitud);
-  const lng = Number(f.longitud);
-  if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
-    return { x: ORIGEN.x, y: ORIGEN.y };
-  }
-  return {
-    x: Math.min(770, Math.max(30, ORIGEN.x + (lng - ORIGEN.lng) / GRADOS_POR_UNIDAD)),
-    y: Math.min(430, Math.max(44, ORIGEN.y - (lat - ORIGEN.lat) / GRADOS_POR_UNIDAD)),
-  };
+// ---------- Ubicación ----------
+const centroMapa = computed(() => {
+  const lugar = canton.value ?? provincia.value;
+  const lat = Number(lugar?.latitud);
+  const lng = Number(lugar?.longitud);
+  return lugar && Number.isFinite(lat) && Number.isFinite(lng) ? { lat, lng } : null;
 });
-
-function moverPin(x: number, y: number): void {
-  f.latitud = (ORIGEN.lat - (y - ORIGEN.y) * GRADOS_POR_UNIDAD).toFixed(6);
-  f.longitud = (ORIGEN.lng + (x - ORIGEN.x) * GRADOS_POR_UNIDAD).toFixed(6);
-}
+const ubicacionTxt = computed(() =>
+  [
+    parroquias.value.find((q) => q.codigo === f.parroquia)?.nombre,
+    canton.value?.nombre,
+    provincia.value?.nombre,
+  ]
+    .filter(Boolean)
+    .join(', '),
+);
 
 // ---------- Amenidades ----------
-function alternarAmenidad(clave: string): void {
-  const nuevo = new Set(amenidades.value);
-  if (nuevo.has(clave)) {
-    nuevo.delete(clave);
+function metaAmenidad(a: AmenidadCatalogo): string {
+  if (a.esencial) {
+    return 'Esencial';
+  }
+  return a.reservable
+    ? a.requiere_aprobacion
+      ? 'Reservable · con aprobación'
+      : 'Reservable'
+    : 'Acceso libre';
+}
+
+function alternarAmenidad(id: number): void {
+  const nuevo = new Map(amenidades.value);
+  if (nuevo.has(id)) {
+    nuevo.delete(id);
   } else {
-    nuevo.add(clave);
+    nuevo.set(id, 1);
   }
   amenidades.value = nuevo;
 }
 
-function metaAmenidad(a: AmenidadCatalogo): string {
-  if (a.esencial) {
-    return 'Esencial · nunca se restringe';
-  }
-  return a.reservable ? 'Reservable' : 'Acceso libre';
+function cambiarCantidad(id: number, evento: Event): void {
+  const n = Math.round(Number((evento.target as HTMLInputElement).value));
+  const nuevo = new Map(amenidades.value);
+  nuevo.set(id, Number.isFinite(n) ? Math.min(999, Math.max(1, n)) : 1);
+  amenidades.value = nuevo;
 }
 
-// ---------- Administrador ----------
-const cuentaExistente = computed(() => CUENTAS_EXISTENTES[f.cedula.trim()]);
-const nombreCorto = computed(() => f.nombre.replace(/^(Conjunto|Edificio|Urbanización)\s+/i, ''));
+// ---------- Administrador: ¿ya tiene cuenta? ----------
+const correoDiferido = refDebounced(toRef(f, 'correo'), 400);
+const usuario = useBuscarUsuario(correoDiferido);
 
-// ---------- Validación por paso ----------
-const CAMPOS_POR_PASO: Record<number, Campo[]> = {
-  1: [
-    'nombre',
-    'ruc',
-    'razonSocial',
-    'canton',
-    'parroquia',
-    'direccion',
-    'contacto',
-    'unidades',
-    'valorUnidad',
-  ],
-  2: ['latitud', 'longitud'],
-  3: [],
-  4: ['cedula', 'nombreAdmin', 'correo', 'celular'],
-};
-
-function validar(campo: Campo): string | undefined {
-  const texto = (v: unknown): string => (typeof v === 'string' ? v.trim() : '');
-  switch (campo) {
-    case 'nombre':
-      return texto(f.nombre) ? undefined : 'Escribe el nombre del condominio.';
-    case 'ruc':
-      return /^\d{10}001$/.test(texto(f.ruc))
-        ? undefined
-        : 'El RUC tiene 13 dígitos y termina en 001.';
-    case 'razonSocial':
-      return texto(f.razonSocial) ? undefined : 'Escribe la razón social.';
-    case 'canton':
-      return !cantones.value.length || f.canton ? undefined : 'Elige el cantón.';
-    case 'parroquia':
-      return !parroquias.value.length || f.parroquia ? undefined : 'Elige la parroquia.';
-    case 'direccion':
-      return texto(f.direccion) ? undefined : 'Escribe la dirección.';
-    case 'contacto':
-      return texto(f.contacto) ? undefined : 'Escribe un teléfono o correo de contacto.';
-    case 'unidades':
-      return f.unidades !== null && Number.isInteger(f.unidades) && f.unidades > 0
-        ? undefined
-        : 'Indica cuántas unidades tiene (número entero mayor a 0).';
-    case 'valorUnidad':
-      return f.valorUnidad !== null && f.valorUnidad > 0
-        ? undefined
-        : 'El valor por unidad debe ser mayor a 0.';
-    case 'latitud': {
-      const n = Number(f.latitud);
-      return texto(f.latitud) && n >= -5.1 && n <= 1.7
-        ? undefined
-        : 'Latitud no válida para Ecuador.';
-    }
-    case 'longitud': {
-      const n = Number(f.longitud);
-      return texto(f.longitud) && n >= -92.1 && n <= -75.1
-        ? undefined
-        : 'Longitud no válida para Ecuador.';
-    }
-    case 'cedula':
-      return /^\d{10}$/.test(texto(f.cedula)) ? undefined : 'La cédula tiene 10 dígitos.';
-    case 'nombreAdmin':
-      return texto(f.nombreAdmin) ? undefined : 'Escribe los nombres y apellidos.';
-    case 'correo':
-      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(texto(f.correo))
-        ? undefined
-        : 'Escribe un correo válido.';
-    case 'celular':
-      return /^09\d{8}$/.test(texto(f.celular).replace(/\s/g, ''))
-        ? undefined
-        : 'El celular tiene 10 dígitos y empieza con 09.';
-    default:
-      return undefined;
+// ---------- Validación ----------
+const errores = computed(() => {
+  const todos: Partial<Record<CampoFormulario, string>> = {};
+  for (const n of intentados.value) {
+    Object.assign(todos, validarPaso(n, f));
   }
+  return { ...erroresApi.value, ...todos };
+});
+
+function err(campo: CampoFormulario): string | undefined {
+  return errores.value[campo];
 }
 
 function pasoValido(n: number): boolean {
-  return (CAMPOS_POR_PASO[n] ?? []).every((c) => !validar(c));
-}
-
-function err(campo: Campo): string | undefined {
-  const pasoDelCampo = Number(
-    Object.keys(CAMPOS_POR_PASO).find((k) => CAMPOS_POR_PASO[Number(k)]?.includes(campo)),
-  );
-  return intentados.value.has(pasoDelCampo) ? validar(campo) : undefined;
+  return Object.keys(validarPaso(n, f)).length === 0;
 }
 
 const hayErrores = computed(() => intentados.value.has(paso.value) && !pasoValido(paso.value));
@@ -564,43 +659,52 @@ function anterior(): void {
   }
 }
 
-function siguiente(): void {
-  if (paso.value < 4) {
+const crear = useCrearCondominio();
+
+async function siguiente(): Promise<void> {
+  if (paso.value < TOTAL_PASOS) {
     irA(paso.value + 1);
     return;
   }
-  const invalido = [1, 2, 3, 4].find((n) => !pasoValido(n));
+  const invalido = PASOS.map((_, i) => i + 1).find((n) => !pasoValido(n));
   if (invalido) {
     marcarIntentado(invalido);
     paso.value = invalido;
     return;
   }
-  $q.notify({
-    type: 'positive',
-    message: cuentaExistente.value
-      ? `${f.nombre} creado. ${f.nombreAdmin} ya puede administrarlo con su cuenta.`
-      : `${f.nombre} creado. Enviamos la invitación a ${f.correo}.`,
-  });
-  void router.push({ name: 'plataforma-condominios' });
+
+  errorGeneral.value = null;
+  erroresApi.value = {};
+  try {
+    const creado = await crear.mutateAsync(aPayload(f, amenidades.value));
+    $q.notify({ type: 'positive', message: `${creado.condominio.nombre}: ${creado.mensaje}` });
+    await router.push({ name: 'plataforma-condominios' });
+  } catch (error) {
+    const apiError = aApiError(error);
+    const porCampo: Partial<Record<CampoFormulario, string>> = {};
+    let primerPaso: number | null = null;
+    for (const [campoApi, mensajes] of Object.entries(apiError.campos)) {
+      const destino = campoDeApi(campoApi);
+      if (destino && mensajes[0]) {
+        porCampo[destino.campo] ??= mensajes[0];
+        primerPaso = Math.min(primerPaso ?? destino.paso, destino.paso);
+      }
+    }
+    if (apiError.codigo === 'CEDULA_EN_USO') {
+      porCampo.cedula = apiError.mensaje;
+      primerPaso = TOTAL_PASOS;
+    }
+    erroresApi.value = porCampo;
+    if (primerPaso !== null) {
+      paso.value = primerPaso;
+    } else {
+      errorGeneral.value = apiError.mensaje;
+    }
+  }
 }
 </script>
 
 <style scoped>
-.asistente__estado {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
-  min-height: 160px;
-  justify-content: center;
-  color: var(--safic-texto-suave);
-  font-size: 14px;
-}
-
-.amenidad__icono {
-  color: var(--safic-texto-suave);
-}
-
 .asistente.safic-main {
   padding: 28px 40px;
   gap: 18px;
@@ -722,6 +826,7 @@ function siguiente(): void {
 .asistente__ubicacion {
   display: flex;
   gap: 20px;
+  min-height: 460px;
 }
 
 .asistente__ubicacion-campos {
@@ -819,7 +924,7 @@ function siguiente(): void {
   border-top: 1px solid var(--safic-linea);
   padding-top: 16px;
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 12px;
   font-size: 13px;
 }
@@ -936,6 +1041,119 @@ function siguiente(): void {
   .asistente__boton {
     flex-grow: 1;
     white-space: normal;
+  }
+}
+
+.asistente__panel--cargando {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px 20px;
+  align-content: start;
+}
+
+.asistente__grilla--cinco {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.asistente__cobro {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-width: 980px;
+}
+
+.campo-etiqueta {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--safic-texto-2);
+}
+
+.campo-error {
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #9b1c12;
+}
+
+.metodos {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.metodo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  min-height: 76px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid #d8d4c8;
+  background: #ffffff;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+}
+
+.metodo--activo {
+  border: 2px solid var(--q-primary);
+  background: #f1f6f5;
+}
+
+.metodo__titulo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--safic-texto);
+}
+
+.metodo__punto {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid #a9a498;
+  box-sizing: border-box;
+}
+
+.metodo--activo .metodo__punto {
+  border: 5px solid var(--q-primary);
+}
+
+.metodo__detalle {
+  font-size: 12px;
+  color: var(--safic-texto-suave);
+}
+
+.asistente__nota--centrada {
+  align-self: center;
+}
+
+.amenidad__numero {
+  width: 56px;
+  height: 32px;
+  border: 1px solid #cfcbbf;
+  border-radius: 8px;
+  padding: 0 6px;
+  font: inherit;
+  font-weight: 800;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+@media (max-width: 1023px) {
+  .metodos,
+  .asistente__grilla--cinco {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 </style>

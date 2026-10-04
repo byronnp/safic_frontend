@@ -25,9 +25,12 @@
 </template>
 
 <script setup lang="ts">
-import type { PasoAsistente } from '@/modules/plataforma/demo/nuevo-condominio';
+export interface PasoAsistente {
+  titulo: string;
+  sub: string;
+}
 
-defineProps<{ pasos: PasoAsistente[]; actual: number }>();
+defineProps<{ pasos: readonly PasoAsistente[]; actual: number }>();
 const emit = defineEmits<{ ir: [paso: number] }>();
 </script>
 

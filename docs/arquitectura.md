@@ -35,3 +35,8 @@ Plan: Sprint 0 (este esqueleto, frontend y backend) → S1 alta de condominio �
 - `GET /me/menu` (condominio del header) y `GET /plataforma/me/menu` (equipo 0). El frontend usa el mismo formato `ItemMenu`; en desarrollo suma las pantallas en vista previa del menú local.
 - `MenuSeeder` solo crea pantallas con API y asigna perfiles a los ítems nuevos según los permisos por defecto de cada rol; no pisa cambios del super admin.
 - Rutas `/api/v1/plataforma/*`: middleware `plataforma` (equipo 0); cada una con su permiso de plataforma.
+
+### Reconciliación de S1 (3-oct-2026)
+
+- El asistente de nuevo condominio usa los catálogos de `s1/alta-condominio`: `GET /plataforma/planes`, `GET /plataforma/amenidades` y `GET /ubicaciones` (`plataforma.service.ts`, `core/catalogos/ubicaciones.ts`). Se retiran `useCatalogosAlta` y `catalogos.service.ts`, que usaban `/plataforma/catalogos` y `/plataforma/ubicaciones` (retirados del backend).
+- El menú lateral y el del panel de plataforma vienen de `GET /me/menu` y `GET /plataforma/me/menu` (`s1/semana-1`).

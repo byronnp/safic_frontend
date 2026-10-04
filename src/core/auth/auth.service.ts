@@ -1,6 +1,14 @@
 import { api } from '@/core/api/client';
 import type { ApiRespuesta, ContextoCondominio, RespuestaToken, Usuario } from '@/core/api/types';
 
+/** Contrato: components/schemas/Invitacion. */
+export interface Invitacion {
+  nombre: string;
+  email: string;
+  condominio: string;
+  expira_en: string;
+}
+
 /**
  * Llamadas de autenticación. El refresh token viaja en la cookie HttpOnly
  * `safic_refresh` (el navegador la maneja; JavaScript nunca la ve).
@@ -37,5 +45,24 @@ export const authService = {
       headers: { 'X-Condominio-Id': String(condominioId) },
     });
     return data.data;
+  },
+
+  /** Primer ingreso: a quién corresponde el enlace del correo (sin sesión). */
+  async verInvitacion(token: string): Promise<Invitacion> {
+    const { data } = await api.get<ApiRespuesta<Invitacion>>(
+      `/auth/invitaciones/${encodeURIComponent(token)}`,
+      { saltarRefresco: true },
+    );
+    return data.data;
+  },
+
+  /** Crea la contraseña y activa la cuenta. Devuelve el correo para iniciar sesión. */
+  async aceptarInvitacion(token: string, password: string, confirmacion: string): Promise<string> {
+    const { data } = await api.post<ApiRespuesta<{ email: string }>>(
+      `/auth/invitaciones/${encodeURIComponent(token)}/aceptar`,
+      { password, password_confirmation: confirmacion },
+      { saltarRefresco: true },
+    );
+    return data.data.email;
   },
 };

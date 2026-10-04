@@ -33,6 +33,7 @@ src/modules/<m>/      pages · components · composables (vue-query) · services
 
 - **Token**: el access token vive solo en memoria. Nunca en localStorage/sessionStorage. El refresh es una cookie HttpOnly que JavaScript no toca.
 - **Condominio**: el cliente HTTP agrega `X-Condominio-Id`. Las claves de Vue Query **incluyen el condominio** (`['bloques', condominioId]`) y la caché se vacía (`queryClient.clear()`) al cambiar de condominio o cerrar sesión.
+- **Excepción a la clave con condominio**: los catálogos globales (`['catalogo', 'ubicaciones']`) y los datos del panel de plataforma (`['plataforma', ...]`) no dependen de un condominio; igual se vacían con `queryClient.clear()` al cerrar sesión.
 - **Permisos**: cada ruta declara `meta.permiso`; los botones se ocultan con `session.tienePermiso()`. Ocultar no es seguridad: la API también lo exige.
 - **Menú**: todo ítem tiene ícono de `ICONOS` (Material Symbols Rounded). Cuando exista `GET /me/menu`, reemplaza a `MENU_BASE` con el mismo formato `ItemMenu`.
 - **Capas**: página → composable (useQuery/useMutation) → service (axios) → API. Las páginas no llaman a axios.
@@ -41,7 +42,7 @@ src/modules/<m>/      pages · components · composables (vue-query) · services
 - **Apariencia**: solo `primary` y `accent` se personalizan por condominio (`useTenantTheme`). Los colores de estado son fijos.
 - **Datos personales** (cédula, teléfono, correo) llegan enmascarados de la API cuando el rol no tiene `residentes.ver_datos`; no intentar "desenmascararlos".
 - Código del dominio en español (`bloques`, `condominioId`); nombres técnicos de Vue/Quasar en inglés.
-- No agregar paquetes sin justificarlo en el pull request.
+- No agregar paquetes sin justificarlo en el pull request. `leaflet` (mapa de ubicación, `components/MapaUbicacion.vue`) usa teselas de OpenStreetMap con su atribución.
 
 ## Módulo nuevo (receta)
 
