@@ -1,42 +1,37 @@
 <template>
   <!-- Tarjeta de ocupante vigente (mockup UnidadDetalle) -->
   <div class="ocupante">
-    <div class="ocupante__avatar" :style="{ background: ocupante.fondo, color: ocupante.texto }">
-      {{ ocupante.iniciales }}
+    <div class="ocupante__avatar" :style="{ background: color.fondo, color: color.texto }">
+      {{ iniciales(ocupante.persona.nombre_completo) }}
     </div>
     <div class="ocupante__datos">
       <div class="ocupante__nombre-fila">
-        <div class="ocupante__nombre">{{ ocupante.nombre }}</div>
-        <span v-if="ocupante.principal" class="ocupante__principal">PRINCIPAL</span>
+        <div class="ocupante__nombre">{{ ocupante.persona.nombre_completo }}</div>
+        <span v-if="ocupante.es_principal" class="ocupante__principal">PRINCIPAL</span>
       </div>
       <div class="ocupante__relacion">
-        {{ ocupante.relacion
-        }}<template v-if="ocupante.desde !== '—'"> · Desde {{ ocupante.desde }}</template>
+        {{ relacionTexto }} · Desde {{ formatoFecha(ocupante.fecha_inicio) }}
+        <template v-if="ocupante.fecha_fin">
+          · Hasta {{ formatoFecha(ocupante.fecha_fin) }}</template
+        >
       </div>
     </div>
+    <!-- Llegan enmascarados si el rol no tiene residentes.ver_datos -->
     <div class="ocupante__contacto">
-      <div>{{ ocupante.telefono }}</div>
-      <div class="ocupante__documento">{{ ocupante.documento }}</div>
+      <div>{{ ocupante.persona.telefono ?? '—' }}</div>
+      <div class="ocupante__documento">{{ ocupante.persona.documento }}</div>
     </div>
-    <EstadoBadge :tono="ESTADOS_CUENTA[ocupante.cuenta].tono" class="ocupante__cuenta">
-      {{ ESTADOS_CUENTA[ocupante.cuenta].texto }}
-    </EstadoBadge>
     <button
+      v-if="puedeEditar"
       type="button"
       class="ocupante__mas"
-      :aria-label="`Más acciones para ${ocupante.nombre}`"
+      :aria-label="`Más acciones para ${ocupante.persona.nombre_completo}`"
     >
       <q-icon name="sym_r_more_vert" size="20px" />
       <q-menu anchor="bottom right" self="top right">
         <q-list dense style="min-width: 200px">
-          <q-item
-            v-for="accion in ACCIONES"
-            :key="accion"
-            v-close-popup
-            clickable
-            @click="emit('accion', `${accion}: disponible cuando se conecte la API.`)"
-          >
-            <q-item-section>{{ accion }}</q-item-section>
+          <q-item v-close-popup clickable @click="emit('finalizar', ocupante)">
+            <q-item-section>Dar de baja</q-item-section>
           </q-item>
         </q-list>
       </q-menu>
@@ -45,14 +40,26 @@
 </template>
 
 <script setup lang="ts">
-import EstadoBadge from '@/components/EstadoBadge.vue';
+import { computed } from 'vue';
 
-import { ESTADOS_CUENTA, type OcupanteDemo } from '../demo/unidades';
+import { colorAvatar, iniciales } from '@/core/theme/avatar';
+import { formatoFecha } from '@/utils/formato';
 
-defineProps<{ ocupante: OcupanteDemo }>();
-const emit = defineEmits<{ accion: [mensaje: string] }>();
+import { textoRelacion } from '../persona.formulario';
+import type { Ocupante } from '../services/unidades.service';
 
-const ACCIONES = ['Marcar como principal', 'Reenviar invitación', 'Editar datos', 'Dar de baja'];
+const props = defineProps<{ ocupante: Ocupante; indice: number; puedeEditar: boolean }>();
+const emit = defineEmits<{ finalizar: [ocupante: Ocupante] }>();
+
+const color = computed(() => colorAvatar(props.ocupante.es_principal ? 0 : props.indice + 1));
+
+/** Un propietario que no es el principal no reside en la unidad. */
+const relacionTexto = computed(() => {
+  const texto = textoRelacion(props.ocupante.relacion);
+  return props.ocupante.relacion === 'propietario' && !props.ocupante.es_principal
+    ? `${texto} (no reside)`
+    : texto;
+});
 </script>
 
 <style scoped>
@@ -121,12 +128,6 @@ const ACCIONES = ['Marcar como principal', 'Reenviar invitación', 'Editar datos
   margin-top: 2px;
 }
 
-.ocupante__cuenta {
-  width: 130px;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
 .ocupante__mas {
   width: 40px;
   height: 40px;
@@ -163,10 +164,6 @@ const ACCIONES = ['Marcar como principal', 'Reenviar invitación', 'Editar datos
     width: auto;
     flex-grow: 1;
     padding-left: 64px;
-  }
-
-  .ocupante__cuenta {
-    order: 6;
   }
 }
 </style>
