@@ -100,13 +100,12 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/modules/unidades/pages/BloquesPage.vue'),
         meta: { permiso: 'unidades.ver', titulo: 'Bloques' },
       },
-      previa(
-        'unidades/:codigo',
-        'unidad-detalle',
-        'Detalle de unidad',
-        () => import('@/modules/unidades/pages/UnidadDetallePage.vue'),
-        { menuActivo: 'unidades' },
-      ),
+      {
+        path: 'unidades/:id(\\d+)',
+        name: 'unidad-detalle',
+        component: () => import('@/modules/unidades/pages/UnidadDetallePage.vue'),
+        meta: { permiso: 'unidades.ver', titulo: 'Detalle de unidad', menuActivo: 'unidades' },
+      },
 
       // Fase 2 · Finanzas
       previa(

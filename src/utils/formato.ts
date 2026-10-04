@@ -38,3 +38,15 @@ export function formatoFechaCorta(valor: string | Date): string {
   const fecha = typeof valor === 'string' ? new Date(`${valor}T12:00:00`) : valor;
   return fechaCorta.format(fecha).replace('.', '');
 }
+
+const fechaLarga = new Intl.DateTimeFormat('es-EC', {
+  day: 'numeric',
+  month: 'short',
+  year: 'numeric',
+  timeZone: 'America/Guayaquil',
+});
+
+/** "2025-10-01" → "1 oct 2025" (fecha sin hora: se lee a mediodía para no cambiar de día) */
+export function formatoFecha(valor: string): string {
+  return fechaLarga.format(new Date(`${valor}T12:00:00`)).replace('.', '');
+}

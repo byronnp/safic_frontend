@@ -29,6 +29,16 @@
           <div class="unidades-barra__relleno" :style="{ width: `${porcentajeCupo}%` }" />
         </div>
       </div>
+      <div class="safic-indicador">
+        <div class="safic-indicador__etiqueta">Ocupadas</div>
+        <div class="safic-indicador__valor">{{ resumen.data.value.ocupadas }}</div>
+        <div class="safic-indicador__nota">{{ porcentajeOcupadas }} % de las registradas</div>
+      </div>
+      <div class="safic-indicador">
+        <div class="safic-indicador__etiqueta">Residentes registrados</div>
+        <div class="safic-indicador__valor">{{ resumen.data.value.residentes }}</div>
+        <div class="safic-indicador__nota">Propietarios, inquilinos y residentes vigentes</div>
+      </div>
       <div
         class="safic-indicador"
         :class="{
@@ -45,11 +55,16 @@
       <div class="unidades-barra-herramientas">
         <label class="unidades-buscar">
           <q-icon :name="ICONOS.buscar" size="18px" class="unidades-buscar__icono" />
-          <input v-model="busqueda" placeholder="Buscar por código" aria-label="Buscar unidades" />
+          <input
+            v-model="busqueda"
+            placeholder="Buscar por código u ocupante"
+            aria-label="Buscar unidades"
+          />
         </label>
 
         <UnidadesFiltro v-model="seleccion.bloque" etiqueta="Bloque" :opciones="opcionesBloque" />
         <UnidadesFiltro v-model="seleccion.tipo" etiqueta="Tipo" :opciones="opcionesTipo" />
+        <UnidadesFiltro v-model="seleccion.estado" etiqueta="Estado" :opciones="opcionesEstado" />
 
         <div class="unidades-espaciador" />
         <div class="unidades-conteo">{{ conteo }}</div>
@@ -72,27 +87,29 @@
           <div>ÁREA</div>
           <div>ALÍCUOTA</div>
           <div>ESTADO</div>
+          <div />
         </div>
 
         <template v-if="unidades.isLoading.value">
           <div v-for="n in 6" :key="n" class="unidades-rejilla unidades-fila">
             <q-skeleton v-for="c in 8" :key="c" type="text" width="70%" />
+            <div />
           </div>
         </template>
 
-        <div
+        <router-link
           v-for="fila in filas"
           v-else
           :key="fila.id"
+          :to="{ name: 'unidad-detalle', params: { id: fila.id } }"
           class="unidades-rejilla unidades-fila"
-          role="row"
+          :aria-label="`Ver unidad ${fila.codigo}`"
         >
           <div class="unidades-fila__codigo">{{ fila.codigo }}</div>
           <div class="unidades-fila__suave">{{ fila.bloque?.nombre ?? '—' }}</div>
           <div class="unidades-fila__suave">{{ TIPO_CORTO[fila.tipo] }}</div>
-          <!-- Propietario y ocupante llegan con los ocupantes (S2 · 5b) -->
-          <div class="unidades-fila__suave">—</div>
-          <div class="unidades-fila__suave">—</div>
+          <div class="unidades-fila__propietario">{{ fila.propietarios.join(', ') || '—' }}</div>
+          <div class="unidades-fila__suave">{{ ocupante(fila) }}</div>
           <div class="unidades-fila__suave">{{ formatoArea(fila.area_m2) }}</div>
           <div class="unidades-fila__suave">{{ formatoAlicuota(fila.alicuota) }}</div>
           <div>
@@ -100,7 +117,10 @@
               {{ ESTADOS[fila.estado].texto }}
             </EstadoBadge>
           </div>
-        </div>
+          <div class="unidades-fila__flecha">
+            <q-icon :name="ICONOS.siguiente" size="18px" />
+          </div>
+        </router-link>
 
         <div v-if="!unidades.isLoading.value && filas.length === 0" class="unidades-vacio">
           <template v-if="hayFiltros">
@@ -144,7 +164,7 @@
 import { useQuasar } from 'quasar';
 import { computed, reactive, ref, watch } from 'vue';
 
-import EstadoBadge, { type TonoEstado } from '@/components/EstadoBadge.vue';
+import EstadoBadge from '@/components/EstadoBadge.vue';
 import PaginaEncabezado from '@/components/PaginaEncabezado.vue';
 import { ICONOS } from '@/core/navigation/icons';
 import { useSessionStore } from '@/stores/session';
@@ -154,24 +174,17 @@ import { formatoPorcentaje } from '@/utils/formato';
 import UnidadesFiltro, { type OpcionFiltro } from '../components/UnidadesFiltro.vue';
 import { useBloques } from '../composables/useBloques';
 import { useResumenUnidades, useUnidades } from '../composables/useUnidades';
-import type { EstadoUnidad, FiltroUnidades, TipoUnidad } from '../services/unidades.service';
+import { textoRelacion } from '../persona.formulario';
+import type {
+  EstadoUnidad,
+  FiltroUnidades,
+  TipoUnidad,
+  Unidad,
+} from '../services/unidades.service';
 import { TIPOS_UNIDAD } from '../unidad.formulario';
+import { ESTADOS_UNIDAD as ESTADOS, TIPO_CORTO } from '../unidad.textos';
 
 const POR_PAGINA = 25;
-
-const TIPO_CORTO: Record<TipoUnidad, string> = {
-  departamento: 'Depto',
-  casa: 'Casa',
-  local: 'Local',
-  parqueadero: 'Parqueadero',
-  bodega: 'Bodega',
-};
-
-const ESTADOS: Record<EstadoUnidad, { texto: string; tono: TonoEstado }> = {
-  ocupada: { texto: 'Ocupada', tono: 'exito' },
-  arrendada: { texto: 'Arrendada', tono: 'info' },
-  vacia: { texto: 'Vacía', tono: 'neutro' },
-};
 
 const $q = useQuasar();
 const session = useSessionStore();
@@ -181,21 +194,29 @@ const puedeEditar = computed(() => session.tienePermiso('unidades.editar'));
 
 const busqueda = ref('');
 const busquedaDebounced = refDebounced(busqueda, 300);
-const seleccion = reactive<{ bloque: string; tipo: string }>({ bloque: '', tipo: '' });
+const seleccion = reactive<{ bloque: string; tipo: string; estado: string }>({
+  bloque: '',
+  tipo: '',
+  estado: '',
+});
 const pagina = ref(1);
 
 const filtro = computed<FiltroUnidades>(() => ({
   buscar: busquedaDebounced.value.trim(),
   tipo: seleccion.tipo as TipoUnidad | '',
+  estado: seleccion.estado as EstadoUnidad | '',
   bloqueId: seleccion.bloque ? Number(seleccion.bloque) : null,
   pagina: pagina.value,
   porPagina: POR_PAGINA,
 }));
 
 // Un filtro nuevo vuelve a la primera página
-watch([busquedaDebounced, () => seleccion.bloque, () => seleccion.tipo], () => {
-  pagina.value = 1;
-});
+watch(
+  [busquedaDebounced, () => seleccion.bloque, () => seleccion.tipo, () => seleccion.estado],
+  () => {
+    pagina.value = 1;
+  },
+);
 
 const unidades = useUnidades(filtro);
 const resumen = useResumenUnidades();
@@ -208,9 +229,17 @@ const opcionesBloque = computed<OpcionFiltro[]>(() =>
   (bloques.data.value ?? []).map((b) => ({ valor: String(b.id), texto: b.nombre })),
 );
 const opcionesTipo: OpcionFiltro[] = TIPOS_UNIDAD.map((t) => ({ valor: t.valor, texto: t.texto }));
+const opcionesEstado: OpcionFiltro[] = Object.entries(ESTADOS).map(([valor, e]) => ({
+  valor,
+  texto: e.texto,
+}));
 
 const hayFiltros = computed(
-  () => !!busquedaDebounced.value.trim() || !!seleccion.bloque || !!seleccion.tipo,
+  () =>
+    !!busquedaDebounced.value.trim() ||
+    !!seleccion.bloque ||
+    !!seleccion.tipo ||
+    !!seleccion.estado,
 );
 
 const porcentajeCupo = computed(() => {
@@ -218,6 +247,21 @@ const porcentajeCupo = computed(() => {
   if (!r || r.total_contratadas === 0) return 0;
   return Math.min(100, (r.registradas / r.total_contratadas) * 100);
 });
+
+const porcentajeOcupadas = computed(() => {
+  const r = resumen.data.value;
+  if (!r || r.registradas === 0) return 0;
+  return Math.round((r.ocupadas / r.registradas) * 100);
+});
+
+/** "Diego Mora (inquilino)"; el propietario que reside sin aclaración, como en el mockup. */
+function ocupante(u: Unidad): string {
+  const p = u.ocupante_principal;
+  if (!p) return '—';
+  return p.relacion === 'propietario'
+    ? p.nombre
+    : `${p.nombre} (${textoRelacion(p.relacion).toLowerCase()})`;
+}
 
 /** Suma de alícuotas frente a 100 % (solo se muestra: no es un monto). */
 const alicuotas = computed(() => {
@@ -255,6 +299,7 @@ function limpiar(): void {
   busqueda.value = '';
   seleccion.bloque = '';
   seleccion.tipo = '';
+  seleccion.estado = '';
 }
 
 function importar(): void {
@@ -383,7 +428,7 @@ function importar(): void {
 
 .unidades-rejilla {
   display: grid;
-  grid-template-columns: 110px 140px 110px 1.4fr 1.2fr 90px 90px 120px;
+  grid-template-columns: 110px 140px 110px 1.4fr 1.2fr 90px 90px 120px 48px;
   min-width: 1040px;
 }
 
@@ -405,6 +450,15 @@ function importar(): void {
   font-size: 14px;
   color: var(--safic-texto);
   text-decoration: none;
+}
+
+.unidades-fila:hover {
+  background: var(--safic-fondo-2);
+}
+
+.unidades-fila:focus-visible {
+  outline: 2px solid var(--q-primary);
+  outline-offset: -2px;
 }
 
 .unidades-paginacion {
