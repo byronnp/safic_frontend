@@ -3,73 +3,66 @@
     <PaginaEncabezado miga="Inicio / Unidades" titulo="Unidades">
       <template #acciones>
         <button type="button" class="unidades-boton unidades-boton--secundario" @click="importar">
-          <q-icon name="sym_r_upload" size="18px" />Importar Excel
+          <q-icon :name="ICONOS.importar" size="18px" />Importar Excel
         </button>
-        <button type="button" class="unidades-boton" @click="nuevaUnidad">
-          <q-icon name="sym_r_add" size="18px" />Nueva unidad
-        </button>
+        <router-link v-if="puedeEditar" :to="{ name: 'unidades-nueva' }" class="unidades-boton">
+          <q-icon :name="ICONOS.agregar" size="18px" />Nueva unidad
+        </router-link>
       </template>
     </PaginaEncabezado>
 
-    <div class="safic-indicadores">
+    <div v-if="resumen.data.value" class="safic-indicadores">
       <div class="safic-indicador">
         <div class="safic-indicador__etiqueta">Unidades</div>
-        <div class="safic-indicador__valor">{{ INDICADORES_UNIDADES.unidades }}</div>
-        <div class="safic-indicador__nota">{{ INDICADORES_UNIDADES.unidadesNota }}</div>
-      </div>
-      <div class="safic-indicador">
-        <div class="safic-indicador__etiqueta">Ocupadas</div>
-        <div class="safic-indicador__valor">{{ INDICADORES_UNIDADES.ocupadas }}</div>
+        <div class="safic-indicador__valor">{{ resumen.data.value.registradas }}</div>
+        <div class="safic-indicador__nota">
+          de {{ resumen.data.value.total_contratadas }} contratadas
+        </div>
         <div
           class="unidades-barra"
           role="progressbar"
-          aria-label="Porcentaje de unidades ocupadas"
-          :aria-valuenow="INDICADORES_UNIDADES.ocupadasPorcentaje"
+          aria-label="Unidades registradas del total contratado"
+          :aria-valuenow="resumen.data.value.registradas"
           aria-valuemin="0"
-          aria-valuemax="100"
+          :aria-valuemax="resumen.data.value.total_contratadas"
         >
-          <div
-            class="unidades-barra__relleno"
-            :style="{ width: `${INDICADORES_UNIDADES.ocupadasPorcentaje}%` }"
-          />
+          <div class="unidades-barra__relleno" :style="{ width: `${porcentajeCupo}%` }" />
         </div>
       </div>
-      <div class="safic-indicador">
-        <div class="safic-indicador__etiqueta">Residentes registrados</div>
-        <div class="safic-indicador__valor">{{ INDICADORES_UNIDADES.residentes }}</div>
-        <div class="safic-indicador__nota">{{ INDICADORES_UNIDADES.residentesNota }}</div>
-      </div>
-      <div class="safic-indicador unidades-indicador-alerta">
+      <div
+        class="safic-indicador"
+        :class="{
+          'unidades-indicador-alerta': alicuotas.estado !== 'ok' && alicuotas.estado !== 'vacio',
+        }"
+      >
         <div class="safic-indicador__etiqueta">Alícuotas</div>
-        <div class="safic-indicador__valor">{{ INDICADORES_UNIDADES.alicuotas }}</div>
-        <div class="safic-indicador__nota">{{ INDICADORES_UNIDADES.alicuotasNota }}</div>
+        <div class="safic-indicador__valor">{{ alicuotas.valor }}</div>
+        <div class="safic-indicador__nota">{{ alicuotas.nota }}</div>
       </div>
     </div>
 
     <section class="safic-tabla-seccion unidades-tabla">
       <div class="unidades-barra-herramientas">
         <label class="unidades-buscar">
-          <q-icon name="sym_r_search" size="18px" class="unidades-buscar__icono" />
-          <input
-            v-model="busqueda"
-            placeholder="Buscar por código, propietario o placa"
-            aria-label="Buscar unidades"
-          />
+          <q-icon :name="ICONOS.buscar" size="18px" class="unidades-buscar__icono" />
+          <input v-model="busqueda" placeholder="Buscar por código" aria-label="Buscar unidades" />
         </label>
 
-        <UnidadesFiltro
-          v-for="filtro in filtros"
-          :key="filtro.clave"
-          v-model="seleccion[filtro.clave]"
-          :etiqueta="filtro.etiqueta"
-          :opciones="filtro.opciones"
-        />
+        <UnidadesFiltro v-model="seleccion.bloque" etiqueta="Bloque" :opciones="opcionesBloque" />
+        <UnidadesFiltro v-model="seleccion.tipo" etiqueta="Tipo" :opciones="opcionesTipo" />
 
         <div class="unidades-espaciador" />
         <div class="unidades-conteo">{{ conteo }}</div>
       </div>
 
-      <div class="unidades-desplazable">
+      <div v-if="unidades.isError.value" class="q-pa-lg">
+        <div class="safic-alerta row items-center" role="alert" style="gap: 12px">
+          <span class="col-grow">{{ unidades.error.value?.mensaje }}</span>
+          <q-btn flat no-caps dense label="Reintentar" @click="unidades.refetch()" />
+        </div>
+      </div>
+
+      <div v-else class="unidades-desplazable" :aria-busy="unidades.isFetching.value">
         <div class="unidades-rejilla unidades-rejilla--cabecera" role="row">
           <div>CÓDIGO</div>
           <div>BLOQUE</div>
@@ -79,40 +72,69 @@
           <div>ÁREA</div>
           <div>ALÍCUOTA</div>
           <div>ESTADO</div>
-          <div />
         </div>
 
-        <router-link
+        <template v-if="unidades.isLoading.value">
+          <div v-for="n in 6" :key="n" class="unidades-rejilla unidades-fila">
+            <q-skeleton v-for="c in 8" :key="c" type="text" width="70%" />
+          </div>
+        </template>
+
+        <div
           v-for="fila in filas"
-          :key="fila.codigo"
-          :to="{ name: 'unidad-detalle', params: { codigo: fila.codigo } }"
+          v-else
+          :key="fila.id"
           class="unidades-rejilla unidades-fila"
-          :aria-label="`Ver unidad ${fila.codigo}`"
+          role="row"
         >
           <div class="unidades-fila__codigo">{{ fila.codigo }}</div>
-          <div class="unidades-fila__suave">{{ fila.bloque }}</div>
-          <div class="unidades-fila__suave">{{ fila.tipo }}</div>
-          <div class="unidades-fila__propietario">{{ fila.propietario }}</div>
-          <div class="unidades-fila__suave">{{ fila.ocupante }}</div>
-          <div class="unidades-fila__suave">{{ fila.area }}</div>
-          <div class="unidades-fila__suave">{{ fila.alicuota }}</div>
+          <div class="unidades-fila__suave">{{ fila.bloque?.nombre ?? '—' }}</div>
+          <div class="unidades-fila__suave">{{ TIPO_CORTO[fila.tipo] }}</div>
+          <!-- Propietario y ocupante llegan con los ocupantes (S2 · 5b) -->
+          <div class="unidades-fila__suave">—</div>
+          <div class="unidades-fila__suave">—</div>
+          <div class="unidades-fila__suave">{{ formatoArea(fila.area_m2) }}</div>
+          <div class="unidades-fila__suave">{{ formatoAlicuota(fila.alicuota) }}</div>
           <div>
-            <EstadoBadge :tono="ESTADOS_UNIDAD[fila.estado].tono">
-              {{ ESTADOS_UNIDAD[fila.estado].texto }}
+            <EstadoBadge :tono="ESTADOS[fila.estado].tono">
+              {{ ESTADOS[fila.estado].texto }}
             </EstadoBadge>
           </div>
-          <div class="unidades-fila__flecha">
-            <q-icon name="sym_r_chevron_right" size="18px" />
-          </div>
-        </router-link>
-
-        <div v-if="filas.length === 0" class="unidades-vacio">
-          <q-icon name="sym_r_search_off" size="36px" />
-          <div class="unidades-vacio__titulo">Ninguna unidad coincide con la búsqueda.</div>
-          <button type="button" class="unidades-vacio__limpiar" @click="limpiar">
-            Quitar filtros
-          </button>
         </div>
+
+        <div v-if="!unidades.isLoading.value && filas.length === 0" class="unidades-vacio">
+          <template v-if="hayFiltros">
+            <q-icon :name="ICONOS.sinResultados" size="36px" />
+            <div class="unidades-vacio__titulo">Ninguna unidad coincide con la búsqueda.</div>
+            <button type="button" class="unidades-vacio__limpiar" @click="limpiar">
+              Quitar filtros
+            </button>
+          </template>
+          <template v-else>
+            <q-icon :name="ICONOS.unidades" size="40px" />
+            <div class="unidades-vacio__titulo">Todavía no hay unidades.</div>
+            <div>Registra los departamentos, casas, locales, parqueaderos y bodegas.</div>
+            <router-link
+              v-if="puedeEditar"
+              :to="{ name: 'unidades-nueva' }"
+              class="unidades-boton q-mt-sm"
+            >
+              <q-icon :name="ICONOS.agregar" size="18px" />Crear primera unidad
+            </router-link>
+          </template>
+        </div>
+      </div>
+
+      <div v-if="paginacion && paginacion.last_page > 1" class="unidades-paginacion">
+        <q-pagination
+          v-model="pagina"
+          :max="paginacion.last_page"
+          :max-pages="7"
+          direction-links
+          boundary-links
+          color="primary"
+          aria-label="Páginas de unidades"
+        />
       </div>
     </section>
   </q-page>
@@ -120,95 +142,130 @@
 
 <script setup lang="ts">
 import { useQuasar } from 'quasar';
-import { computed, reactive, ref } from 'vue';
+import { computed, reactive, ref, watch } from 'vue';
 
-import EstadoBadge from '@/components/EstadoBadge.vue';
+import EstadoBadge, { type TonoEstado } from '@/components/EstadoBadge.vue';
 import PaginaEncabezado from '@/components/PaginaEncabezado.vue';
+import { ICONOS } from '@/core/navigation/icons';
+import { useSessionStore } from '@/stores/session';
+import { refDebounced } from '@/utils/debounce';
+import { formatoPorcentaje } from '@/utils/formato';
 
 import UnidadesFiltro, { type OpcionFiltro } from '../components/UnidadesFiltro.vue';
-import {
-  DETALLES_UNIDAD,
-  ESTADOS_UNIDAD,
-  INDICADORES_UNIDADES,
-  TOTAL_UNIDADES,
-  UNIDADES,
-  type UnidadDemo,
-} from '../demo/unidades';
+import { useBloques } from '../composables/useBloques';
+import { useResumenUnidades, useUnidades } from '../composables/useUnidades';
+import type { EstadoUnidad, FiltroUnidades, TipoUnidad } from '../services/unidades.service';
+import { TIPOS_UNIDAD } from '../unidad.formulario';
 
-type ClaveFiltro = 'bloque' | 'tipo' | 'estado';
+const POR_PAGINA = 25;
+
+const TIPO_CORTO: Record<TipoUnidad, string> = {
+  departamento: 'Depto',
+  casa: 'Casa',
+  local: 'Local',
+  parqueadero: 'Parqueadero',
+  bodega: 'Bodega',
+};
+
+const ESTADOS: Record<EstadoUnidad, { texto: string; tono: TonoEstado }> = {
+  ocupada: { texto: 'Ocupada', tono: 'exito' },
+  arrendada: { texto: 'Arrendada', tono: 'info' },
+  vacia: { texto: 'Vacía', tono: 'neutro' },
+};
 
 const $q = useQuasar();
+const session = useSessionStore();
+
+// Mostrar el botón es comodidad; la API exige unidades.editar de todas formas.
+const puedeEditar = computed(() => session.tienePermiso('unidades.editar'));
 
 const busqueda = ref('');
-const seleccion = reactive<Record<ClaveFiltro, string>>({ bloque: '', tipo: '', estado: '' });
+const busquedaDebounced = refDebounced(busqueda, 300);
+const seleccion = reactive<{ bloque: string; tipo: string }>({ bloque: '', tipo: '' });
+const pagina = ref(1);
 
-function unicos(valores: string[]): OpcionFiltro[] {
-  return [...new Set(valores)].map((v) => ({ valor: v, texto: v }));
-}
+const filtro = computed<FiltroUnidades>(() => ({
+  buscar: busquedaDebounced.value.trim(),
+  tipo: seleccion.tipo as TipoUnidad | '',
+  bloqueId: seleccion.bloque ? Number(seleccion.bloque) : null,
+  pagina: pagina.value,
+  porPagina: POR_PAGINA,
+}));
 
-const filtros: { clave: ClaveFiltro; etiqueta: string; opciones: OpcionFiltro[] }[] = [
-  { clave: 'bloque', etiqueta: 'Bloque', opciones: unicos(UNIDADES.map((u) => u.bloque)) },
-  { clave: 'tipo', etiqueta: 'Tipo', opciones: unicos(UNIDADES.map((u) => u.tipo)) },
-  {
-    clave: 'estado',
-    etiqueta: 'Estado',
-    opciones: Object.entries(ESTADOS_UNIDAD).map(([valor, e]) => ({ valor, texto: e.texto })),
-  },
-];
-
-function normalizar(texto: string): string {
-  return texto.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
-}
-
-function coincide(u: UnidadDemo, termino: string): boolean {
-  if (!termino) return true;
-  const placas = (DETALLES_UNIDAD[u.codigo]?.vehiculos ?? []).map((v) => v.placa);
-  return [u.codigo, u.propietario, u.ocupante, ...placas].some((t) =>
-    normalizar(t).includes(termino),
-  );
-}
-
-const filas = computed(() => {
-  const termino = normalizar(busqueda.value.trim());
-  return UNIDADES.filter(
-    (u) =>
-      (!seleccion.bloque || u.bloque === seleccion.bloque) &&
-      (!seleccion.tipo || u.tipo === seleccion.tipo) &&
-      (!seleccion.estado || u.estado === seleccion.estado) &&
-      coincide(u, termino),
-  );
+// Un filtro nuevo vuelve a la primera página
+watch([busquedaDebounced, () => seleccion.bloque, () => seleccion.tipo], () => {
+  pagina.value = 1;
 });
+
+const unidades = useUnidades(filtro);
+const resumen = useResumenUnidades();
+const bloques = useBloques();
+
+const filas = computed(() => unidades.data.value?.unidades ?? []);
+const paginacion = computed(() => unidades.data.value?.paginacion);
+
+const opcionesBloque = computed<OpcionFiltro[]>(() =>
+  (bloques.data.value ?? []).map((b) => ({ valor: String(b.id), texto: b.nombre })),
+);
+const opcionesTipo: OpcionFiltro[] = TIPOS_UNIDAD.map((t) => ({ valor: t.valor, texto: t.texto }));
 
 const hayFiltros = computed(
-  () => !!busqueda.value.trim() || !!seleccion.bloque || !!seleccion.tipo || !!seleccion.estado,
+  () => !!busquedaDebounced.value.trim() || !!seleccion.bloque || !!seleccion.tipo,
 );
 
-/** "Mostrando 1–8 de 148", como en el mockup. */
-const conteo = computed(() => {
-  const n = filas.value.length;
-  if (n === 0) return 'Sin resultados';
-  return `Mostrando 1–${n} de ${hayFiltros.value ? n : TOTAL_UNIDADES}`;
+const porcentajeCupo = computed(() => {
+  const r = resumen.data.value;
+  if (!r || r.total_contratadas === 0) return 0;
+  return Math.min(100, (r.registradas / r.total_contratadas) * 100);
 });
 
-function limpiar() {
+/** Suma de alícuotas frente a 100 % (solo se muestra: no es un monto). */
+const alicuotas = computed(() => {
+  const suma = Number(resumen.data.value?.suma_alicuotas ?? 0);
+  if (suma === 0) {
+    return { estado: 'vacio', valor: '—', nota: 'Aún no hay alícuotas registradas' };
+  }
+  const diferencia = Math.round((100 - suma) * 10000) / 10000;
+  const valor = formatoPorcentaje(suma);
+  if (diferencia === 0) return { estado: 'ok', valor, nota: 'Cuadra en 100 %' };
+  return diferencia > 0
+    ? { estado: 'falta', valor, nota: `Faltan ${formatoPorcentaje(diferencia)} para cuadrar` }
+    : { estado: 'exceso', valor, nota: `Excede en ${formatoPorcentaje(-diferencia)}` };
+});
+
+/** "Mostrando 1–25 de 148", como en el mockup. */
+const conteo = computed(() => {
+  const p = paginacion.value;
+  if (!p || p.total === 0) return unidades.isLoading.value ? '' : 'Sin resultados';
+  const desde = (p.page - 1) * p.per_page + 1;
+  const hasta = Math.min(desde + p.per_page - 1, p.total);
+  return `Mostrando ${desde}–${hasta} de ${p.total}`;
+});
+
+function formatoArea(area: string): string {
+  return `${Number(area).toLocaleString('es-EC', { maximumFractionDigits: 2 })} m²`;
+}
+
+function formatoAlicuota(alicuota: string | null): string {
+  if (alicuota === null) return '—';
+  return `${Number(alicuota).toLocaleString('es-EC', { minimumFractionDigits: 2, maximumFractionDigits: 4 })} %`;
+}
+
+function limpiar(): void {
   busqueda.value = '';
   seleccion.bloque = '';
   seleccion.tipo = '';
-  seleccion.estado = '';
 }
 
-function importar() {
+function importar(): void {
   $q.notify({ type: 'info', message: 'La importación desde Excel estará disponible pronto.' });
-}
-
-function nuevaUnidad() {
-  $q.notify({ type: 'info', message: 'El registro de unidades estará disponible pronto.' });
 }
 </script>
 
 <style scoped>
 .unidades-boton {
   height: 44px;
+  text-decoration: none;
   padding: 0 18px;
   border-radius: 10px;
   border: none;
@@ -230,7 +287,6 @@ function nuevaUnidad() {
 }
 
 .unidades-boton:focus-visible,
-.unidades-fila:focus-visible,
 .unidades-vacio__limpiar:focus-visible {
   outline: 2px solid var(--q-primary);
   outline-offset: 2px;
@@ -327,7 +383,7 @@ function nuevaUnidad() {
 
 .unidades-rejilla {
   display: grid;
-  grid-template-columns: 110px 140px 90px 1.4fr 1.2fr 90px 90px 120px 48px;
+  grid-template-columns: 110px 140px 110px 1.4fr 1.2fr 90px 90px 120px;
   min-width: 1040px;
 }
 
@@ -351,8 +407,10 @@ function nuevaUnidad() {
   text-decoration: none;
 }
 
-.unidades-fila:hover {
-  background: var(--safic-fondo-2);
+.unidades-paginacion {
+  display: flex;
+  justify-content: center;
+  padding: 14px 20px;
 }
 
 .unidades-fila__codigo {

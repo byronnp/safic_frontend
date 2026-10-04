@@ -82,12 +82,18 @@ const routes: RouteRecordRaw[] = [
       },
 
       // Fase 1 · Unidades
-      previa(
-        'unidades',
-        'unidades',
-        'Unidades',
-        () => import('@/modules/unidades/pages/UnidadesPage.vue'),
-      ),
+      {
+        path: 'unidades',
+        name: 'unidades',
+        component: () => import('@/modules/unidades/pages/UnidadesPage.vue'),
+        meta: { permiso: 'unidades.ver', titulo: 'Unidades' },
+      },
+      {
+        path: 'unidades/nueva',
+        name: 'unidades-nueva',
+        component: () => import('@/modules/unidades/pages/NuevaUnidadPage.vue'),
+        meta: { permiso: 'unidades.editar', titulo: 'Nueva unidad', menuActivo: 'unidades' },
+      },
       {
         path: 'unidades/bloques',
         name: 'bloques',

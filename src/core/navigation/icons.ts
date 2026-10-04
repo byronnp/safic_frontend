@@ -31,6 +31,11 @@ export const ICONOS = {
   refrescar: 'sym_r_refresh',
   bloqueado: 'sym_r_lock',
   vacio: 'sym_r_inbox',
+  volver: 'sym_r_chevron_left',
+  info: 'sym_r_info',
+  importar: 'sym_r_upload',
+  siguiente: 'sym_r_chevron_right',
+  sinResultados: 'sym_r_search_off',
   // Módulos y pantallas (mismos nombres que en los mockups)
   resumen: 'sym_r_dashboard',
   pagosPorAprobar: 'sym_r_fact_check',

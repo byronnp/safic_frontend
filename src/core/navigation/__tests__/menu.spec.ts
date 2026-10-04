@@ -26,10 +26,10 @@ describe('menú lateral', () => {
     expect(filtrarMenu(MENU_BASE, []).map((i) => i.id)).toEqual(['inicio']);
   });
 
-  it('con unidades.ver aparece el grupo Unidades con Bloques', () => {
+  it('con unidades.ver aparece el grupo Unidades con la lista y Bloques', () => {
     const menu = filtrarMenu(MENU_BASE, ['unidades.ver']);
     const unidades = menu.find((i) => i.id === 'unidades');
-    expect(unidades?.hijos?.map((h) => h.id)).toEqual(['unidades.bloques']);
+    expect(unidades?.hijos?.map((h) => h.id)).toEqual(['unidades.lista', 'unidades.bloques']);
   });
 
   it('las vistas previas solo aparecen si se piden', () => {
