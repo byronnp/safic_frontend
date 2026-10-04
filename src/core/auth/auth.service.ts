@@ -7,6 +7,8 @@ export interface Invitacion {
   email: string;
   condominio: string;
   expira_en: string;
+  /** Versión del aviso de privacidad que se acepta al crear la contraseña. */
+  aviso_privacidad_version: string;
 }
 
 /**
@@ -57,10 +59,22 @@ export const authService = {
   },
 
   /** Crea la contraseña y activa la cuenta. Devuelve el correo para iniciar sesión. */
-  async aceptarInvitacion(token: string, password: string, confirmacion: string): Promise<string> {
+  async aceptarInvitacion(
+    token: string,
+    password: string,
+    confirmacion: string,
+    aceptaPrivacidad: boolean,
+    /** Versión del aviso que la persona leyó (la API rechaza si ya no es la vigente). */
+    avisoVersion: string,
+  ): Promise<string> {
     const { data } = await api.post<ApiRespuesta<{ email: string }>>(
       `/auth/invitaciones/${encodeURIComponent(token)}/aceptar`,
-      { password, password_confirmation: confirmacion },
+      {
+        password,
+        password_confirmation: confirmacion,
+        acepta_privacidad: aceptaPrivacidad,
+        aviso_privacidad_version: avisoVersion,
+      },
       { saltarRefresco: true },
     );
     return data.data.email;

@@ -5,6 +5,7 @@ import type { ApiError } from '@/core/api/errors';
 
 import {
   plataformaService,
+  type AdministradorCondominio,
   type AmenidadCatalogo,
   type CondominioCreado,
   type NuevoCondominio,
@@ -69,5 +70,20 @@ export function useBuscarUsuario(email: Ref<string>) {
     queryFn: () => plataformaService.buscarUsuario(normalizado.value),
     enabled: computed(() => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizado.value)),
     staleTime: 60_000,
+  });
+}
+
+export function useReenviarInvitacion() {
+  const queryClient = useQueryClient();
+
+  return useMutation<
+    AdministradorCondominio,
+    ApiError,
+    { condominioId: number; usuarioId: number; email: string | null }
+  >({
+    mutationFn: ({ condominioId, usuarioId, email }) =>
+      plataformaService.reenviarInvitacion(condominioId, usuarioId, email),
+    // La tarjeta muestra el correo del administrador
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: clavesPlataforma.condominios }),
   });
 }

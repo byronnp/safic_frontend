@@ -39,10 +39,25 @@
       </div>
       <div class="tarjeta__admin" :title="administrador?.email">{{ adminTxt }}</div>
     </div>
+
+    <!-- Invitación pendiente: el administrador aún no crea su contraseña -->
+    <div v-if="pendiente" class="tarjeta__pendiente">
+      <EstadoBadge tono="alerta" texto="Invitación pendiente" />
+      <span class="tarjeta__correo" :title="pendiente.email">{{ pendiente.email }}</span>
+      <button
+        v-if="puedeReenviar"
+        type="button"
+        class="tarjeta__reenviar"
+        @click="reenviarInvitacion"
+      >
+        Reenviar
+      </button>
+    </div>
   </article>
 </template>
 
 <script setup lang="ts">
+import { useQuasar } from 'quasar';
 import { computed } from 'vue';
 
 import EstadoBadge from '@/components/EstadoBadge.vue';
@@ -52,9 +67,17 @@ import type {
   CondominioPlataforma,
   EstadoCondominio,
 } from '@/modules/plataforma/services/plataforma.service';
+import { useSessionStore } from '@/stores/session';
 import { formatoMoneda } from '@/utils/formato';
 
+import ReenviarInvitacionDialog from './ReenviarInvitacionDialog.vue';
+
 const props = defineProps<{ condominio: CondominioPlataforma }>();
+
+const $q = useQuasar();
+const session = useSessionStore();
+// Mostrar el botón es comodidad; la API exige plataforma.condominios de todas formas.
+const puedeReenviar = computed(() => session.tienePermisoPlataforma('plataforma.condominios'));
 
 const ESTADO: Record<EstadoCondominio, { tono: TonoEstado; texto: string }> = {
   activo: { tono: 'exito', texto: 'Activo' },
@@ -72,6 +95,27 @@ const mensualidad = computed(() =>
   props.condominio.mensualidad ? formatoMoneda(props.condominio.mensualidad) : '—',
 );
 const administrador = computed(() => props.condominio.administradores[0] ?? null);
+const pendiente = computed(
+  () => props.condominio.administradores.find((a) => a.estado === 'invitado') ?? null,
+);
+
+function reenviarInvitacion(): void {
+  const a = pendiente.value;
+  if (!a) return;
+  $q.dialog({
+    component: ReenviarInvitacionDialog,
+    componentProps: {
+      condominioId: props.condominio.id,
+      condominio: props.condominio.nombre,
+      usuarioId: a.id,
+      nombre: a.nombre,
+      emailActual: a.email,
+    },
+  }).onOk((admin: { email: string }) => {
+    $q.notify({ type: 'positive', message: `Enviamos una nueva invitación a ${admin.email}.` });
+  });
+}
+
 const adminTxt = computed(() => {
   const a = administrador.value;
   if (!a) {
@@ -82,6 +126,42 @@ const adminTxt = computed(() => {
 </script>
 
 <style scoped>
+.tarjeta__pendiente {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--safic-linea);
+  min-width: 0;
+}
+
+.tarjeta__correo {
+  flex-grow: 1;
+  min-width: 0;
+  font-size: 13px;
+  color: var(--safic-texto-suave);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tarjeta__reenviar {
+  border: none;
+  background: none;
+  padding: 4px 0;
+  color: var(--q-primary);
+  font-size: 13px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.tarjeta__reenviar:focus-visible {
+  outline: 2px solid var(--q-primary);
+  outline-offset: 2px;
+}
+
 .tarjeta {
   background: #ffffff;
   border: 1px solid var(--safic-borde);
