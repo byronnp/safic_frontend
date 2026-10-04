@@ -14,110 +14,28 @@
 body{margin:0;font-family:Manrope,system-ui,sans-serif;background:#F5F4EF;color:#1C1B18}
 a{color:#0E5E5B}a:hover{color:#08403E}
 button,input{font-family:inherit}
-.escena .ventana{animation-name:encender;animation-iteration-count:infinite;animation-timing-function:ease-in-out}
-@keyframes encender{0%,100%{opacity:.95}45%{opacity:.25}55%{opacity:.25}}
-.escena .tarjeta{animation:aparecer 9s ease-out infinite both}
-@keyframes aparecer{0%{opacity:0;transform:translateY(14px)}8%{opacity:1;transform:translateY(0)}86%{opacity:1;transform:translateY(0)}96%,100%{opacity:0;transform:translateY(-6px)}}
-.escena .flujo{stroke-dasharray:4 10;animation:fluir 1.6s linear infinite}
-@keyframes fluir{to{stroke-dashoffset:-28}}
-@media (prefers-reduced-motion: reduce){.escena *{animation:none !important}}
 </style>
 </helmet>
 <div style="width: 1440px; height: 900px; display: flex; background: #F5F4EF; overflow: hidden">
 
-<div style="width: 70%; flex-shrink: 0; background: #12302F; color: #E8F0EE; padding: 64px 88px; box-sizing: border-box; display: flex; flex-direction: column; position: relative; overflow: hidden">
+<div style="width: 70%; flex-shrink: 0; position: relative; overflow: hidden; background: #12302F; color: #E8F0EE">
+<img src="../../src/assets/login-condominio.jpg" alt="Conjunto residencial con edificios, áreas verdes, juegos infantiles y el letrero de bienvenida del condominio" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; object-position: 35% 50%">
+<div style="position: absolute; top: 0; left: 0; right: 0; height: 62%; background: linear-gradient(180deg, rgba(18,48,47,0.94) 0%, rgba(18,48,47,0.82) 45%, rgba(18,48,47,0) 100%)"></div>
+<div style="position: absolute; left: 0; right: 0; bottom: 0; height: 150px; background: linear-gradient(0deg, rgba(18,48,47,0.88) 0%, rgba(18,48,47,0) 100%)"></div>
+<div style="position: relative; height: 100%; padding: 56px 88px 44px 88px; box-sizing: border-box; display: flex; flex-direction: column">
 <div style="display: flex; align-items: center; gap: 12px">
 <div style="width: 42px; height: 42px; border-radius: 11px; background: #F0B35A; color: #12302F; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 20px">S</div>
-<div><div style="font-weight: 800; font-size: 22px; letter-spacing: 1px">SAFIC</div><div style="font-size: 12px; color: #B9CDC9; font-weight: 600">Sistema de Administración Financiera de Condominios</div></div>
+<div><div style="font-weight: 800; font-size: 22px; letter-spacing: 1px; color: #FFFFFF">SAFIC</div><div style="font-size: 12px; color: #D6E3E0; font-weight: 600">Sistema de Administración Financiera de Condominios</div></div>
 </div>
-<div style="flex-grow: 1; display: flex; align-items: center; min-height: 0; margin: 24px 0">
-<svg class="escena" width="832" height="340" viewBox="0 0 832 340" fill="none" role="img" aria-label="Edificios del condominio con avisos de pagos recibidos, conciliación con el banco y cuotas generadas" style="font-family: Manrope, system-ui, sans-serif; max-width: 100%; height: auto">
-<line x1="0" y1="328" x2="832" y2="328" stroke="#2C6461" stroke-width="2"></line>
-<rect x="40" y="130" width="120" height="198" rx="4" fill="#18403E" stroke="#2C6461" stroke-width="2"></rect>
-<rect x="58" y="152" width="16" height="20" rx="2" fill="#24524F"></rect>
-<rect class="ventana" x="92" y="152" width="16" height="20" rx="2" fill="#F0B35A" style="animation-delay: 0.4s; animation-duration: 5.4s"></rect>
-<rect class="ventana" x="126" y="152" width="16" height="20" rx="2" fill="#F0B35A" style="animation-delay: 0.3s; animation-duration: 5.3s"></rect>
-<rect class="ventana" x="58" y="186" width="16" height="20" rx="2" fill="#F0B35A" style="animation-delay: 2.6s; animation-duration: 3.7s"></rect>
-<rect class="ventana" x="92" y="186" width="16" height="20" rx="2" fill="#F0B35A" style="animation-delay: 2.5s; animation-duration: 6.4s"></rect>
-<rect x="126" y="186" width="16" height="20" rx="2" fill="#24524F"></rect>
-<rect x="58" y="220" width="16" height="20" rx="2" fill="#24524F"></rect>
-<rect class="ventana" x="92" y="220" width="16" height="20" rx="2" fill="#F0B35A" style="animation-delay: 0.3s; animation-duration: 6.5s"></rect>
-<rect class="ventana" x="126" y="220" width="16" height="20" rx="2" fill="#F0B35A" style="animation-delay: 0.9s; animation-duration: 3.9s"></rect>
-<rect x="58" y="254" width="16" height="20" rx="2" fill="#24524F"></rect>
-<rect x="92" y="254" width="16" height="20" rx="2" fill="#24524F"></rect>
-<rect class="ventana" x="126" y="254" width="16" height="20" rx="2" fill="#F0B35A" style="animation-delay: 0.4s; animation-duration: 3.7s"></rect>
-<rect x="180" y="50" width="150" height="278" rx="4" fill="#18403E" stroke="#2C6461" stroke-width="2"></rect>
-<rect class="ventana" x="197" y="72" width="16" height="20" rx="2" fill="#F0B35A" style="animation-delay: 4.1s; animation-duration: 5.0s"></rect>
-<rect class="ventana" x="230" y="72" width="16" height="20" rx="2" fill="#F0B35A" style="animation-delay: 3.5s; animation-duration: 5.1s"></rect>
-<rect class="ventana" x="264" y="72" width="16" height="20" rx="2" fill="#F0B35A" style="animation-delay: 4.8s; animation-duration: 5.9s"></rect>
-<rect x="297" y="72" width="16" height="20" rx="2" fill="#24524F"></rect>
-<rect x="197" y="106" width="16" height="20" rx="2" fill="#24524F"></rect>
-<rect x="230" y="106" width="16" height="20" rx="2" fill="#24524F"></rect>
-<rect class="ventana" x="264" y="106" width="16" height="20" rx="2" fill="#F0B35A" style="animation-delay: 0.9s; animation-duration: 5.2s"></rect>
-<rect x="297" y="106" width="16" height="20" rx="2" fill="#24524F"></rect>
-<rect x="197" y="140" width="16" height="20" rx="2" fill="#24524F"></rect>
-<rect x="230" y="140" width="16" height="20" rx="2" fill="#24524F"></rect>
-<rect x="264" y="140" width="16" height="20" rx="2" fill="#24524F"></rect>
-<rect x="297" y="140" width="16" height="20" rx="2" fill="#24524F"></rect>
-<rect x="197" y="174" width="16" height="20" rx="2" fill="#24524F"></rect>
-<rect x="230" y="174" width="16" height="20" rx="2" fill="#24524F"></rect>
-<rect class="ventana" x="264" y="174" width="16" height="20" rx="2" fill="#F0B35A" style="animation-delay: 0.1s; animation-duration: 5.1s"></rect>
-<rect x="297" y="174" width="16" height="20" rx="2" fill="#24524F"></rect>
-<rect class="ventana" x="197" y="208" width="16" height="20" rx="2" fill="#F0B35A" style="animation-delay: 0.8s; animation-duration: 4.4s"></rect>
-<rect class="ventana" x="230" y="208" width="16" height="20" rx="2" fill="#F0B35A" style="animation-delay: 5.2s; animation-duration: 3.8s"></rect>
-<rect x="264" y="208" width="16" height="20" rx="2" fill="#24524F"></rect>
-<rect class="ventana" x="297" y="208" width="16" height="20" rx="2" fill="#F0B35A" style="animation-delay: 5.2s; animation-duration: 4.5s"></rect>
-<rect x="197" y="242" width="16" height="20" rx="2" fill="#24524F"></rect>
-<rect class="ventana" x="230" y="242" width="16" height="20" rx="2" fill="#F0B35A" style="animation-delay: 0.9s; animation-duration: 4.1s"></rect>
-<rect x="264" y="242" width="16" height="20" rx="2" fill="#24524F"></rect>
-<rect class="ventana" x="297" y="242" width="16" height="20" rx="2" fill="#F0B35A" style="animation-delay: 1.6s; animation-duration: 3.5s"></rect>
-<rect x="197" y="276" width="16" height="20" rx="2" fill="#24524F"></rect>
-<rect x="230" y="276" width="16" height="20" rx="2" fill="#24524F"></rect>
-<rect x="264" y="276" width="16" height="20" rx="2" fill="#24524F"></rect>
-<rect x="297" y="276" width="16" height="20" rx="2" fill="#24524F"></rect>
-<rect x="350" y="160" width="100" height="168" rx="4" fill="#18403E" stroke="#2C6461" stroke-width="2"></rect>
-<rect class="ventana" x="373" y="182" width="16" height="20" rx="2" fill="#F0B35A" style="animation-delay: 2.4s; animation-duration: 4.9s"></rect>
-<rect class="ventana" x="411" y="182" width="16" height="20" rx="2" fill="#F0B35A" style="animation-delay: 3.8s; animation-duration: 3.7s"></rect>
-<rect class="ventana" x="373" y="216" width="16" height="20" rx="2" fill="#F0B35A" style="animation-delay: 1.3s; animation-duration: 4.1s"></rect>
-<rect class="ventana" x="411" y="216" width="16" height="20" rx="2" fill="#F0B35A" style="animation-delay: 0.3s; animation-duration: 3.5s"></rect>
-<rect class="ventana" x="373" y="250" width="16" height="20" rx="2" fill="#F0B35A" style="animation-delay: 0.6s; animation-duration: 4.8s"></rect>
-<rect class="ventana" x="411" y="250" width="16" height="20" rx="2" fill="#F0B35A" style="animation-delay: 5.2s; animation-duration: 5.6s"></rect>
-<path class="flujo" d="M452 230 C 478 230, 478 76, 500 76" stroke="#F0B35A" stroke-width="2" stroke-linecap="round"></path>
-<path class="flujo" d="M452 230 C 478 230, 478 176, 500 176" stroke="#F0B35A" stroke-width="2" stroke-linecap="round" style="animation-delay: 0.6s"></path>
-<path class="flujo" d="M452 230 C 478 230, 478 276, 500 276" stroke="#F0B35A" stroke-width="2" stroke-linecap="round" style="animation-delay: 1.2s"></path>
-<g transform="translate(500 40)"><g class="tarjeta" style="animation-delay: 0s">
-<rect width="300" height="72" rx="14" fill="#1B4341" stroke="#2C6461" stroke-width="1.5"></rect>
-<circle cx="36" cy="36" r="18" fill="#F0B35A"></circle>
-<path d="M28 36l6 6 11-12" fill="none" stroke="#12302F" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path>
-<text x="66" y="31" font-size="15" font-weight="700" fill="#FFFFFF">Pago recibido</text>
-<text x="66" y="51" font-size="13" font-weight="600" fill="#B9CDC9">A-102 · Transferencia</text>
-<text x="284" y="44" text-anchor="end" font-size="16" font-weight="800" fill="#FFFFFF">$ 160,00</text>
-</g></g>
-<g transform="translate(500 140)"><g class="tarjeta" style="animation-delay: 1.4s">
-<rect width="300" height="72" rx="14" fill="#1B4341" stroke="#2C6461" stroke-width="1.5"></rect>
-<circle cx="36" cy="36" r="18" fill="#F0B35A"></circle>
-<path d="M26 32h20M28 32v10M33 32v10M39 32v10M44 32v10M25 44h22M36 25l11 6H25z" fill="none" stroke="#12302F" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path>
-<text x="66" y="31" font-size="15" font-weight="700" fill="#FFFFFF">Conciliado con el banco</text>
-<text x="66" y="51" font-size="13" font-weight="600" fill="#B9CDC9">Banco Pichincha · 18 sep</text>
-
-</g></g>
-<g transform="translate(500 240)"><g class="tarjeta" style="animation-delay: 2.8s">
-<rect width="300" height="72" rx="14" fill="#1B4341" stroke="#2C6461" stroke-width="1.5"></rect>
-<circle cx="36" cy="36" r="18" fill="#F0B35A"></circle>
-<path d="M30 25h9l5 5v15H30zM34 34h7M34 39h7" fill="none" stroke="#12302F" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path>
-<text x="66" y="31" font-size="15" font-weight="700" fill="#FFFFFF">Cuotas de octubre</text>
-<text x="66" y="51" font-size="13" font-weight="600" fill="#B9CDC9">148 unidades generadas</text>
-
-</g></g>
-</svg>
-</div>
-<h1 style="margin: 0; max-width: 680px; font-size: 48px; line-height: 1.06; font-weight: 800; letter-spacing: -1px; color: #FFFFFF">Las finanzas de tu condominio, claras y al día.</h1>
-<p style="margin: 20px 0 0 0; font-size: 17px; line-height: 1.55; color: #B9CDC9; max-width: 560px">Cuotas, pagos por transferencia, conciliación bancaria y reportes para cada condominio, con acceso para administradores, residentes y guardias.</p>
-<div style="display: flex; gap: 28px; margin-top: 32px">
-<div style="display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 600; color: #D6E3E0">
+<h1 style="margin: 48px 0 0 0; max-width: 640px; font-size: 48px; line-height: 1.06; font-weight: 800; letter-spacing: -1px; color: #FFFFFF">Las finanzas de tu condominio, claras y al día.</h1>
+<p style="margin: 18px 0 0 0; font-size: 17px; line-height: 1.55; color: #E1EBE9; max-width: 540px">Cuotas, pagos por transferencia, conciliación bancaria y reportes para cada condominio, con acceso para administradores, residentes y guardias.</p>
+<div style="flex-grow: 1"></div>
+<div style="display: flex; gap: 28px">
+<div style="display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 700; color: #FFFFFF">
 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F0B35A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"></path></svg>Datos aislados por condominio</div>
-<div style="display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 600; color: #D6E3E0">
+<div style="display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 700; color: #FFFFFF">
 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F0B35A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2" width="10" height="20" rx="2"></rect><path d="M11 18h2"></path></svg>Web y app móvil</div>
+</div>
 </div>
 </div>
 

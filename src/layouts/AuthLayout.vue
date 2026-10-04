@@ -2,8 +2,18 @@
   <q-layout view="hHh lpR fFf">
     <q-page-container>
       <q-page class="auth">
-        <!-- Panel de marca (mockup Login): se oculta en pantallas pequeñas -->
+        <!-- Panel de marca (mockup Login): foto del condominio con el lema encima.
+             Se oculta en pantallas pequeñas; la foto es un fondo CSS para que el
+             celular no la descargue. -->
         <aside class="auth__marca gt-sm">
+          <div
+            class="auth__foto"
+            role="img"
+            aria-label="Conjunto residencial con edificios, áreas verdes, juegos infantiles y el letrero de bienvenida del condominio"
+          />
+          <div class="auth__velo auth__velo--arriba" />
+          <div class="auth__velo auth__velo--abajo" />
+
           <div class="row items-center no-wrap" style="gap: 12px">
             <div class="auth__logo">S</div>
             <div>
@@ -12,15 +22,12 @@
             </div>
           </div>
 
-          <div class="auth__escena">
-            <AuthEscena />
-          </div>
-
           <h1 class="auth__lema">Las finanzas de tu condominio, claras y al día.</h1>
           <p class="auth__texto">
             Cuotas, pagos por transferencia, conciliación bancaria y reportes para cada condominio,
             con acceso para administradores, residentes y guardias.
           </p>
+          <div class="auth__espacio" />
           <div class="auth__rasgos">
             <div class="auth__rasgo">
               <q-icon name="sym_r_shield" size="20px" />
@@ -51,8 +58,6 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
 
-import AuthEscena from './components/AuthEscena.vue';
-
 const { t } = useI18n();
 </script>
 
@@ -63,17 +68,58 @@ const { t } = useI18n();
   background: var(--safic-fondo);
 }
 
-/* Mockup Login: 70 % marca y escena, 30 % formulario (el formulario nunca baja de 400px). */
+/* Mockup Login: 70 % foto y lema, 30 % formulario (el formulario nunca baja de 400px). */
 .auth__marca {
   flex: 1 1 auto;
   min-width: 0;
   background: var(--safic-tinta);
   color: #e8f0ee;
-  padding: 64px 88px;
+  padding: 56px 88px 44px;
   display: flex;
   flex-direction: column;
   position: relative;
   overflow: hidden;
+  isolation: isolate;
+}
+
+/* La foto y los velos quedan detrás del texto (z-index negativo dentro de .auth__marca). */
+.auth__foto,
+.auth__velo {
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.auth__foto {
+  inset: 0;
+  background: url('../assets/login-condominio.jpg') 35% 50% / cover no-repeat;
+}
+
+/* Velos con la tinta fija de SAFIC (no el primario del condominio): el texto blanco
+   siempre cumple el contraste sobre la foto. */
+.auth__velo--arriba {
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 62%;
+  background: linear-gradient(
+    180deg,
+    rgb(18 48 47 / 94%) 0%,
+    rgb(18 48 47 / 82%) 45%,
+    rgb(18 48 47 / 0%) 100%
+  );
+}
+
+.auth__velo--abajo {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 150px;
+  background: linear-gradient(0deg, rgb(18 48 47 / 88%) 0%, rgb(18 48 47 / 0%) 100%);
+}
+
+.auth__espacio {
+  flex-grow: 1;
 }
 
 .auth__logo {
@@ -93,25 +139,18 @@ const { t } = useI18n();
   font-weight: 800;
   font-size: 22px;
   letter-spacing: 1px;
+  color: #ffffff;
 }
 
 .auth__descripcion {
   font-size: 12px;
-  color: #b9cdc9;
+  color: #d6e3e0;
   font-weight: 600;
 }
 
-.auth__escena {
-  flex-grow: 1;
-  min-height: 0;
-  margin: 24px 0;
-  display: flex;
-  align-items: center;
-}
-
 .auth__lema {
-  margin: 0;
-  max-width: 680px;
+  margin: 48px 0 0 0;
+  max-width: 640px;
   font-size: 48px;
   line-height: 1.08;
   font-weight: 800;
@@ -120,17 +159,16 @@ const { t } = useI18n();
 }
 
 .auth__texto {
-  margin: 20px 0 0 0;
+  margin: 18px 0 0 0;
   font-size: 17px;
   line-height: 1.55;
-  color: #b9cdc9;
-  max-width: 560px;
+  color: #e1ebe9;
+  max-width: 540px;
 }
 
 .auth__rasgos {
   display: flex;
   gap: 28px;
-  margin-top: 32px;
   flex-wrap: wrap;
 }
 
@@ -139,8 +177,8 @@ const { t } = useI18n();
   align-items: center;
   gap: 10px;
   font-size: 14px;
-  font-weight: 600;
-  color: #d6e3e0;
+  font-weight: 700;
+  color: #ffffff;
 }
 
 .auth__rasgo .q-icon {
