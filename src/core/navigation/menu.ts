@@ -332,7 +332,7 @@ export const MENU_APP_GUARDIA: ItemMenu[] = [
     etiqueta: 'Directorio',
     icono: ICONOS.directorio,
     ruta: 'guardia-directorio',
-    vistaPrevia: true,
+    permiso: 'garita.directorio',
   },
   {
     id: 'guardia.reservas',

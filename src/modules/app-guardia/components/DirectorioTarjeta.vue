@@ -1,42 +1,75 @@
 <template>
-  <article class="directorio-tarjeta" :aria-label="`${residente.nombre}, ${residente.unidad}`">
+  <article class="directorio-tarjeta" :aria-label="`Unidad ${resultado.unidad.codigo}`">
     <div
-      v-for="vehiculo in residente.vehiculos"
+      v-for="vehiculo in resultado.vehiculos"
       :key="vehiculo.placa"
       class="directorio-tarjeta__fila"
     >
-      <div class="directorio-tarjeta__placa">{{ vehiculo.placa }}</div>
+      <div
+        class="directorio-tarjeta__placa"
+        :class="{ 'directorio-tarjeta__placa--apagada': !vehiculo.coincide && hayCoincidencia }"
+      >
+        {{ vehiculo.placa }}
+      </div>
       <div class="directorio-tarjeta__vehiculo">{{ vehiculo.descripcion }}</div>
     </div>
-    <div class="directorio-tarjeta__fila">
+    <div v-for="ocupante in filasOcupantes" :key="ocupante.clave" class="directorio-tarjeta__fila">
       <div
         class="directorio-tarjeta__unidad"
         :class="[
-          `directorio-tarjeta__unidad--${residente.tipoUnidad}`,
-          { 'directorio-tarjeta__unidad--larga': residente.unidad.length > 4 },
+          `directorio-tarjeta__unidad--${tipoVisual(resultado.unidad.tipo)}`,
+          { 'directorio-tarjeta__unidad--larga': resultado.unidad.codigo.length > 4 },
         ]"
       >
-        {{ residente.unidad }}
+        {{ resultado.unidad.codigo }}
       </div>
       <div class="directorio-tarjeta__textos">
-        <div class="directorio-tarjeta__nombre">{{ residente.nombre }}</div>
-        <div class="directorio-tarjeta__relacion">{{ residente.relacion }}</div>
+        <div class="directorio-tarjeta__nombre">{{ ocupante.nombre }}</div>
+        <div class="directorio-tarjeta__relacion">{{ ocupante.detalle }}</div>
       </div>
       <a
-        :href="`tel:${residente.telefono}`"
-        :aria-label="`Llamar a ${residente.nombre}`"
+        v-if="ocupante.telefono"
+        :href="enlaceTelefono(ocupante.telefono)"
+        :aria-label="`Llamar a ${ocupante.nombre}`"
         class="directorio-tarjeta__llamar"
       >
-        <q-icon name="sym_r_call" size="22px" />
+        <q-icon :name="ICONOS.llamar" size="22px" />
       </a>
     </div>
   </article>
 </template>
 
 <script setup lang="ts">
-import type { DirectorioResidente } from '@/modules/app-guardia/demo/directorio';
+import { computed } from 'vue';
 
-defineProps<{ residente: DirectorioResidente }>();
+import { ICONOS } from '@/core/navigation/icons';
+
+import { enlaceTelefono, textoOcupante, tipoVisual } from '../directorio.logica';
+import type { DirectorioUnidad } from '../services/directorio.service';
+
+const props = defineProps<{ resultado: DirectorioUnidad }>();
+
+/** Si la búsqueda fue por placa, las demás placas de la unidad se atenúan. */
+const hayCoincidencia = computed(() => props.resultado.vehiculos.some((v) => v.coincide));
+
+/** Una fila por ocupante vigente; una unidad sin ocupantes igual muestra su código. */
+const filasOcupantes = computed(() =>
+  props.resultado.ocupantes.length
+    ? props.resultado.ocupantes.map((o, i) => ({
+        clave: `${i}-${o.nombre}`,
+        nombre: o.nombre,
+        detalle: textoOcupante(o, props.resultado.unidad.bloque),
+        telefono: o.telefono,
+      }))
+    : [
+        {
+          clave: 'vacia',
+          nombre: 'Sin ocupantes',
+          detalle: props.resultado.unidad.bloque ?? 'Unidad vacía',
+          telefono: null,
+        },
+      ],
+);
 </script>
 
 <style scoped>
@@ -65,6 +98,10 @@ defineProps<{ residente: DirectorioResidente }>();
   font-size: 17px;
   letter-spacing: 1px;
   background: #fff8e1;
+}
+
+.directorio-tarjeta__placa--apagada {
+  opacity: 0.5;
 }
 
 .directorio-tarjeta__vehiculo {
