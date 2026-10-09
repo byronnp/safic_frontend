@@ -7,6 +7,7 @@
     :class="{ 'interruptor--on': modelValue }"
     :aria-checked="modelValue"
     :aria-label="etiqueta"
+    :disabled="disabled"
     @click="emit('update:modelValue', !modelValue)"
   >
     <span class="interruptor__perilla" />
@@ -14,11 +15,16 @@
 </template>
 
 <script setup lang="ts">
-defineProps<{ modelValue: boolean; etiqueta: string }>();
+defineProps<{ modelValue: boolean; etiqueta: string; disabled?: boolean }>();
 const emit = defineEmits<{ 'update:modelValue': [valor: boolean] }>();
 </script>
 
 <style scoped>
+.interruptor:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .interruptor {
   width: 38px;
   height: 22px;

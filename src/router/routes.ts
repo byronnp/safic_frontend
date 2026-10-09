@@ -302,12 +302,12 @@ const routes: RouteRecordRaw[] = [
         'Roles y permisos',
         () => import('@/modules/plataforma/pages/RolesPermisosPage.vue'),
       ),
-      previa(
-        'menu',
-        'plataforma-menu',
-        'Menú del sistema',
-        () => import('@/modules/plataforma/pages/MenuSistemaPage.vue'),
-      ),
+      {
+        path: 'menu',
+        name: 'plataforma-menu',
+        component: () => import('@/modules/plataforma/pages/MenuSistemaPage.vue'),
+        meta: { permiso: 'plataforma.roles', titulo: 'Menú del sistema' },
+      },
       previa(
         'configuracion',
         'plataforma-configuracion',

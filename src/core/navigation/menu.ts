@@ -267,7 +267,6 @@ export const MENU_PLATAFORMA: ItemMenu[] = [
         icono: ICONOS.menuSistema,
         ruta: 'plataforma-menu',
         permiso: 'plataforma.roles',
-        vistaPrevia: true,
       },
       {
         id: 'plataforma.configuracion',
