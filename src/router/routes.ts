@@ -189,6 +189,12 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/modules/configuracion/pages/DatosCondominioPage.vue'),
         meta: { permiso: 'condominio.editar', titulo: 'Datos del condominio' },
       },
+      {
+        path: 'configuracion/cobro',
+        name: 'configuracion-cobro',
+        component: () => import('@/modules/configuracion/pages/CobroCuotasPage.vue'),
+        meta: { permiso: 'condominio.editar', titulo: 'Cobro de cuotas' },
+      },
       previa(
         'configuracion/amenidades',
         'configuracion-amenidades',
