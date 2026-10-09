@@ -2,7 +2,14 @@
   <!-- Panel "Agregar amenidad" (mockup F1AmenidadesCondominio) -->
   <div class="cabecera">
     <h2 class="cabecera__titulo">Agregar amenidad</h2>
-    <button type="button" class="cabecera__cerrar" @click="emit('cerrar')">Cerrar</button>
+    <button
+      type="button"
+      class="cabecera__cerrar"
+      :disabled="agregar.isPending.value"
+      @click="emit('cerrar')"
+    >
+      Cerrar
+    </button>
   </div>
 
   <div class="fuentes" role="tablist" aria-label="Origen de la amenidad">
@@ -12,29 +19,39 @@
       type="button"
       role="tab"
       class="fuentes__btn"
-      :class="{ 'fuentes__btn--activa': fuente === f.id }"
-      :aria-selected="fuente === f.id"
-      @click="elegirFuente(f.id)"
+      :class="{ 'fuentes__btn--activa': formulario.origen === f.id }"
+      :aria-selected="formulario.origen === f.id"
+      @click="elegirOrigen(f.id)"
     >
       {{ f.label }}
     </button>
   </div>
 
-  <template v-if="fuente === 'cat'">
+  <div v-if="errorGeneral" class="safic-alerta" role="alert">{{ errorGeneral }}</div>
+
+  <template v-if="formulario.origen === 'catalogo'">
     <div class="seccion">ELIGE DEL CATÁLOGO</div>
-    <div class="tipos">
+    <div v-if="catalogo.isPending.value" class="estado-carga" aria-busy="true">
+      Cargando catálogo…
+    </div>
+    <div v-else-if="catalogo.isError.value" class="safic-alerta" role="alert">
+      {{ catalogo.error.value?.mensaje }}
+      <q-btn flat no-caps dense label="Reintentar" @click="catalogo.refetch()" />
+    </div>
+    <div v-else class="tipos">
       <button
-        v-for="(t, i) in CATALOGO_AMENIDADES"
-        :key="t.nombre"
+        v-for="t in tipos"
+        :key="t.id"
         type="button"
         class="tipos__chip"
-        :class="{ 'tipos__chip--activo': tipo === i }"
-        :aria-pressed="tipo === i"
-        @click="elegirTipo(i)"
+        :class="{ 'tipos__chip--activo': formulario.tipoId === t.id }"
+        :aria-pressed="formulario.tipoId === t.id"
+        @click="elegirTipo(t.id)"
       >
         {{ t.nombre }}{{ yaUsados(t.nombre) ? ` · tienes ${yaUsados(t.nombre)}` : '' }}
       </button>
     </div>
+    <div v-if="errores.tipoId" class="campo__error">{{ errores.tipoId }}</div>
   </template>
 
   <template v-else>
@@ -42,19 +59,21 @@
       <label for="amenidad-nombre">Nombre</label>
       <input
         id="amenidad-nombre"
-        v-model="nombrePropio"
+        v-model="formulario.nombre"
         class="campo__control"
+        maxlength="70"
         placeholder="Ej. Muelle, Huerto, Sala de cine"
       />
+      <span v-if="errores.nombre" class="campo__error">{{ errores.nombre }}</span>
     </div>
     <div class="campo">
       <label for="amenidad-categoria">Categoría</label>
       <select
         id="amenidad-categoria"
-        v-model="categoriaPropia"
+        v-model="formulario.categoria"
         class="campo__control campo__control--select"
       >
-        <option v-for="c in CATEGORIAS_PROPIAS" :key="c">{{ c }}</option>
+        <option v-for="c in CATEGORIAS" :key="c.valor" :value="c.valor">{{ c.etiqueta }}</option>
       </select>
     </div>
     <div class="reservable">
@@ -66,10 +85,10 @@
         type="button"
         role="switch"
         class="interruptor"
-        :class="{ 'interruptor--activo': reservablePropia }"
-        :aria-checked="reservablePropia"
+        :class="{ 'interruptor--activo': formulario.reservable }"
+        :aria-checked="formulario.reservable"
         aria-label="Reservable"
-        @click="reservablePropia = !reservablePropia"
+        @click="formulario.reservable = !formulario.reservable"
       >
         <span class="interruptor__perilla" />
       </button>
@@ -84,16 +103,16 @@
           type="button"
           class="contador__btn"
           aria-label="Menos"
-          @click="cantidad = Math.max(1, cantidad - 1)"
+          @click="formulario.cantidad = Math.max(1, formulario.cantidad - 1)"
         >
           −
         </button>
-        <span class="contador__valor" aria-live="polite">{{ cantidad }}</span>
+        <span class="contador__valor" aria-live="polite">{{ formulario.cantidad }}</span>
         <button
           type="button"
           class="contador__btn"
           aria-label="Más"
-          @click="cantidad = Math.min(10, cantidad + 1)"
+          @click="formulario.cantidad = Math.min(20, formulario.cantidad + 1)"
         >
           +
         </button>
@@ -101,13 +120,18 @@
     </div>
     <div class="campo">
       <label for="amenidad-ubicacion">Ubicación</label>
-      <select
+      <input
         id="amenidad-ubicacion"
-        v-model="ubicacion"
-        class="campo__control campo__control--select"
-      >
-        <option v-for="u in UBICACIONES_AMENIDAD" :key="u">{{ u }}</option>
-      </select>
+        v-model="formulario.ubicacion"
+        class="campo__control"
+        list="amenidad-ubicaciones"
+        maxlength="80"
+        autocomplete="off"
+      />
+      <datalist id="amenidad-ubicaciones">
+        <option v-for="u in ubicaciones" :key="u" :value="u" />
+      </datalist>
+      <span v-if="errores.ubicacion" class="campo__error">{{ errores.ubicacion }}</span>
     </div>
   </div>
 
@@ -116,147 +140,108 @@
   <button
     type="button"
     class="agregar"
-    :class="{ 'agregar--activo': valido }"
-    :disabled="!valido"
-    @click="agregar"
+    :class="{ 'agregar--activo': vista.valido }"
+    :disabled="!vista.valido || agregar.isPending.value"
+    @click="enviar"
   >
-    {{ nombres.length > 1 ? `Agregar ${nombres.length} amenidades` : 'Agregar amenidad' }}
+    {{
+      agregar.isPending.value
+        ? 'Agregando…'
+        : vista.nombres.length > 1
+          ? `Agregar ${vista.nombres.length} amenidades`
+          : 'Agregar amenidad'
+    }}
   </button>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
-import { CATALOGO_AMENIDADES, CATEGORIAS_PROPIAS, UBICACIONES_AMENIDAD } from '../demo/amenidades';
-import type { Amenidad, CategoriaAmenidad, OrigenAmenidad } from '../demo/amenidades';
+import { useQuasar } from 'quasar';
+import { computed, reactive, ref } from 'vue';
 
-const props = defineProps<{ amenidades: Amenidad[] }>();
-const emit = defineEmits<{ cerrar: []; agregar: [nuevas: Amenidad[]] }>();
+import { aApiError } from '@/core/api/errors';
+import { useBloques } from '@/modules/unidades/composables/useBloques';
+
+import { useAgregarAmenidad, useCatalogoAmenidades } from '../composables/useAmenidades';
+import {
+  CAMPOS_API_AMENIDAD,
+  CATEGORIAS,
+  FORMULARIO_AMENIDAD_VACIO,
+  peticionAmenidad,
+  ubicacionesSugeridas,
+  vistaAmenidad,
+  type FormularioAmenidad,
+} from '../amenidades.logica';
+import type { AmenidadCondominio, OrigenAmenidad } from '../services/amenidades.service';
+
+const props = defineProps<{ amenidades: AmenidadCondominio[] }>();
+const emit = defineEmits<{ cerrar: []; agregadas: [creadas: AmenidadCondominio[]] }>();
 
 const FUENTES: { id: OrigenAmenidad; label: string }[] = [
-  { id: 'cat', label: 'Del catálogo' },
-  { id: 'prop', label: 'Crear propia' },
+  { id: 'catalogo', label: 'Del catálogo' },
+  { id: 'propia', label: 'Crear propia' },
 ];
 
-const CATEGORIA_POR_NOMBRE: Record<string, CategoriaAmenidad> = {
-  Recreación: 'rec',
-  Deporte: 'dep',
-  Social: 'soc',
-  Servicios: 'ser',
-  Seguridad: 'seg',
-};
+const $q = useQuasar();
+const catalogo = useCatalogoAmenidades(() => true);
+const bloques = useBloques();
+const agregar = useAgregarAmenidad();
 
-const fuente = ref<OrigenAmenidad>('cat');
-const tipo = ref<number | null>(null);
-const cantidad = ref(1);
-const nombrePropio = ref('');
-const categoriaPropia = ref(CATEGORIAS_PROPIAS[0] ?? 'Recreación');
-const reservablePropia = ref(true);
-const ubicacion = ref(UBICACIONES_AMENIDAD[0] ?? 'Área social');
+const formulario = reactive<FormularioAmenidad>({ ...FORMULARIO_AMENIDAD_VACIO });
+const errores = reactive<Partial<Record<keyof FormularioAmenidad, string>>>({});
+const errorGeneral = ref<string | null>(null);
 
-const tipoCatalogo = computed(() =>
-  tipo.value !== null ? (CATALOGO_AMENIDADES[tipo.value] ?? null) : null,
+const tipos = computed(() => catalogo.data.value ?? []);
+const ubicaciones = computed(() =>
+  ubicacionesSugeridas((bloques.data.value ?? []).map((b) => b.nombre)),
 );
+const vista = computed(() => vistaAmenidad(formulario, tipos.value, props.amenidades));
 
 function yaUsados(nombreTipo: string): number {
   return props.amenidades.filter((a) => a.tipo === nombreTipo).length;
 }
 
-function elegirFuente(id: OrigenAmenidad) {
-  fuente.value = id;
-  cantidad.value = 1;
+function elegirOrigen(id: OrigenAmenidad) {
+  formulario.origen = id;
+  formulario.cantidad = 1;
 }
 
-function elegirTipo(i: number) {
-  tipo.value = i;
-  cantidad.value = 1;
+function elegirTipo(id: number) {
+  formulario.tipoId = id;
+  formulario.cantidad = 1;
 }
 
-const nombreBase = computed(() =>
-  fuente.value === 'cat' ? (tipoCatalogo.value?.nombre ?? '') : nombrePropio.value.trim(),
-);
-
-const reservable = computed(() =>
-  fuente.value === 'cat' ? !!tipoCatalogo.value?.reservable : reservablePropia.value,
-);
-
-const enCatalogo = computed(
-  () =>
-    fuente.value === 'prop' &&
-    CATALOGO_AMENIDADES.some((c) => c.nombre.toLowerCase() === nombreBase.value.toLowerCase()),
-);
-
-const nombres = computed(() => {
-  const base = nombreBase.value;
-  if (!base) {
-    return [];
-  }
-  const usados = fuente.value === 'cat' ? yaUsados(base) : 0;
-  if (reservable.value && cantidad.value > 1) {
-    return Array.from({ length: cantidad.value }, (_, k) => `${base} ${usados + k + 1}`);
-  }
-  if (reservable.value && usados > 0) {
-    return [`${base} ${usados + 1}`];
-  }
-  return [cantidad.value > 1 ? `${base} (${cantidad.value})` : base];
-});
-
-const valido = computed(() => !!nombreBase.value && !enCatalogo.value);
-
-const vista = computed<{ texto: string; tono: 'neutro' | 'error' | 'info' | 'exito' }>(() => {
-  if (!nombreBase.value) {
-    return {
-      texto:
-        fuente.value === 'cat'
-          ? 'Elige un tipo del catálogo.'
-          : 'Escribe el nombre de la amenidad.',
-      tono: 'neutro',
-    };
-  }
-  if (enCatalogo.value) {
-    return {
-      texto: `"${nombreBase.value}" ya existe en el catálogo. Agrégala desde "Del catálogo" para mantener los valores sugeridos.`,
-      tono: 'error',
-    };
-  }
-  if (reservable.value && cantidad.value > 1) {
-    return {
-      texto: `Se crearán ${cantidad.value} registros para reservarlos por separado: ${nombres.value.join(', ')}.`,
-      tono: 'info',
-    };
-  }
-  return {
-    texto:
-      `Se creará: ${nombres.value[0] ?? ''}` +
-      (reservable.value ? '. Después configura horarios y cobro en Áreas comunes.' : '.') +
-      (fuente.value === 'prop' ? ' Solo tu condominio la verá.' : ''),
-    tono: 'exito',
-  };
-});
-
-function agregar() {
-  if (!valido.value) {
+async function enviar(): Promise<void> {
+  if (!vista.value.valido) {
     return;
   }
-  const cat = tipoCatalogo.value;
-  const deCatalogo = fuente.value === 'cat' && cat !== null;
-  const categoria: CategoriaAmenidad = deCatalogo
-    ? cat.categoria
-    : (CATEGORIA_POR_NOMBRE[categoriaPropia.value] ?? 'rec');
-  emit(
-    'agregar',
-    nombres.value.map((nombre) => ({
-      nombre,
-      tipo: deCatalogo ? nombreBase.value : 'Propia del condominio',
-      categoria,
-      origen: fuente.value,
-      ubicacion: ubicacion.value,
-      reservable: reservable.value,
-      esencial: deCatalogo ? cat.esencial : false,
-      info: reservable.value ? 'Falta configurar reservas' : 'Uso libre',
-      fotos: 0,
-      mantenimiento: null,
-    })),
-  );
+  for (const campo of Object.keys(errores) as (keyof FormularioAmenidad)[]) {
+    delete errores[campo];
+  }
+  errorGeneral.value = null;
+
+  try {
+    const creadas = await agregar.mutateAsync(peticionAmenidad(formulario));
+    $q.notify({
+      type: 'positive',
+      message:
+        creadas.length > 1 ? `${creadas.length} amenidades agregadas.` : 'Amenidad agregada.',
+    });
+    emit('agregadas', creadas);
+  } catch (e) {
+    const apiError = aApiError(e);
+    let pintado = false;
+    for (const [campoApi, campo] of Object.entries(CAMPOS_API_AMENIDAD)) {
+      const mensaje = apiError.campo(campoApi);
+      if (mensaje) {
+        (errores as Record<string, string>)[campo] = mensaje;
+        pintado = true;
+      }
+    }
+    if (!pintado) {
+      // AMENIDAD_EXISTE u otro error: el mensaje ya viene en español
+      errorGeneral.value = apiError.mensaje;
+    }
+  }
 }
 </script>
 
@@ -458,6 +443,17 @@ function agregar() {
   font-size: 18px;
   font-weight: 800;
   color: var(--safic-texto);
+}
+
+.estado-carga {
+  font-size: 13px;
+  color: var(--safic-texto-suave);
+}
+
+.campo__error {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--q-negative);
 }
 
 .aviso {

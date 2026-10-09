@@ -14,130 +14,156 @@
         </template>
       </PaginaEncabezado>
 
-      <div class="kpis">
-        <div v-for="k in kpis" :key="k.l" class="kpi">
-          <div class="kpi__etiqueta">{{ k.l }}</div>
-          <div class="kpi__valor">{{ k.v }}</div>
-        </div>
+      <div v-if="amenidades.isPending.value" class="amenidades__principal" aria-busy="true">
+        <q-skeleton type="rect" height="72px" class="amenidades__skeleton" />
+        <q-skeleton type="rect" height="320px" class="amenidades__skeleton" />
       </div>
 
-      <div class="tabla">
-        <div class="tabla__desplazable">
-          <div class="tabla__fila tabla__cabecera">
-            <div>AMENIDAD</div>
-            <div>ORIGEN</div>
-            <div>UBICACIÓN</div>
-            <div>USO</div>
-            <div>ESTADO</div>
-          </div>
-          <button
-            v-for="(a, i) in amenidades"
-            :key="`${a.nombre}-${i}`"
-            type="button"
-            class="tabla__fila tabla__item"
-            :class="{ 'tabla__item--activa': modo === 'detalle' && i === seleccion }"
-            :aria-pressed="modo === 'detalle' && i === seleccion"
-            @click="elegir(i)"
-          >
-            <div class="amenidad">
-              <span class="amenidad__icono" :style="{ background: COLOR_CATEGORIA[a.categoria] }">
-                {{ inicialesAmenidad(a.nombre) }}
-              </span>
-              <div class="amenidad__textos">
-                <div class="amenidad__nombre" :title="a.nombre">{{ a.nombre }}</div>
-                <div class="amenidad__tipo" :title="a.tipo">{{ a.tipo }}</div>
-              </div>
-            </div>
-            <div>
-              <span class="chip" :class="a.origen === 'cat' ? 'chip--neutro' : 'chip--info'">
-                {{ a.origen === 'cat' ? 'Catálogo' : 'Propia' }}
-              </span>
-            </div>
-            <div class="tabla__texto">{{ a.ubicacion }}</div>
-            <div class="tabla__texto">{{ usoAmenidad(a) }}</div>
-            <div>
-              <span class="chip" :class="a.mantenimiento ? 'chip--alerta' : 'chip--exito'">
-                {{ estadoAmenidad(a) }}
-              </span>
-            </div>
-          </button>
-        </div>
+      <div v-else-if="amenidades.isError.value" class="safic-alerta" role="alert">
+        {{ amenidades.error.value?.mensaje }}
+        <q-btn flat no-caps dense label="Reintentar" @click="amenidades.refetch()" />
       </div>
+
+      <template v-else>
+        <div class="kpis">
+          <div v-for="k in kpis" :key="k.l" class="kpi">
+            <div class="kpi__etiqueta">{{ k.l }}</div>
+            <div class="kpi__valor">{{ k.v }}</div>
+          </div>
+        </div>
+
+        <div v-if="!lista.length" class="amenidades__vacio">
+          <q-icon :name="ICONOS.vacio" size="36px" />
+          <div>Todavía no hay amenidades. Agrega las del catálogo o crea las propias.</div>
+        </div>
+
+        <div v-else class="tabla">
+          <div class="tabla__desplazable">
+            <div class="tabla__fila tabla__cabecera">
+              <div>AMENIDAD</div>
+              <div>ORIGEN</div>
+              <div>UBICACIÓN</div>
+              <div>USO</div>
+              <div>ESTADO</div>
+            </div>
+            <button
+              v-for="a in lista"
+              :key="a.id"
+              type="button"
+              class="tabla__fila tabla__item"
+              :class="{ 'tabla__item--activa': modo === 'detalle' && a.id === seleccionada?.id }"
+              :aria-pressed="modo === 'detalle' && a.id === seleccionada?.id"
+              @click="elegir(a.id)"
+            >
+              <div class="amenidad">
+                <span class="amenidad__icono" :style="{ background: colorAmenidad(a) }">
+                  {{ inicialesAmenidad(a.nombre) }}
+                </span>
+                <div class="amenidad__textos">
+                  <div class="amenidad__nombre" :title="a.nombre">{{ a.nombre }}</div>
+                  <div class="amenidad__tipo" :title="a.tipo ?? 'Propia del condominio'">
+                    {{ a.tipo ?? 'Propia del condominio' }}
+                  </div>
+                </div>
+              </div>
+              <div>
+                <span class="chip" :class="a.origen === 'catalogo' ? 'chip--neutro' : 'chip--info'">
+                  {{ a.origen === 'catalogo' ? 'Catálogo' : 'Propia' }}
+                </span>
+              </div>
+              <div class="tabla__texto">{{ a.ubicacion ?? '—' }}</div>
+              <div class="tabla__texto">{{ usoAmenidad(a) }}</div>
+              <div>
+                <span class="chip" :class="`chip--${tonoEstadoAmenidad(a)}`">
+                  {{ estadoAmenidad(a) }}
+                </span>
+              </div>
+            </button>
+          </div>
+        </div>
+      </template>
     </section>
 
     <aside class="panel" :aria-label="modo === 'detalle' ? 'Detalle de la amenidad' : 'Agregar'">
       <AmenidadesDetalle
         v-if="modo === 'detalle' && seleccionada"
+        :key="seleccionada.id"
         :amenidad="seleccionada"
-        @mantenimiento="alternarMantenimiento"
-        @desactivar="desactivar"
       />
       <AmenidadesAgregar
         v-else-if="modo === 'agregar'"
-        :key="formularioId"
-        :amenidades="amenidades"
+        :amenidades="lista"
         @cerrar="modo = 'detalle'"
-        @agregar="agregar"
+        @agregadas="agregadas"
       />
     </aside>
   </q-page>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
-import { useQuasar } from 'quasar';
+import { useIsMutating } from '@tanstack/vue-query';
+import { computed, ref, watch } from 'vue';
+
 import PaginaEncabezado from '@/components/PaginaEncabezado.vue';
+import { ICONOS } from '@/core/navigation/icons';
+import { useSessionStore } from '@/stores/session';
+
 import AmenidadesAgregar from '../components/AmenidadesAgregar.vue';
 import AmenidadesDetalle from '../components/AmenidadesDetalle.vue';
-import { estadoAmenidad, inicialesAmenidad, usoAmenidad } from '../components/amenidades-formato';
-import { AMENIDADES, COLOR_CATEGORIA, MANTENIMIENTO_HASTA } from '../demo/amenidades';
-import type { Amenidad } from '../demo/amenidades';
+import {
+  colorAmenidad,
+  estadoAmenidad,
+  inicialesAmenidad,
+  kpisAmenidades,
+  tonoEstadoAmenidad,
+  usoAmenidad,
+} from '../amenidades.logica';
+import { useAmenidades } from '../composables/useAmenidades';
+import type { AmenidadCondominio } from '../services/amenidades.service';
 
-const $q = useQuasar();
+const session = useSessionStore();
+const amenidades = useAmenidades();
+// Mientras se guarda algo no se cambia de amenidad ni se abre otro formulario
+const guardando = useIsMutating();
 
-const amenidades = ref<Amenidad[]>(AMENIDADES.map((a) => ({ ...a })));
 const modo = ref<'detalle' | 'agregar'>('detalle');
-const seleccion = ref(2);
-const formularioId = ref(0);
+const seleccionId = ref<number | null>(null);
 
-const seleccionada = computed(() => amenidades.value[seleccion.value] ?? amenidades.value[0]);
+const lista = computed(() => amenidades.data.value ?? []);
+const kpis = computed(() => kpisAmenidades(lista.value));
 
-const kpis = computed(() => [
-  { l: 'Amenidades', v: amenidades.value.length },
-  { l: 'Reservables', v: amenidades.value.filter((a) => a.reservable).length },
-  { l: 'En mantenimiento', v: amenidades.value.filter((a) => a.mantenimiento).length },
-  { l: 'Propias', v: amenidades.value.filter((a) => a.origen === 'prop').length },
-]);
+// Por omisión la primera; si la elegida desaparece de la lista, vuelve a la primera
+const seleccionada = computed(
+  () => lista.value.find((a) => a.id === seleccionId.value) ?? lista.value[0] ?? null,
+);
 
-function elegir(i: number) {
-  seleccion.value = i;
+// Al cambiar de condominio no queda una amenidad ni un formulario del anterior
+watch(
+  () => session.condominioId,
+  () => {
+    seleccionId.value = null;
+    modo.value = 'detalle';
+  },
+);
+
+function elegir(id: number) {
+  if (guardando.value > 0) {
+    return;
+  }
+  seleccionId.value = id;
   modo.value = 'detalle';
 }
 
 function abrirAgregar() {
-  formularioId.value++;
+  if (guardando.value > 0) {
+    return;
+  }
   modo.value = 'agregar';
 }
 
-function alternarMantenimiento() {
-  const a = seleccionada.value;
-  if (a) {
-    a.mantenimiento = a.mantenimiento ? null : MANTENIMIENTO_HASTA;
-  }
-}
-
-function desactivar() {
-  $q.notify({ type: 'positive', message: 'Amenidad desactivada.' });
-}
-
-function agregar(nuevas: Amenidad[]) {
-  seleccion.value = amenidades.value.length;
-  amenidades.value.push(...nuevas);
+function agregadas(creadas: AmenidadCondominio[]) {
+  seleccionId.value = creadas[0]?.id ?? null;
   modo.value = 'detalle';
-  $q.notify({
-    type: 'positive',
-    message: nuevas.length > 1 ? `${nuevas.length} amenidades agregadas.` : 'Amenidad agregada.',
-  });
 }
 </script>
 
@@ -183,6 +209,22 @@ function agregar(nuevas: Amenidad[]) {
   font-size: 22px;
   font-weight: 800;
   margin-top: 2px;
+}
+
+.amenidades__vacio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 40px 16px;
+  color: var(--safic-texto-suave);
+  background: var(--safic-superficie);
+  border: 1px solid var(--safic-borde);
+  border-radius: 14px;
+}
+
+.amenidades__skeleton {
+  border-radius: 14px;
 }
 
 .tabla {
