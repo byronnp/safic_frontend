@@ -201,12 +201,12 @@ const routes: RouteRecordRaw[] = [
         'Amenidades',
         () => import('@/modules/configuracion/pages/AmenidadesPage.vue'),
       ),
-      previa(
-        'configuracion/usuarios',
-        'configuracion-usuarios',
-        'Usuarios',
-        () => import('@/modules/configuracion/pages/UsuariosPage.vue'),
-      ),
+      {
+        path: 'configuracion/usuarios',
+        name: 'configuracion-usuarios',
+        component: () => import('@/modules/configuracion/pages/UsuariosPage.vue'),
+        meta: { permiso: 'usuarios.gestionar', titulo: 'Usuarios' },
+      },
       previa(
         'configuracion/roles',
         'configuracion-roles',
