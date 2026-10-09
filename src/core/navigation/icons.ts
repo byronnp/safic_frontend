@@ -63,6 +63,7 @@ export const ICONOS = {
   visitas: 'sym_r_qr_code_2',
   asamblea: 'sym_r_how_to_vote',
   directorio: 'sym_r_contacts',
+  llamar: 'sym_r_call',
   garitaApp: 'sym_r_badge',
   reservasHoy: 'sym_r_event',
   pagosApp: 'sym_r_payments',

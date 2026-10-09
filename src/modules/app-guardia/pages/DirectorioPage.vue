@@ -2,22 +2,23 @@
   <div class="app-pagina">
     <AppEncabezado
       class="directorio-encabezado"
-      :antetitulo="`${DIRECTORIO_TURNO.garita} · ${DIRECTORIO_TURNO.turno}`"
+      :antetitulo="session.condominioActivo?.nombre ?? 'Garita'"
       titulo="Directorio"
     >
       <template #derecha>
-        <div class="directorio-avatar" :title="DIRECTORIO_TURNO.guardia" aria-hidden="true">
-          {{ iniciales(DIRECTORIO_TURNO.guardia) }}
+        <div class="directorio-avatar" :title="session.usuario?.nombre" aria-hidden="true">
+          {{ iniciales(session.usuario?.nombre ?? '') }}
         </div>
       </template>
 
       <label class="directorio-buscar">
-        <q-icon name="sym_r_search" size="22px" class="directorio-buscar__icono" />
+        <q-icon :name="ICONOS.buscar" size="22px" class="directorio-buscar__icono" />
         <input
           v-model="busqueda"
           type="search"
           class="directorio-buscar__campo"
           :aria-label="etiquetaBusqueda"
+          maxlength="60"
           autocomplete="off"
           autocapitalize="characters"
           spellcheck="false"
@@ -43,17 +44,32 @@
     </AppEncabezado>
 
     <div class="app-cuerpo directorio-cuerpo">
-      <div class="directorio-conteo" aria-live="polite">
-        {{ resultados.length }} {{ resultados.length === 1 ? 'resultado' : 'resultados' }}
+      <div v-if="!buscando" class="directorio-vacio">
+        Escribe al menos 2 letras o números de un nombre, una unidad o una placa.
       </div>
-      <DirectorioTarjeta
-        v-for="residente in resultados"
-        :key="residente.id"
-        :residente="residente"
-      />
-      <div v-if="!resultados.length" class="directorio-vacio">
-        No hay coincidencias. Revisa la {{ nombreCampo }} o cambia el filtro.
+
+      <div v-else-if="directorio.isError.value" class="safic-alerta" role="alert">
+        {{ directorio.error.value?.mensaje }}
+        <q-btn flat no-caps dense label="Reintentar" @click="directorio.refetch()" />
       </div>
+
+      <template v-else>
+        <div class="directorio-conteo" aria-live="polite">
+          <template v-if="directorio.isPending.value">Buscando…</template>
+          <template v-else>
+            {{ resultados.length }} {{ resultados.length === 1 ? 'resultado' : 'resultados' }}
+          </template>
+        </div>
+        <DirectorioTarjeta
+          v-for="resultado in resultados"
+          :key="resultado.unidad.id"
+          :resultado="resultado"
+        />
+        <div v-if="sinCoincidencias" class="directorio-vacio">
+          No hay coincidencias. Revisa la {{ nombreCampo }} o cambia el filtro.
+        </div>
+      </template>
+
       <div class="directorio-nota">
         Solo se muestran nombre, unidad, teléfono y placas. Cédulas y correos están ocultos para el
         rol de guardia.
@@ -66,16 +82,14 @@
 import { computed, ref } from 'vue';
 
 import AppEncabezado from '@/components/app/AppEncabezado.vue';
+import { ICONOS } from '@/core/navigation/icons';
 import { iniciales } from '@/core/theme/avatar';
-import DirectorioTarjeta from '@/modules/app-guardia/components/DirectorioTarjeta.vue';
-import type { DirectorioResidente } from '@/modules/app-guardia/demo/directorio';
-import {
-  DIRECTORIO_BUSQUEDA_INICIAL,
-  DIRECTORIO_RESIDENTES,
-  DIRECTORIO_TURNO,
-} from '@/modules/app-guardia/demo/directorio';
+import { useSessionStore } from '@/stores/session';
+import { refDebounced } from '@/utils/debounce';
 
-type CampoBusqueda = 'placa' | 'nombre' | 'unidad';
+import DirectorioTarjeta from '../components/DirectorioTarjeta.vue';
+import { useDirectorio } from '../composables/useDirectorio';
+import { coincideCampo, terminoValido, type CampoBusqueda } from '../directorio.logica';
 
 const FILTROS: { id: CampoBusqueda; etiqueta: string }[] = [
   { id: 'placa', etiqueta: 'Placa' },
@@ -83,44 +97,27 @@ const FILTROS: { id: CampoBusqueda; etiqueta: string }[] = [
   { id: 'unidad', etiqueta: 'Unidad' },
 ];
 
-const busqueda = ref(DIRECTORIO_BUSQUEDA_INICIAL);
+const session = useSessionStore();
+
+const busqueda = ref('');
 const campo = ref<CampoBusqueda>('placa');
+// Se espera a que deje de escribir: cada consulta cuenta para el límite por minuto
+const termino = refDebounced(busqueda, 500);
+
+const buscando = computed(() => terminoValido(busqueda.value));
+const directorio = useDirectorio(termino);
 
 const nombreCampo = computed(
   () => FILTROS.find((f) => f.id === campo.value)?.etiqueta.toLowerCase() ?? '',
 );
 const etiquetaBusqueda = computed(() => `Buscar por ${nombreCampo.value}`);
 
-/** Sin tildes, mayúsculas ni guiones/espacios: "pbc 4821" encuentra "PBC-4821". */
-function normalizar(texto: string, compacto: boolean): string {
-  const base = texto.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
-  return compacto ? base.replace(/[\s-]/g, '') : base.replace(/\s+/g, ' ');
-}
-
-function coincide(residente: DirectorioResidente, termino: string): boolean {
-  switch (campo.value) {
-    case 'placa': {
-      const t = normalizar(termino, true);
-      return residente.vehiculos.some((v) => normalizar(v.placa, true).includes(t));
-    }
-    case 'unidad': {
-      const t = normalizar(termino, true);
-      return normalizar(residente.unidad, true).includes(t);
-    }
-    case 'nombre': {
-      const t = normalizar(termino, false);
-      return normalizar(residente.nombre, false).includes(t);
-    }
-  }
-}
-
-const resultados = computed<DirectorioResidente[]>(() => {
-  const termino = busqueda.value.trim();
-  if (!termino) {
-    return DIRECTORIO_RESIDENTES;
-  }
-  return DIRECTORIO_RESIDENTES.filter((r) => coincide(r, termino));
-});
+const resultados = computed(() =>
+  (directorio.data.value ?? []).filter((r) => coincideCampo(r, campo.value, busqueda.value)),
+);
+const sinCoincidencias = computed(
+  () => !directorio.isPending.value && resultados.value.length === 0,
+);
 </script>
 
 <style scoped>

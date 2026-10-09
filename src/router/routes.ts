@@ -371,12 +371,12 @@ const routes: RouteRecordRaw[] = [
         'Garita',
         () => import('@/modules/app-guardia/pages/GaritaPage.vue'),
       ),
-      previa(
-        'directorio',
-        'guardia-directorio',
-        'Directorio',
-        () => import('@/modules/app-guardia/pages/DirectorioPage.vue'),
-      ),
+      {
+        path: 'directorio',
+        name: 'guardia-directorio',
+        component: () => import('@/modules/app-guardia/pages/DirectorioPage.vue'),
+        meta: { permiso: 'garita.directorio', titulo: 'Directorio' },
+      },
       previa(
         'reservas-hoy',
         'guardia-reservas-hoy',
