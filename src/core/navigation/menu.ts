@@ -203,7 +203,6 @@ export const MENU_BASE: ItemMenu[] = [
         icono: ICONOS.roles,
         ruta: 'configuracion-roles',
         permiso: 'usuarios.gestionar',
-        vistaPrevia: true,
       },
       {
         id: 'configuracion.suscripcion',

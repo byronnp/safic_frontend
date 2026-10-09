@@ -1,121 +1,143 @@
 <template>
   <q-page class="safic-main roles" :style-fn="alturaPagina">
-    <!-- Lista de roles -->
-    <section class="roles-lista">
-      <div class="roles-lista__encabezado">
-        <h1 class="roles-lista__titulo">Roles disponibles</h1>
-        <button type="button" class="roles-boton-borde" @click="abrirSolicitud">
-          <q-icon name="sym_r_outgoing_mail" size="18px" />Solicitar rol
-        </button>
-      </div>
-      <div class="roles-lista__tarjeta">
-        <template v-for="grupo in GRUPOS_ROLES" :key="grupo.titulo">
-          <div class="roles-lista__grupo">{{ grupo.titulo }}</div>
-          <RolesCondominioItem
-            v-for="item in grupo.roles"
-            :key="item.clave"
-            :rol="item"
-            :activo="item.clave === seleccion"
-            :administrativo="esAdministrativo(item)"
-            @elegir="elegir(item.clave)"
-          />
-        </template>
-      </div>
-    </section>
+    <div v-if="roles.isPending.value" class="roles-estado" aria-busy="true">
+      <q-skeleton type="rect" height="320px" class="roles-skeleton" />
+      <q-skeleton type="rect" height="320px" class="roles-skeleton" />
+    </div>
 
-    <!-- Detalle del rol -->
-    <section class="roles-detalle">
-      <div class="roles-detalle__encabezado">
-        <div class="roles-detalle__textos">
-          <div class="roles-detalle__tipo">{{ TIPOS[rolActivo.tipo] }}</div>
-          <div class="roles-detalle__nombre">{{ rolActivo.nombre }}</div>
+    <div v-else-if="roles.isError.value" class="safic-alerta roles-estado" role="alert">
+      {{ roles.error.value?.mensaje }}
+      <q-btn flat no-caps dense label="Reintentar" @click="roles.refetch()" />
+    </div>
+
+    <template v-else-if="datos && rolActivo">
+      <!-- Lista de roles -->
+      <section class="roles-lista">
+        <div class="roles-lista__encabezado">
+          <h1 class="roles-lista__titulo">Roles disponibles</h1>
+          <button type="button" class="roles-boton-borde" @click="abrirSolicitud">
+            <q-icon name="sym_r_outgoing_mail" size="18px" />Solicitar rol
+          </button>
         </div>
-        <span class="roles-detalle__candado">
-          <q-icon name="sym_r_lock" size="16px" />Solo lectura · lo define la plataforma
-        </span>
-      </div>
+        <div class="roles-lista__tarjeta">
+          <template v-for="grupo in grupos" :key="grupo.tipo">
+            <div class="roles-lista__grupo">{{ grupo.titulo }}</div>
+            <RolesCondominioItem
+              v-for="item in grupo.roles"
+              :key="item.clave"
+              :rol="item"
+              :activo="item.clave === rolActivo.clave"
+              @elegir="elegir(item.clave)"
+            />
+          </template>
+        </div>
+      </section>
 
-      <RolesCondominioSolicitud
-        v-if="solicitando"
-        @cancelar="solicitando = false"
-        @enviar="enviarSolicitud"
-      />
+      <!-- Detalle del rol -->
+      <section class="roles-detalle">
+        <div class="roles-detalle__encabezado">
+          <div class="roles-detalle__textos">
+            <div class="roles-detalle__tipo">{{ TIPOS_ROL[rolActivo.tipo] }}</div>
+            <div class="roles-detalle__nombre">{{ rolActivo.nombre }}</div>
+          </div>
+          <span class="roles-detalle__candado">
+            <q-icon name="sym_r_lock" size="16px" />Solo lectura · lo define la plataforma
+          </span>
+        </div>
 
-      <div class="roles-detalle__aviso" :class="`roles-detalle__aviso--${aviso.tono}`" role="note">
-        {{ aviso.texto }}
-      </div>
+        <RolesCondominioSolicitud
+          v-if="solicitando"
+          @cancelar="solicitando = false"
+          @enviada="solicitudEnviada"
+        />
 
-      <RolesCondominioPermisos :rol="rolActivo" class="roles-detalle__permisos" />
-
-      <div class="roles-detalle__pie">
-        <span class="roles-detalle__pie-texto">
-          {{ rolActivo.usuarios }}
-          {{ rolActivo.usuarios === 1 ? 'usuario tiene' : 'usuarios tienen' }} este rol en
-          {{ NOMBRE_CONDOMINIO_CORTO }}.
-        </span>
-        <router-link
-          v-if="rolActivo.tipo !== 'cargo'"
-          :to="{ name: 'configuracion-usuarios' }"
-          class="roles-detalle__asignar"
+        <div
+          class="roles-detalle__aviso"
+          :class="`roles-detalle__aviso--${aviso.tono}`"
+          role="note"
         >
-          Asignar a usuarios
-        </router-link>
-      </div>
-    </section>
+          {{ aviso.texto }}
+        </div>
 
-    <!-- Menú que verá -->
-    <aside class="roles-menu">
-      <div class="roles-menu__titulo">MENÚ QUE VERÁ</div>
-      <div class="roles-menu__caja">
-        <div v-for="m in menu" :key="m.texto" class="roles-menu__item">
-          <q-icon :name="`sym_r_${m.icono}`" size="18px" />{{ m.texto }}
+        <RolesCondominioPermisos
+          :rol="rolActivo"
+          :permisos="datos.permisos"
+          class="roles-detalle__permisos"
+        />
+
+        <div class="roles-detalle__pie">
+          <span class="roles-detalle__pie-texto">
+            {{ rolActivo.usuarios }}
+            {{ rolActivo.usuarios === 1 ? 'usuario tiene' : 'usuarios tienen' }} este rol en
+            {{ session.condominioActivo?.nombre ?? 'el condominio' }}.
+          </span>
+          <router-link :to="{ name: 'configuracion-usuarios' }" class="roles-detalle__asignar">
+            {{ rolActivo.tipo === 'cargo' ? 'Ir a Usuarios' : 'Asignar a usuarios' }}
+          </router-link>
         </div>
-        <div v-if="menu.length === 0" class="roles-menu__vacio">
-          Sin pantallas: marca al menos un permiso.
+      </section>
+
+      <!-- Menú que verá -->
+      <aside class="roles-menu">
+        <div class="roles-menu__titulo">MENÚ QUE VERÁ</div>
+        <div class="roles-menu__caja">
+          <div v-for="m in rolActivo.menu" :key="m.etiqueta" class="roles-menu__item">
+            <q-icon :name="iconoSeguro(m.icono)" size="18px" />{{ m.etiqueta }}
+          </div>
+          <div v-if="rolActivo.menu.length === 0" class="roles-menu__vacio">
+            Sin pantallas: este rol no tiene permisos con pantalla.
+          </div>
         </div>
-      </div>
-      <div class="roles-menu__nota">
-        El menú se arma solo con los permisos del rol y los módulos del plan.
-      </div>
-    </aside>
+        <div class="roles-menu__nota">
+          El menú se arma solo con los permisos del rol y las pantallas que la plataforma le asigna.
+        </div>
+      </aside>
+    </template>
   </q-page>
 </template>
 
 <script setup lang="ts">
 import { useQuasar } from 'quasar';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 
+import { useRoles } from '../composables/useRoles';
 import RolesCondominioItem from '../components/RolesCondominioItem.vue';
 import RolesCondominioPermisos from '../components/RolesCondominioPermisos.vue';
 import RolesCondominioSolicitud from '../components/RolesCondominioSolicitud.vue';
-import {
-  CUPO_ROLES,
-  GRUPOS_ROLES,
-  MENU_POR_PERMISO,
-  MODULOS_DEL_PLAN,
-  NOMBRE_CONDOMINIO_CORTO,
-  PERMISOS,
-  ROL_INICIAL,
-  type RolDemo,
-  type TipoRol,
-} from '../demo/roles';
-
-const TIPOS: Record<TipoRol, string> = {
-  sistema: 'Rol de sistema',
-  cargo: 'Cargo de directiva',
-  adicional: 'Rol adicional creado por la plataforma',
-};
+import { agruparRoles, avisoRol, iconoSeguro, TIPOS_ROL } from '../roles.logica';
+import { useSessionStore } from '@/stores/session';
 
 const $q = useQuasar();
+const session = useSessionStore();
+const roles = useRoles();
 
-const ROLES = GRUPOS_ROLES.flatMap((g) => g.roles);
+const datos = computed(() => roles.data.value ?? null);
+const grupos = computed(() => agruparRoles(datos.value?.roles ?? []));
 
-const seleccion = ref(ROL_INICIAL);
+const seleccion = ref<string | null>(null);
 const solicitando = ref(false);
 const enviada = ref(false);
 
-const rolActivo = computed<RolDemo>(
-  () => ROLES.find((r) => r.clave === seleccion.value) ?? ROLES[0]!,
+// Por omisión el primero de la lista; si el elegido ya no existe, vuelve al primero
+const rolActivo = computed(
+  () =>
+    datos.value?.roles.find((r) => r.clave === seleccion.value) ?? datos.value?.roles[0] ?? null,
+);
+
+const aviso = computed(() =>
+  rolActivo.value && datos.value
+    ? avisoRol(rolActivo.value, datos.value.cupo, enviada.value)
+    : { tono: 'info' as const, texto: '' },
+);
+
+// Al cambiar de condominio no queda un rol ni un formulario del anterior
+watch(
+  () => session.condominioId,
+  () => {
+    seleccion.value = null;
+    solicitando.value = false;
+    enviada.value = false;
+  },
 );
 
 /** En pantallas anchas la página ocupa el alto visible y las listas se desplazan por dentro. */
@@ -123,44 +145,6 @@ function alturaPagina(offset: number, alto: number) {
   const disponible = `${alto - offset}px`;
   return $q.screen.gt.sm ? { height: disponible } : { minHeight: disponible };
 }
-
-/** Un rol es administrativo si tiene algún permiso administrativo de un módulo del plan. */
-function esAdministrativo(r: RolDemo): boolean {
-  return PERMISOS.some(
-    (p) => p.administrativo && MODULOS_DEL_PLAN.includes(p.modulo) && r.permisos.includes(p.clave),
-  );
-}
-
-const aviso = computed(() => {
-  if (enviada.value) {
-    return {
-      tono: 'exito',
-      texto: 'Solicitud enviada a la plataforma. Te avisaremos cuando el rol esté disponible.',
-    };
-  }
-  if (rolActivo.value.tipo === 'cargo') {
-    return {
-      tono: 'neutro',
-      texto:
-        'Cargo de directiva: se asigna desde Usuarios › Directiva. Sus permisos los define la plataforma.',
-    };
-  }
-  if (esAdministrativo(rolActivo.value)) {
-    return {
-      tono: 'alerta',
-      texto: `Rol administrativo: quien lo tenga cuenta para el límite de tu plan (${CUPO_ROLES.usados} de ${CUPO_ROLES.limite} usados). Los roles los define la plataforma; aquí solo los asignas.`,
-    };
-  }
-  return {
-    tono: 'info',
-    texto:
-      'Los roles los define la plataforma; aquí ves qué permite cada uno en tu plan y los asignas a tus usuarios. ¿Necesitas otro? Usa Solicitar rol.',
-  };
-});
-
-const menu = computed(() =>
-  MENU_POR_PERMISO.filter((m) => rolActivo.value.permisos.includes(m.permiso)),
-);
 
 function elegir(clave: string) {
   seleccion.value = clave;
@@ -172,7 +156,7 @@ function abrirSolicitud() {
   enviada.value = false;
 }
 
-function enviarSolicitud() {
+function solicitudEnviada() {
   solicitando.value = false;
   enviada.value = true;
 }
@@ -187,6 +171,17 @@ function enviarSolicitud() {
 }
 
 /* Lista de roles */
+.roles-estado {
+  flex-grow: 1;
+  display: flex;
+  gap: 16px;
+}
+
+.roles-skeleton {
+  flex-grow: 1;
+  border-radius: 14px;
+}
+
 .roles-lista {
   width: 300px;
   flex-shrink: 0;
