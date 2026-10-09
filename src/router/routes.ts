@@ -207,12 +207,12 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/modules/configuracion/pages/UsuariosPage.vue'),
         meta: { permiso: 'usuarios.gestionar', titulo: 'Usuarios' },
       },
-      previa(
-        'configuracion/roles',
-        'configuracion-roles',
-        'Roles',
-        () => import('@/modules/configuracion/pages/RolesPage.vue'),
-      ),
+      {
+        path: 'configuracion/roles',
+        name: 'configuracion-roles',
+        component: () => import('@/modules/configuracion/pages/RolesPage.vue'),
+        meta: { permiso: 'usuarios.gestionar', titulo: 'Roles' },
+      },
       previa(
         'configuracion/suscripcion',
         'configuracion-suscripcion',

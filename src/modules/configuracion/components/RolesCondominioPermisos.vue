@@ -1,30 +1,22 @@
 <template>
   <!-- Permisos del rol agrupados por módulo, solo lectura (mockup F1RolesCondominio) -->
   <div class="permisos">
-    <template v-for="grupo in grupos" :key="grupo.modulo">
+    <template v-for="grupo in grupos" :key="grupo.grupo">
       <div class="permisos__modulo">
-        <span class="permisos__modulo-nombre">{{ grupo.modulo.toUpperCase() }}</span>
-        <span v-if="!grupo.enPlan" class="permisos__plan">Requiere plan Completo</span>
+        <span class="permisos__modulo-nombre">{{ grupo.grupo.toUpperCase() }}</span>
       </div>
       <div v-for="p in grupo.permisos" :key="p.clave" class="permisos__fila">
         <span
           class="permisos__caja"
-          :class="{
-            'permisos__caja--fuera': !grupo.enPlan,
-            'permisos__caja--marcada': grupo.enPlan && rol.permisos.includes(p.clave),
-          }"
+          :class="{ 'permisos__caja--marcada': rol.permisos.includes(p.clave) }"
           role="checkbox"
-          :aria-checked="grupo.enPlan && rol.permisos.includes(p.clave)"
+          :aria-checked="rol.permisos.includes(p.clave)"
           aria-readonly="true"
-          :aria-disabled="!grupo.enPlan"
-          :aria-label="p.texto"
+          :aria-label="p.etiqueta"
         >
-          <q-icon v-if="!grupo.enPlan" name="sym_r_lock" size="15px" />
-          <q-icon v-else-if="rol.permisos.includes(p.clave)" name="sym_r_check" size="17px" />
+          <q-icon v-if="rol.permisos.includes(p.clave)" name="sym_r_check" size="17px" />
         </span>
-        <span class="permisos__texto" :class="{ 'permisos__texto--fuera': !grupo.enPlan }">
-          {{ p.texto }}
-        </span>
+        <span class="permisos__texto">{{ p.etiqueta }}</span>
         <span v-if="p.administrativo" class="permisos__adm">ADM</span>
         <span class="permisos__clave">{{ p.clave }}</span>
       </div>
@@ -33,22 +25,14 @@
 </template>
 
 <script setup lang="ts">
-import { MODULOS_DEL_PLAN, PERMISOS, type PermisoDemo, type RolDemo } from '../demo/roles';
+import { computed } from 'vue';
 
-defineProps<{ rol: RolDemo }>();
+import { agruparPermisos } from '../roles.logica';
+import type { PermisoCatalogo, RolCondominio } from '../services/roles.service';
 
-const grupos = PERMISOS.reduce<{ modulo: string; enPlan: boolean; permisos: PermisoDemo[] }[]>(
-  (lista, p) => {
-    const ultimo = lista[lista.length - 1];
-    if (ultimo && ultimo.modulo === p.modulo) {
-      ultimo.permisos.push(p);
-    } else {
-      lista.push({ modulo: p.modulo, enPlan: MODULOS_DEL_PLAN.includes(p.modulo), permisos: [p] });
-    }
-    return lista;
-  },
-  [],
-);
+const props = defineProps<{ rol: RolCondominio; permisos: PermisoCatalogo[] }>();
+
+const grupos = computed(() => agruparPermisos(props.permisos));
 </script>
 
 <style scoped>
@@ -81,16 +65,6 @@ const grupos = PERMISOS.reduce<{ modulo: string; enPlan: boolean; permisos: Perm
   color: var(--q-primary);
 }
 
-.permisos__plan {
-  display: inline-flex;
-  padding: 2px 8px;
-  border-radius: 999px;
-  background: #f1efe8;
-  color: var(--safic-texto-tenue);
-  font-size: 11px;
-  font-weight: 700;
-}
-
 .permisos__fila {
   display: flex;
   align-items: center;
@@ -118,22 +92,12 @@ const grupos = PERMISOS.reduce<{ modulo: string; enPlan: boolean; permisos: Perm
   background: var(--q-primary);
 }
 
-.permisos__caja--fuera {
-  border: 1px dashed var(--safic-borde-2);
-  background: var(--safic-fondo-2);
-  color: #b9b3a5;
-}
-
 .permisos__texto {
   flex-grow: 1;
   min-width: 0;
   font-size: 13px;
   font-weight: 600;
   color: var(--safic-texto);
-}
-
-.permisos__texto--fuera {
-  color: #a7a195;
 }
 
 .permisos__adm {

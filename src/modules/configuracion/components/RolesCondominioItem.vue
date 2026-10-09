@@ -8,7 +8,7 @@
     @click="emit('elegir')"
   >
     <q-icon
-      :name="`sym_r_${rol.tipo === 'cargo' ? 'lock' : rol.icono}`"
+      :name="iconoRol(rol)"
       size="20px"
       class="rol__icono"
       :class="{ 'rol__icono--adicional': rol.tipo === 'adicional' }"
@@ -16,18 +16,18 @@
     <span class="rol__textos">
       <span class="rol__nombre">{{ rol.nombre }}</span>
       <span class="rol__sub">
-        {{ rol.usuarios }} {{ rol.usuarios === 1 ? 'usuario' : 'usuarios'
-        }}{{ rol.tipo === 'cargo' ? ' · cargo' : '' }}
+        {{ textoUsuarios(rol.usuarios) }}{{ rol.tipo === 'cargo' ? ' · cargo' : '' }}
       </span>
     </span>
-    <span v-if="administrativo" class="rol__adm">ADM</span>
+    <span v-if="rol.cuenta_cupo" class="rol__adm">ADM</span>
   </button>
 </template>
 
 <script setup lang="ts">
-import type { RolDemo } from '../demo/roles';
+import { iconoRol, textoUsuarios } from '../roles.logica';
+import type { RolCondominio } from '../services/roles.service';
 
-defineProps<{ rol: RolDemo; activo: boolean; administrativo: boolean }>();
+defineProps<{ rol: RolCondominio; activo: boolean }>();
 const emit = defineEmits<{ elegir: [] }>();
 </script>
 

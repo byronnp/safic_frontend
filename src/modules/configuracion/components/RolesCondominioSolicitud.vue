@@ -1,41 +1,89 @@
 <template>
   <!-- Formulario "Solicitar un rol nuevo a la plataforma" (mockup F1RolesCondominio) -->
-  <form class="solicitud" @submit.prevent="enviar">
+  <form class="solicitud" novalidate @submit.prevent="enviar">
     <div class="solicitud__titulo">Solicitar un rol nuevo a la plataforma</div>
+    <div v-if="errorGeneral" class="solicitud__error" role="alert">{{ errorGeneral }}</div>
     <label class="solicitud__campo">
       Nombre sugerido
-      <input v-model="nombre" class="solicitud__input" />
+      <input
+        v-model="formulario.nombre"
+        class="solicitud__input"
+        maxlength="60"
+        placeholder="Jardinero"
+        :aria-invalid="!!errores.nombre"
+      />
+      <span v-if="errores.nombre" class="solicitud__error">{{ errores.nombre }}</span>
     </label>
     <label class="solicitud__campo">
       ¿Qué debe poder hacer?
-      <input v-model="descripcion" class="solicitud__input solicitud__input--chico" />
+      <input
+        v-model="formulario.descripcion"
+        class="solicitud__input solicitud__input--chico"
+        maxlength="500"
+        placeholder="Ver la agenda de áreas y reportar incidencias de áreas verdes"
+        :aria-invalid="!!errores.descripcion"
+      />
+      <span v-if="errores.descripcion" class="solicitud__error">{{ errores.descripcion }}</span>
     </label>
-    <div v-if="error" class="solicitud__error" role="alert">{{ error }}</div>
     <div class="solicitud__acciones">
-      <button type="button" class="solicitud__cancelar" @click="emit('cancelar')">Cancelar</button>
-      <button type="submit" class="solicitud__enviar">Enviar solicitud</button>
+      <button
+        type="button"
+        class="solicitud__cancelar"
+        :disabled="solicitar.isPending.value"
+        @click="emit('cancelar')"
+      >
+        Cancelar
+      </button>
+      <button type="submit" class="solicitud__enviar" :disabled="solicitar.isPending.value">
+        {{ solicitar.isPending.value ? 'Enviando…' : 'Enviar solicitud' }}
+      </button>
     </div>
   </form>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { reactive, ref } from 'vue';
 
-import { SOLICITUD_EJEMPLO } from '../demo/roles';
+import { aApiError } from '@/core/api/errors';
 
-const emit = defineEmits<{ cancelar: []; enviar: [] }>();
+import { useSolicitarRol } from '../composables/useRoles';
+import { validarSolicitud } from '../roles.logica';
+import type { SolicitarRol } from '../services/roles.service';
 
-const nombre = ref<string>(SOLICITUD_EJEMPLO.nombre);
-const descripcion = ref<string>(SOLICITUD_EJEMPLO.descripcion);
-const error = ref('');
+const emit = defineEmits<{ cancelar: []; enviada: [] }>();
 
-function enviar() {
-  if (!nombre.value.trim() || !descripcion.value.trim()) {
-    error.value = 'Escribe el nombre y lo que debe poder hacer el rol.';
+const solicitar = useSolicitarRol();
+const formulario = reactive<SolicitarRol>({ nombre: '', descripcion: '' });
+const errores = reactive<{ nombre?: string | undefined; descripcion?: string | undefined }>({});
+const errorGeneral = ref<string | null>(null);
+
+async function enviar(): Promise<void> {
+  errores.nombre = undefined;
+  errores.descripcion = undefined;
+  errorGeneral.value = null;
+
+  Object.assign(errores, validarSolicitud(formulario));
+  if (errores.nombre || errores.descripcion) {
     return;
   }
-  error.value = '';
-  emit('enviar');
+
+  try {
+    await solicitar.mutateAsync({
+      nombre: formulario.nombre.trim(),
+      descripcion: formulario.descripcion.trim(),
+    });
+    emit('enviada');
+  } catch (e) {
+    const apiError = aApiError(e);
+    errores.nombre = apiError.campo('nombre');
+    errores.descripcion = apiError.campo('descripcion');
+    if (!errores.nombre && !errores.descripcion) {
+      errorGeneral.value =
+        apiError.estado === 429
+          ? 'Enviaste demasiadas solicitudes. Intenta de nuevo en un rato.'
+          : apiError.mensaje;
+    }
+  }
 }
 </script>
 
