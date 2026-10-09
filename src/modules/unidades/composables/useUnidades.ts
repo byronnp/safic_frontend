@@ -4,6 +4,7 @@ import { computed, type Ref } from 'vue';
 import type { ApiError } from '@/core/api/errors';
 import { useSessionStore } from '@/stores/session';
 
+import { clavesBloques } from './useBloques';
 import {
   unidadesService,
   type AsignarOcupante,
@@ -14,6 +15,7 @@ import {
   type Mascota,
   type Ocupante,
   type PaginaUnidades,
+  type ResultadoImportacion,
   type ResumenUnidades,
   type Unidad,
   type UnidadDetalle,
@@ -62,6 +64,24 @@ export function useCrearUnidad() {
     // Lista y resumen (cupo, suma de alícuotas) cambian con cada alta
     onSuccess: () =>
       queryClient.invalidateQueries({ queryKey: clavesUnidades.todas(session.condominioId) }),
+  });
+}
+
+export function useImportarUnidades() {
+  const session = useSessionStore();
+  const queryClient = useQueryClient();
+
+  return useMutation<ResultadoImportacion, ApiError, { archivo: File; confirmar: boolean }>({
+    mutationFn: ({ archivo, confirmar }) => unidadesService.importar(archivo, confirmar),
+    // Solo la creación cambia la lista, el resumen (cupo) y los bloques; la vista previa no guarda nada
+    onSuccess: (resultado) => {
+      if (resultado.confirmado) {
+        void queryClient.invalidateQueries({
+          queryKey: clavesUnidades.todas(session.condominioId),
+        });
+        void queryClient.invalidateQueries({ queryKey: clavesBloques.todos(session.condominioId) });
+      }
+    },
   });
 }
 

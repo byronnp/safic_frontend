@@ -1,3 +1,5 @@
+import { isAxiosError } from 'axios';
+
 import { api } from '@/core/api/client';
 import type { ApiRespuesta, Paginacion } from '@/core/api/types';
 
@@ -34,6 +36,26 @@ export interface UnidadDetalle extends Unidad {
   ocupantes: Ocupante[];
   vehiculos: Vehiculo[];
   mascotas: Mascota[];
+}
+
+export interface ErrorImportacion {
+  /** Número de fila en Excel (la 1 son los títulos). */
+  fila: number;
+  campo: string;
+  mensaje: string;
+}
+
+/** POST /unidades/importacion (vista previa o creación). */
+export interface ResultadoImportacion {
+  confirmado: boolean;
+  total_filas: number;
+  validas: number;
+  /** Filas con al menos un error. */
+  con_errores: number;
+  errores: ErrorImportacion[];
+  bloques_nuevos: string[];
+  cupo: { total: number; registradas: number; nuevas: number; alcanza: boolean };
+  creadas: number;
 }
 
 export type TipoVehiculo = 'auto' | 'moto';
@@ -216,6 +238,44 @@ export const unidadesService = {
 
   async eliminarMascota(id: number): Promise<void> {
     await api.delete(`/mascotas/${id}`);
+  },
+
+  /** Excel de ejemplo con las columnas del método de cobro del condominio. */
+  async descargarPlantilla(): Promise<Blob> {
+    try {
+      const { data } = await api.get<Blob>('/unidades/importacion/plantilla', {
+        responseType: 'blob',
+      });
+      return data;
+    } catch (error) {
+      // Con responseType blob el cuerpo del error también llega como Blob: se lee para
+      // conservar el código y el mensaje de la API.
+      if (isAxiosError(error) && error.response?.data instanceof Blob) {
+        try {
+          error.response.data = JSON.parse(await error.response.data.text());
+        } catch {
+          // No era JSON: queda el error genérico
+        }
+      }
+      throw error;
+    }
+  },
+
+  /**
+   * Sin `confirmar` solo valida (vista previa, no guarda nada). Con `confirmar`
+   * crea todas las unidades o ninguna.
+   */
+  async importar(archivo: File, confirmar: boolean): Promise<ResultadoImportacion> {
+    const formulario = new FormData();
+    formulario.append('archivo', archivo);
+    if (confirmar) {
+      formulario.append('confirmar', '1');
+    }
+    const { data } = await api.post<ApiRespuesta<ResultadoImportacion>>(
+      '/unidades/importacion',
+      formulario,
+    );
+    return data.data;
   },
 
   async finalizarOcupante(ocupanteId: number, fechaFin: string): Promise<Ocupante> {

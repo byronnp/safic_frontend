@@ -2,7 +2,12 @@
   <q-page class="safic-main unidades">
     <PaginaEncabezado miga="Inicio / Unidades" titulo="Unidades">
       <template #acciones>
-        <button type="button" class="unidades-boton unidades-boton--secundario" @click="importar">
+        <button
+          v-if="puedeEditar"
+          type="button"
+          class="unidades-boton unidades-boton--secundario"
+          @click="importar"
+        >
           <q-icon :name="ICONOS.importar" size="18px" />Importar Excel
         </button>
         <router-link v-if="puedeEditar" :to="{ name: 'unidades-nueva' }" class="unidades-boton">
@@ -171,6 +176,7 @@ import { useSessionStore } from '@/stores/session';
 import { refDebounced } from '@/utils/debounce';
 import { formatoPorcentaje } from '@/utils/formato';
 
+import ImportarUnidadesDialog from '../components/ImportarUnidadesDialog.vue';
 import UnidadesFiltro, { type OpcionFiltro } from '../components/UnidadesFiltro.vue';
 import { useBloques } from '../composables/useBloques';
 import { useResumenUnidades, useUnidades } from '../composables/useUnidades';
@@ -303,7 +309,7 @@ function limpiar(): void {
 }
 
 function importar(): void {
-  $q.notify({ type: 'info', message: 'La importación desde Excel estará disponible pronto.' });
+  $q.dialog({ component: ImportarUnidadesDialog });
 }
 </script>
 
