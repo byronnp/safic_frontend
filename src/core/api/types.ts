@@ -31,7 +31,10 @@ export interface ApiErrorCuerpo {
 
 /** Apariencia del condominio (pantalla Apariencia). Todos los campos son opcionales. */
 export interface MarcaCondominio {
+  /** El logo de fondo claro (o el oscuro si es el único). */
   logo_url?: string | null;
+  logo_claro_url?: string | null;
+  logo_oscuro_url?: string | null;
   color_primario?: string | null;
   color_acento?: string | null;
 }

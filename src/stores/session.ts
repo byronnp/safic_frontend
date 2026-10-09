@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 
 import { authService } from '@/core/auth/auth.service';
-import type { CondominioResumen, RespuestaToken, Usuario } from '@/core/api/types';
+import type { CondominioResumen, MarcaCondominio, RespuestaToken, Usuario } from '@/core/api/types';
 
 const CLAVE_CONDOMINIO = 'safic.condominio';
 
@@ -147,6 +147,21 @@ export const useSessionStore = defineStore('session', () => {
     }
   }
 
+  /**
+   * Refleja en la sesión lo que el administrador acaba de guardar (nombre, colores y logos)
+   * para que el tema y el menú cambien sin volver a iniciar sesión.
+   */
+  function aplicarDatosCondominio(
+    id: number,
+    datos: { nombre: string; marca: MarcaCondominio },
+  ): void {
+    const condominio = usuario.value?.condominios.find((c) => c.id === id);
+    if (condominio) {
+      condominio.nombre = datos.nombre;
+      condominio.marca = datos.marca;
+    }
+  }
+
   function limpiar(): void {
     accessToken.value = null;
     usuario.value = null;
@@ -175,6 +190,7 @@ export const useSessionStore = defineStore('session', () => {
     refrescar,
     restaurar,
     cerrarSesion,
+    aplicarDatosCondominio,
     limpiar,
   };
 });

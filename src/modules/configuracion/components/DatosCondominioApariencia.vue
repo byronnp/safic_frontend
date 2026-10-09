@@ -5,19 +5,51 @@
       <div>
         <div class="panel__titulo">Logo</div>
         <div class="panel__ayuda">
-          PNG o SVG, máx. 1 MB. Se usa en el menú, la app, recibos y correos.
+          PNG, máx. 1 MB. Se usa en el menú, la app, recibos y correos.
         </div>
       </div>
+      <div v-if="errorLogo" class="safic-alerta" role="alert">{{ errorLogo }}</div>
       <div class="logos">
-        <div class="logos__caja logos__caja--claro">
-          <div class="logo-grande" :style="estiloAcento">{{ LOGO_INICIALES }}</div>
-          <div class="logos__texto">Fondo claro · Cambiar</div>
-        </div>
-        <div class="logos__caja logos__caja--oscuro">
-          <div class="logo-grande" :style="estiloAcento">{{ LOGO_INICIALES }}</div>
-          <div class="logos__texto logos__texto--oscuro">Fondo oscuro · Cambiar</div>
+        <div v-for="v in VARIANTES" :key="v.valor" class="logos__celda">
+          <button
+            type="button"
+            class="logos__caja"
+            :class="`logos__caja--${v.valor}`"
+            :aria-label="`${urlLogo(v.valor) ? 'Cambiar' : 'Subir'} el logo para ${v.etiqueta.toLowerCase()}`"
+            :disabled="ocupado"
+            @click="elegirArchivo(v.valor)"
+          >
+            <img
+              v-if="urlLogo(v.valor)"
+              :src="urlLogo(v.valor)!"
+              alt=""
+              class="logo-grande logo-grande--img"
+            />
+            <div v-else class="logo-grande" :style="estiloAcento">{{ iniciales }}</div>
+            <span class="logos__texto" :class="{ 'logos__texto--oscuro': v.valor === 'oscuro' }">
+              {{ v.etiqueta }} · {{ urlLogo(v.valor) ? 'Cambiar' : 'Subir' }}
+            </span>
+          </button>
+          <button
+            v-if="urlLogo(v.valor)"
+            type="button"
+            class="logos__quitar"
+            :disabled="ocupado"
+            @click="quitarLogo(v.valor)"
+          >
+            Quitar
+          </button>
         </div>
       </div>
+      <input
+        ref="entradaArchivo"
+        type="file"
+        accept="image/png"
+        class="logos__entrada"
+        tabindex="-1"
+        aria-hidden="true"
+        @change="archivoElegido"
+      />
 
       <div>
         <div class="panel__titulo">Color principal</div>
@@ -65,6 +97,7 @@
         />
       </div>
 
+      <div v-if="errorGeneral" class="safic-alerta" role="alert">{{ errorGeneral }}</div>
       <div class="col-grow" />
       <div class="panel__nota">
         Los colores de estado (pagado, pendiente, vencido) no cambian para que signifiquen lo mismo
@@ -76,7 +109,7 @@
           type="button"
           class="btn-guardar"
           :style="{ background: valido ? primario : '#B9B3A5' }"
-          :disabled="!valido"
+          :disabled="!valido || actualizar.isPending.value"
           @click="guardar"
         >
           {{ guardado ? 'Guardado · aplicado' : 'Guardar apariencia' }}
@@ -86,17 +119,21 @@
 
     <DatosCondominioVistaPrevia
       :colores="colores"
-      :logo="LOGO_INICIALES"
-      :nombre="NOMBRE_CORTO"
-      :nombre-completo="DATOS_GENERALES.nombre"
+      :logo="iniciales"
+      :logo-oscuro-url="datos.marca.logo_oscuro_url"
+      :logo-claro-url="datos.marca.logo_claro_url"
+      :nombre="datos.nombre"
+      :nombre-completo="datos.nombre"
       :filas="FILAS_VISTA_PREVIA"
     />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
 import { useQuasar } from 'quasar';
+import { computed, ref } from 'vue';
+
+import { aApiError } from '@/core/api/errors';
 import {
   asegurarContraste,
   contraste,
@@ -106,28 +143,51 @@ import {
   rgbAHex,
 } from '@/core/theme/colors';
 import type { Rgb } from '@/core/theme/colors';
-import DatosCondominioVistaPrevia from './DatosCondominioVistaPrevia.vue';
-import type { ColoresVistaPrevia } from './DatosCondominioVistaPrevia.vue';
+import { iniciales as inicialesDe } from '@/core/theme/avatar';
+
 import {
-  APARIENCIA_GUARDADA,
+  useActualizarDatosCondominio,
+  useQuitarLogo,
+  useSubirLogo,
+} from '../composables/useDatosCondominio';
+import {
+  aparienciaDesde,
   APARIENCIA_PREDETERMINADA,
-  DATOS_GENERALES,
   FILAS_VISTA_PREVIA,
-  LOGO_INICIALES,
-  NOMBRE_CORTO,
+  motivoLogoInvalido,
   PALETA_ACENTO,
   PALETA_PRIMARIO,
-} from '../demo/datos-condominio';
+  peticionApariencia,
+} from '../datos-condominio.logica';
+import type { DatosCondominio, VarianteLogo } from '../services/condominio.service';
+import DatosCondominioVistaPrevia from './DatosCondominioVistaPrevia.vue';
+import type { ColoresVistaPrevia } from './DatosCondominioVistaPrevia.vue';
+
+const props = defineProps<{ datos: DatosCondominio }>();
 
 const $q = useQuasar();
+const actualizar = useActualizarDatosCondominio();
+const subirLogo = useSubirLogo();
+const quitarLogoMutacion = useQuitarLogo();
 
 const BLANCO = '#FFFFFF';
 const NEGRO: Rgb = { r: 0, g: 0, b: 0 };
 const BLANCO_RGB: Rgb = { r: 255, g: 255, b: 255 };
 
-const hex = ref(APARIENCIA_GUARDADA.primario);
-const acento = ref(APARIENCIA_GUARDADA.acento);
+const VARIANTES: { valor: VarianteLogo; etiqueta: string }[] = [
+  { valor: 'claro', etiqueta: 'Fondo claro' },
+  { valor: 'oscuro', etiqueta: 'Fondo oscuro' },
+];
+
+const inicial = aparienciaDesde(props.datos);
+const hex = ref(inicial.primario);
+const acento = ref(inicial.acento);
 const guardado = ref(false);
+const errorGeneral = ref<string | null>(null);
+const errorLogo = ref<string | null>(null);
+
+const iniciales = computed(() => inicialesDe(props.datos.nombre));
+const ocupado = computed(() => subirLogo.isPending.value || quitarLogoMutacion.isPending.value);
 
 /** Mezcla `hex` con `destino` en la proporción `k` (0 a 1). Solo para la vista previa. */
 function mezclar(color: string, destino: Rgb, k: number): string {
@@ -181,12 +241,12 @@ const textoContraste = computed(() => {
   if (!valido.value) {
     return 'Escribe un color hex válido, por ejemplo #1F4C9A.';
   }
-  const inicial = formato(contraste(base.value, BLANCO));
+  const inicialTxt = formato(contraste(base.value, BLANCO));
   if (ajustado.value) {
     const final = formato(contraste(primario.value, BLANCO));
-    return `Contraste ${inicial}:1 con texto blanco: poco legible. Se usará ${primario.value} (${final}:1) para botones y texto; el menú conserva tu tono.`;
+    return `Contraste ${inicialTxt}:1 con texto blanco: poco legible. Se usará ${primario.value} (${final}:1) para botones y texto; el menú conserva tu tono.`;
   }
-  return `Contraste ${inicial}:1 con texto blanco: cumple WCAG AA (mínimo 4,5:1).`;
+  return `Contraste ${inicialTxt}:1 con texto blanco: cumple WCAG AA (mínimo 4,5:1).`;
 });
 
 function elegirPrimario(color: string) {
@@ -205,13 +265,69 @@ function restablecer() {
   guardado.value = false;
 }
 
-function guardar() {
-  if (!valido.value) {
+async function guardar() {
+  if (!valido.value || !esHexValido(acento.value)) {
+    errorGeneral.value = 'Escribe colores hex válidos, por ejemplo #1F4C9A.';
     return;
   }
-  // Vista previa: no cambia el tema real de la aplicación.
-  guardado.value = true;
-  $q.notify({ type: 'positive', message: 'Apariencia guardada.' });
+  errorGeneral.value = null;
+  try {
+    await actualizar.mutateAsync(peticionApariencia(hex.value, acento.value));
+    guardado.value = true;
+    $q.notify({ type: 'positive', message: 'Apariencia guardada.' });
+  } catch (error) {
+    const apiError = aApiError(error);
+    errorGeneral.value =
+      apiError.campo('color_primario') ?? apiError.campo('color_acento') ?? apiError.mensaje;
+  }
+}
+
+// ---------- Logos ----------
+const entradaArchivo = ref<HTMLInputElement | null>(null);
+let varianteElegida: VarianteLogo = 'claro';
+
+function urlLogo(variante: VarianteLogo): string | null {
+  return variante === 'claro'
+    ? props.datos.marca.logo_claro_url
+    : props.datos.marca.logo_oscuro_url;
+}
+
+function elegirArchivo(variante: VarianteLogo): void {
+  varianteElegida = variante;
+  errorLogo.value = null;
+  entradaArchivo.value?.click();
+}
+
+async function archivoElegido(evento: Event): Promise<void> {
+  const entrada = evento.target as HTMLInputElement;
+  const archivo = entrada.files?.[0];
+  entrada.value = ''; // permite volver a elegir el mismo archivo
+  if (!archivo) {
+    return;
+  }
+
+  const motivo = motivoLogoInvalido(archivo);
+  if (motivo) {
+    errorLogo.value = motivo;
+    return;
+  }
+
+  try {
+    await subirLogo.mutateAsync({ variante: varianteElegida, archivo });
+    $q.notify({ type: 'positive', message: 'Logo guardado.' });
+  } catch (error) {
+    const apiError = aApiError(error);
+    errorLogo.value = apiError.campo('archivo') ?? apiError.mensaje;
+  }
+}
+
+async function quitarLogo(variante: VarianteLogo): Promise<void> {
+  errorLogo.value = null;
+  try {
+    await quitarLogoMutacion.mutateAsync(variante);
+  } catch (error) {
+    errorLogo.value = aApiError(error).mensaje;
+  }
 }
 </script>
 
@@ -263,6 +379,13 @@ function guardar() {
   gap: 10px;
 }
 
+.logos__celda {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: stretch;
+}
+
 .logos__caja {
   border-radius: 12px;
   height: 84px;
@@ -271,6 +394,45 @@ function guardar() {
   align-items: center;
   justify-content: center;
   gap: 4px;
+  font-family: inherit;
+  cursor: pointer;
+  padding: 0;
+}
+
+.logos__caja:focus-visible {
+  outline: 3px solid var(--q-accent);
+  outline-offset: 2px;
+}
+
+.logos__caja:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.logos__quitar {
+  align-self: center;
+  border: none;
+  background: transparent;
+  color: var(--safic-texto-suave);
+  font-size: 12px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  text-decoration: underline;
+  min-height: 24px;
+}
+
+.logos__entrada {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.logo-grande--img {
+  object-fit: contain;
+  background: transparent;
 }
 
 .logos__caja--claro {

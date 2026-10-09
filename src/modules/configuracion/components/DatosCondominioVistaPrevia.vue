@@ -6,7 +6,8 @@
       <div class="web">
         <div class="web__menu" :style="{ background: colores.menu }">
           <div class="web__marca">
-            <div class="logo logo--sm" :style="estiloLogo">{{ logo }}</div>
+            <img v-if="logoOscuroUrl" :src="logoOscuroUrl" alt="" class="logo logo--sm logo--img" />
+            <div v-else class="logo logo--sm" :style="estiloLogo">{{ logo }}</div>
             <span class="web__nombre">{{ nombre }}</span>
           </div>
           <div class="web__item" :style="{ color: colores.menuTexto }">
@@ -54,7 +55,15 @@
 
           <div class="recibo">
             <div class="recibo__cabecera" :style="{ background: colores.primario }">
-              <div class="logo logo--recibo" :style="{ color: colores.primario }">{{ logo }}</div>
+              <img
+                v-if="logoClaroUrl"
+                :src="logoClaroUrl"
+                alt=""
+                class="logo logo--recibo logo--img"
+              />
+              <div v-else class="logo logo--recibo" :style="{ color: colores.primario }">
+                {{ logo }}
+              </div>
               <div class="col-grow">
                 <div class="recibo__numero">RECIBO N.º 000482</div>
                 <div class="recibo__condominio">{{ nombreCompleto }}</div>
@@ -110,7 +119,14 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { FilaVistaPrevia } from '../demo/datos-condominio';
+
+export type EstadoVistaPrevia = 'pagado' | 'pendiente' | 'vencido';
+
+export interface FilaVistaPrevia {
+  texto: string;
+  estado: EstadoVistaPrevia;
+  etiqueta: string;
+}
 
 export interface ColoresVistaPrevia {
   /** Primario ya ajustado al contraste mínimo. */
@@ -125,7 +141,11 @@ export interface ColoresVistaPrevia {
 
 const props = defineProps<{
   colores: ColoresVistaPrevia;
+  /** Iniciales que se muestran cuando el condominio no subió logo. */
   logo: string;
+  /** Logo para el menú (fondo oscuro) y para el recibo (fondo claro); null = iniciales. */
+  logoOscuroUrl?: string | null;
+  logoClaroUrl?: string | null;
   nombre: string;
   nombreCompleto: string;
   filas: FilaVistaPrevia[];
@@ -173,6 +193,11 @@ const estiloLogo = estiloAcento;
   justify-content: center;
   font-weight: 800;
   flex-shrink: 0;
+}
+
+.logo--img {
+  object-fit: contain;
+  background: transparent;
 }
 
 .logo--sm {

@@ -183,12 +183,12 @@ const routes: RouteRecordRaw[] = [
       ),
 
       // Configuración del condominio
-      previa(
-        'configuracion/condominio',
-        'configuracion-condominio',
-        'Datos del condominio',
-        () => import('@/modules/configuracion/pages/DatosCondominioPage.vue'),
-      ),
+      {
+        path: 'configuracion/condominio',
+        name: 'configuracion-condominio',
+        component: () => import('@/modules/configuracion/pages/DatosCondominioPage.vue'),
+        meta: { permiso: 'condominio.editar', titulo: 'Datos del condominio' },
+      },
       previa(
         'configuracion/amenidades',
         'configuracion-amenidades',
