@@ -2,21 +2,24 @@
   <q-page class="menu">
     <PaginaEncabezado miga="Plataforma / Acceso / Menú del sistema" titulo="Menú del sistema">
       <template #acciones>
-        <button type="button" class="menu__boton" @click="agregar('g')">Nuevo grupo</button>
-        <button type="button" class="menu__boton menu__boton--primario-borde" @click="agregar('i')">
-          Nuevo ítem
+        <button type="button" class="menu__boton" :disabled="ocupado" @click="nuevo(true)">
+          Nuevo grupo
         </button>
         <button
           type="button"
-          class="menu__boton"
-          :class="pendiente ? 'menu__boton--publicar' : 'menu__boton--apagado'"
-          :aria-disabled="!pendiente"
-          @click="publicar"
+          class="menu__boton menu__boton--primario-borde"
+          :disabled="ocupado"
+          @click="nuevo(false)"
         >
-          {{ publicado ? 'Publicado' : pendiente ? 'Publicar cambios' : 'Sin cambios' }}
+          Nueva pantalla
         </button>
       </template>
     </PaginaEncabezado>
+
+    <div class="menu__aviso">
+      Los cambios rigen al instante para todos los condominios. Los ítems no se borran: se
+      desactivan.
+    </div>
 
     <div class="safic-pestanas" role="tablist" aria-label="Menú a editar">
       <button
@@ -27,7 +30,8 @@
         class="safic-pestana"
         :class="{ 'safic-pestana--activa': a.valor === ambito }"
         :aria-selected="a.valor === ambito"
-        @click="ambito = a.valor"
+        :disabled="ocupado"
+        @click="cambiarAmbito(a.valor)"
       >
         {{ a.etiqueta }}
       </button>
@@ -39,164 +43,235 @@
         <div class="arbol__desplazable">
           <div class="arbol__fila arbol__cabecera">
             <div>ÍTEM</div>
-            <div>PERMISO · MÓDULO</div>
+            <div>PERMISO · PERFILES</div>
             <div>ACTIVO</div>
             <div class="text-right">ORDEN</div>
           </div>
-          <div
-            v-for="(x, idx) in items"
-            :key="x.clave"
-            class="arbol__fila arbol__registro"
-            :class="{
-              'arbol__registro--activo': idx === seleccion,
-              'arbol__registro--grupo': x.tipo === 'g',
-              'arbol__registro--inactivo': !x.activo,
-            }"
-          >
-            <button
-              type="button"
-              class="arbol__item"
-              :aria-pressed="idx === seleccion"
-              @click="seleccion = idx"
-            >
-              <span v-if="x.grupo" class="arbol__sangria" />
-              <q-icon :name="`sym_r_${x.icono}`" size="20px" class="arbol__icono" />
-              <span class="arbol__etiqueta">{{ x.etiqueta }}</span>
-            </button>
-            <div class="arbol__permiso">
-              {{ x.tipo === 'g' ? 'Grupo' : x.permiso || 'Sin permiso' }}<br />{{
-                x.tipo === 'g' ? (x.modulo ? `Módulo ${x.modulo}` : 'Siempre') : x.modulo || '—'
-              }}
-            </div>
-            <div>
-              <MenuSistemaInterruptor
-                :model-value="x.activo"
-                :etiqueta="`Activo: ${x.etiqueta}`"
-                @update:model-value="alternarActivo(idx)"
-              />
-            </div>
-            <div class="arbol__orden">
-              <button
-                type="button"
-                class="arbol__flecha"
-                :aria-label="`Subir ${x.etiqueta}`"
-                @click="mover(idx, -1)"
-              >
-                <q-icon name="sym_r_arrow_upward" size="18px" />
-              </button>
-              <button
-                type="button"
-                class="arbol__flecha"
-                :aria-label="`Bajar ${x.etiqueta}`"
-                @click="mover(idx, 1)"
-              >
-                <q-icon name="sym_r_arrow_downward" size="18px" />
-              </button>
-            </div>
+
+          <div v-if="consulta.isPending.value" class="arbol__estado" aria-busy="true">
+            <q-skeleton v-for="i in 6" :key="i" type="rect" height="36px" class="q-mb-sm" />
           </div>
+          <div v-else-if="consulta.isError.value" class="arbol__estado safic-alerta" role="alert">
+            {{ consulta.error.value?.mensaje }}
+            <q-btn flat no-caps dense label="Reintentar" @click="consulta.refetch()" />
+          </div>
+          <template v-else>
+            <div v-if="!items.length" class="arbol__vacio">
+              Este menú está vacío. Agrega un grupo o una pantalla.
+            </div>
+            <div
+              v-for="x in items"
+              :key="x.id"
+              class="arbol__fila arbol__registro"
+              :class="{
+                'arbol__registro--activo': x.id === seleccion,
+                'arbol__registro--grupo': x.es_grupo,
+                'arbol__registro--inactivo': !x.activo,
+              }"
+            >
+              <button
+                type="button"
+                class="arbol__item"
+                :aria-pressed="x.id === seleccion"
+                @click="seleccionar(x)"
+              >
+                <span v-if="x.padre_id !== null" class="arbol__sangria" />
+                <q-icon :name="x.icono" size="20px" class="arbol__icono" />
+                <span class="arbol__etiqueta">{{ x.etiqueta }}</span>
+              </button>
+              <div class="arbol__permiso">
+                {{ x.es_grupo ? 'Grupo' : x.permiso || 'Sin permiso' }}<br />{{
+                  x.es_grupo ? 'Se muestra si hay hijos' : textoPerfiles(x.roles)
+                }}
+              </div>
+              <div>
+                <MenuSistemaInterruptor
+                  :model-value="x.activo"
+                  :etiqueta="`Activo: ${x.etiqueta}`"
+                  :disabled="ocupado"
+                  @update:model-value="alternarActivo(x)"
+                />
+              </div>
+              <div class="arbol__orden">
+                <button
+                  type="button"
+                  class="arbol__flecha"
+                  :aria-label="`Subir ${x.etiqueta}`"
+                  :disabled="ocupado || !puedeMover(items, x, 'arriba')"
+                  @click="mover(x, 'arriba')"
+                >
+                  <q-icon name="sym_r_arrow_upward" size="18px" />
+                </button>
+                <button
+                  type="button"
+                  class="arbol__flecha"
+                  :aria-label="`Bajar ${x.etiqueta}`"
+                  :disabled="ocupado || !puedeMover(items, x, 'abajo')"
+                  @click="mover(x, 'abajo')"
+                >
+                  <q-icon name="sym_r_arrow_downward" size="18px" />
+                </button>
+              </div>
+            </div>
+          </template>
         </div>
       </section>
 
       <!-- Editor del ítem seleccionado -->
-      <aside v-if="actual" class="editor" aria-label="Editar ítem">
-        <div class="editor__tipo">{{ tipoEditor }}</div>
-        <label class="editor__campo">
-          Etiqueta
-          <input v-model="actual.etiqueta" class="editor__control" @input="marcar" />
-        </label>
-        <div id="menu-iconos-etiqueta" class="editor__campo">Ícono</div>
-        <div class="editor__iconos" role="radiogroup" aria-labelledby="menu-iconos-etiqueta">
-          <button
-            v-for="n in ICONOS_MENU"
-            :key="n"
-            type="button"
-            role="radio"
-            class="editor__icono"
-            :class="{ 'editor__icono--activo': actual.icono === n }"
-            :aria-checked="actual.icono === n"
-            :aria-label="n"
-            @click="elegirIcono(n)"
-          >
-            <q-icon :name="`sym_r_${n}`" size="20px" />
-          </button>
-        </div>
-        <template v-if="actual.tipo === 'i'">
+      <aside class="editor" aria-label="Editar ítem">
+        <div v-if="errorGeneral" class="safic-alerta" role="alert">{{ errorGeneral }}</div>
+        <template v-if="borrador">
+          <div class="editor__tipo">{{ tipoEditor }}</div>
           <label class="editor__campo">
-            Pantalla (del manifiesto de rutas)
-            <select
-              v-model="actual.ruta"
-              class="editor__control editor__control--select"
-              @change="marcar"
-            >
-              <option v-for="r in rutas" :key="r.ruta" :value="r.ruta">
-                {{ r.ruta }}&nbsp;&nbsp;({{ r.etiqueta }})
-              </option>
-            </select>
+            Etiqueta
+            <input v-model="borrador.etiqueta" class="editor__control" maxlength="60" />
+            <span v-if="errores.etiqueta" class="editor__error">{{ errores.etiqueta }}</span>
           </label>
-          <div class="editor__par">
+          <div id="menu-iconos-etiqueta" class="editor__campo">Ícono</div>
+          <div class="editor__iconos" role="radiogroup" aria-labelledby="menu-iconos-etiqueta">
+            <button
+              v-for="n in iconosOfrecidos(borrador.icono)"
+              :key="n"
+              type="button"
+              role="radio"
+              class="editor__icono"
+              :class="{ 'editor__icono--activo': borrador.icono === n }"
+              :aria-checked="borrador.icono === n"
+              :aria-label="n.replace('sym_r_', '')"
+              @click="borrador.icono = n"
+            >
+              <q-icon :name="n" size="20px" />
+            </button>
+          </div>
+          <span v-if="errores.icono" class="editor__error">{{ errores.icono }}</span>
+
+          <template v-if="!borrador.esGrupo">
+            <label class="editor__campo">
+              Pantalla
+              <select v-model="borrador.ruta" class="editor__control editor__control--select">
+                <option value="" disabled>Elige la pantalla</option>
+                <option v-for="r in pantallas" :key="r.ruta" :value="r.ruta">
+                  {{ r.ruta }}&nbsp;&nbsp;({{ r.titulo }})
+                </option>
+              </select>
+              <span v-if="errores.ruta" class="editor__error">{{ errores.ruta }}</span>
+            </label>
+            <label v-if="creando" class="editor__campo">
+              Grupo
+              <select v-model="borrador.padreId" class="editor__control editor__control--select">
+                <option :value="null">Sin grupo (primer nivel)</option>
+                <option v-for="g in grupos" :key="g.id" :value="g.id">{{ g.etiqueta }}</option>
+              </select>
+              <span v-if="errores.padre_id" class="editor__error">{{ errores.padre_id }}</span>
+            </label>
             <label class="editor__campo">
               Permiso requerido
-              <select
-                v-model="actual.permiso"
-                class="editor__control editor__control--select editor__control--chico"
-                @change="marcar"
-              >
+              <select v-model="borrador.permiso" class="editor__control editor__control--select">
                 <option value="">Ninguno</option>
-                <option v-for="p in permisos" :key="p" :value="p">{{ p }}</option>
+                <option v-for="p in datos?.permisos ?? []" :key="p.clave" :value="p.clave">
+                  {{ p.etiqueta }} ({{ p.clave }})
+                </option>
               </select>
+              <span v-if="errores.permiso" class="editor__error">{{ errores.permiso }}</span>
             </label>
-            <label class="editor__campo">
-              Módulo requerido
-              <select
-                v-model="actual.modulo"
-                class="editor__control editor__control--select editor__control--chico"
-                @change="marcar"
-              >
-                <option value="">Ninguno</option>
-                <option v-for="m in modulos" :key="m" :value="m">{{ m }}</option>
-              </select>
-            </label>
+            <fieldset class="editor__campo">
+              <legend class="editor__campo">Perfiles que lo ven</legend>
+              <div class="editor__perfiles">
+                <q-checkbox
+                  v-for="r in datos?.roles ?? []"
+                  :key="r.clave"
+                  v-model="borrador.roles"
+                  :val="r.clave"
+                  :label="r.nombre"
+                  dense
+                />
+              </div>
+              <span v-if="errores.roles" class="editor__error">{{ errores.roles }}</span>
+            </fieldset>
+          </template>
+
+          <div class="editor__nota">
+            <template v-if="borrador.esGrupo">
+              Un grupo solo se muestra si el perfil ve al menos una de sus pantallas.
+            </template>
+            <template v-else-if="borrador.permiso">
+              Ocultar esta pantalla no quita el acceso: la API sigue exigiendo el permiso
+              {{ borrador.permiso }}. Sin perfiles asignados, nadie la ve.
+            </template>
+            <template v-else>
+              Sin permiso requerido: la ven los perfiles marcados. Sin perfiles asignados, nadie la
+              ve.
+            </template>
+          </div>
+
+          <div class="editor__acciones">
+            <q-btn
+              v-if="creando"
+              flat
+              no-caps
+              label="Cancelar"
+              :disable="ocupado"
+              @click="cancelar"
+            />
+            <q-btn
+              unelevated
+              no-caps
+              color="primary"
+              class="safic-btn"
+              :label="creando ? 'Agregar al menú' : 'Guardar cambios'"
+              :loading="guardando"
+              :disable="ocupado || (!creando && !hayCambios)"
+              @click="guardar"
+            />
           </div>
         </template>
-        <div class="editor__nota">
-          <template v-if="actual.tipo === 'g'">
-            Un grupo solo se muestra si el usuario ve al menos uno de sus ítems.
-          </template>
-          <template v-else-if="actual.permiso">
-            Ocultar este ítem no quita el acceso: la API sigue exigiendo el permiso
-            {{ actual.permiso }}. El ícono es obligatorio.
-          </template>
-          <template v-else>
-            Sin permiso requerido: lo ve todo usuario del ámbito. El ícono es obligatorio.
-          </template>
+        <div v-else class="editor__vacio">
+          Elige un ítem de la lista para editarlo, o agrega un grupo o una pantalla.
         </div>
       </aside>
 
-      <!-- Vista previa por rol -->
+      <!-- Vista previa por perfil -->
       <aside class="previa" aria-label="Vista previa del menú">
         <label class="editor__campo">
           Ver como
           <select
-            v-model="rol"
+            v-model="perfil"
             class="editor__control editor__control--select editor__control--medio"
           >
-            <option v-for="r in ROLES_VISTA_PREVIA" :key="r.valor" :value="r.valor">
-              {{ r.etiqueta }}
+            <option v-for="r in datos?.roles ?? []" :key="r.clave" :value="r.clave">
+              {{ r.nombre }}
             </option>
           </select>
         </label>
-        <div class="previa__menu">
+        <div class="previa__menu" :aria-busy="vistaPrevia.isFetching.value">
           <div class="previa__titulo">VISTA PREVIA</div>
-          <template v-for="p in vistaPrevia" :key="p.clave">
-            <div v-if="p.grupo" class="previa__grupo">{{ p.etiqueta }}</div>
-            <div v-else class="previa__item" :class="{ 'previa__item--activo': p.activo }">
-              <q-icon :name="`sym_r_${p.icono}`" size="18px" />{{ p.etiqueta }}
+          <div v-if="vistaPrevia.isError.value" class="safic-alerta" role="alert">
+            {{ vistaPrevia.error.value?.mensaje }}
+          </div>
+          <template v-for="p in vistaPrevia.data.value?.menu ?? []" :key="p.id">
+            <template v-if="p.hijos">
+              <div class="previa__grupo">{{ p.etiqueta }}</div>
+              <div
+                v-for="h in p.hijos"
+                :key="h.id"
+                class="previa__item"
+                :class="{ 'previa__item--activo': h.id === claveSeleccionada }"
+              >
+                <q-icon :name="h.icono" size="18px" />{{ h.etiqueta }}
+              </div>
+            </template>
+            <div
+              v-else
+              class="previa__item"
+              :class="{ 'previa__item--activo': p.id === claveSeleccionada }"
+            >
+              <q-icon :name="p.icono" size="18px" />{{ p.etiqueta }}
             </div>
           </template>
         </div>
-        <div class="previa__nota">
-          {{ ocultos }} ítems ocultos para este rol por permiso, módulo del plan o porque están
-          inactivos.
+        <div v-if="vistaPrevia.data.value" class="previa__nota">
+          {{ vistaPrevia.data.value.ocultos }} pantallas activas no le llegan a este perfil por
+          permiso o porque no están asignadas.
         </div>
       </aside>
     </div>
@@ -204,180 +279,262 @@
 </template>
 
 <script setup lang="ts">
+import { useIsMutating } from '@tanstack/vue-query';
+import { useQuasar } from 'quasar';
 import { computed, ref, watch } from 'vue';
+import { useRouter } from 'vue-router';
 
 import PaginaEncabezado from '@/components/PaginaEncabezado.vue';
+import { aApiError } from '@/core/api/errors';
 import MenuSistemaInterruptor from '@/modules/plataforma/components/MenuSistemaInterruptor.vue';
+
 import {
   AMBITOS_MENU,
-  ICONOS_MENU,
-  MENU_SISTEMA,
-  ROLES_VISTA_PREVIA,
-  SELECCION_INICIAL,
-} from '@/modules/plataforma/demo/menu-sistema';
-import type { AmbitoMenu, ItemMenuSistema } from '@/modules/plataforma/demo/menu-sistema';
+  borradorDe,
+  borradorNuevo,
+  cambiosDe,
+  nuevoModificado,
+  iconosOfrecidos,
+  pantallasDisponibles,
+  peticionNueva,
+  puedeMover,
+  validarBorrador,
+  type BorradorMenu,
+} from '../menu-sistema.logica';
+import {
+  clavesMenuSistema,
+  useCrearMenuItem,
+  useEditarMenuItem,
+  useMenuSistema,
+  useMoverMenuItem,
+  useVistaPreviaMenu,
+} from '../composables/useMenuSistema';
+import type { AmbitoMenu, MenuSistemaItem } from '../services/menu-sistema.service';
 
-const menus = ref<Record<AmbitoMenu, ItemMenuSistema[]>>({
-  cond: MENU_SISTEMA.cond.map((x) => ({ ...x })),
-  plat: MENU_SISTEMA.plat.map((x) => ({ ...x })),
-  res: MENU_SISTEMA.res.map((x) => ({ ...x })),
+type CampoError = 'etiqueta' | 'icono' | 'ruta' | 'padre_id' | 'permiso' | 'roles';
+const CAMPOS_API: CampoError[] = ['etiqueta', 'icono', 'ruta', 'padre_id', 'permiso', 'roles'];
+
+const $q = useQuasar();
+const router = useRouter();
+
+const ambito = ref<AmbitoMenu>('condominio');
+/** Id del ítem en edición; `null` si no hay ninguno o se está creando uno nuevo. */
+const seleccion = ref<number | null>(null);
+const borrador = ref<BorradorMenu | null>(null);
+const errores = ref<Partial<Record<CampoError, string>>>({});
+const errorGeneral = ref<string | null>(null);
+const perfilElegido = ref('');
+
+const consulta = useMenuSistema(ambito);
+const crear = useCrearMenuItem();
+const editar = useEditarMenuItem();
+const mover_ = useMoverMenuItem();
+const enCurso = useIsMutating({ mutationKey: clavesMenuSistema.mutacion });
+
+const datos = computed(() => consulta.data.value);
+const items = computed(() => datos.value?.items ?? []);
+const grupos = computed(() => items.value.filter((i) => i.es_grupo));
+const ocupado = computed(() => enCurso.value > 0);
+const guardando = computed(() => crear.isPending.value || editar.isPending.value);
+const creando = computed(() => borrador.value !== null && seleccion.value === null);
+const itemActual = computed(() => items.value.find((i) => i.id === seleccion.value));
+
+/** El perfil de la vista previa es siempre uno del menú que se está viendo. */
+const perfil = computed({
+  get: () => {
+    const roles = datos.value?.roles ?? [];
+    return roles.some((r) => r.clave === perfilElegido.value)
+      ? perfilElegido.value
+      : (roles[0]?.clave ?? '');
+  },
+  set: (valor: string) => {
+    perfilElegido.value = valor;
+  },
 });
-const ambito = ref<AmbitoMenu>('cond');
-const seleccion = ref(SELECCION_INICIAL.cond);
-const rol = ref('admin');
-const pendiente = ref(false);
-const publicado = ref(false);
-let nuevos = 0;
+const vistaPrevia = useVistaPreviaMenu(ambito, perfil);
+const claveSeleccionada = computed(() => itemActual.value?.clave ?? '');
 
-watch(ambito, (a) => {
-  seleccion.value = SELECCION_INICIAL[a];
-});
-
-const items = computed(() => menus.value[ambito.value]);
-const actual = computed(() => items.value[seleccion.value]);
+const pantallas = computed(() =>
+  pantallasDisponibles(
+    router.getRoutes().map((r) => {
+      const name = typeof r.name === 'string' ? r.name : '';
+      return {
+        name,
+        titulo: typeof r.meta.titulo === 'string' ? r.meta.titulo : '',
+        publica: r.meta.publica === true,
+        app: r.meta.app !== undefined || name.startsWith('app-'),
+        conParametros: r.path.includes(':'),
+        previa: r.meta.vistaPrevia === true,
+      };
+    }),
+    ambito.value,
+    borrador.value?.ruta ?? '',
+  ),
+);
 
 const tipoEditor = computed(() => {
-  const x = actual.value;
-  if (!x) return '';
-  if (x.tipo === 'g') return `Grupo del menú${x.sistema ? ' · de sistema' : ''}`;
-  return `Ítem del menú${x.sistema ? ' · de sistema (se edita, no se borra)' : ''}`;
+  const b = borrador.value;
+  if (!b) return '';
+  const que = b.esGrupo ? 'grupo' : 'pantalla';
+  return creando.value ? `Nuevo ${que} del menú` : `Editar ${que} del menú`;
 });
 
-/** Manifiesto de rutas, permisos y módulos conocidos (de todos los menús). */
-const todos = computed(() => Object.values(menus.value).flat());
-const rutas = computed(() => {
-  const vistas = new Map<string, string>();
-  todos.value.forEach((x) => {
-    if (x.tipo === 'i' && x.ruta && !vistas.has(x.ruta)) vistas.set(x.ruta, x.etiqueta);
+const hayCambios = computed(() => {
+  const item = itemActual.value;
+  return (
+    item !== undefined &&
+    borrador.value !== null &&
+    Object.keys(cambiosDe(item, borrador.value)).length > 0
+  );
+});
+
+function textoPerfiles(roles: string[]): string {
+  if (roles.length === 0) return 'Sin perfiles (nadie lo ve)';
+  const nombres = roles.map((c) => datos.value?.roles.find((r) => r.clave === c)?.nombre ?? c);
+  return nombres.join(', ');
+}
+
+/** No pisar una edición en curso: pide confirmar antes de cambiar de ítem. */
+function sinPerderCambios(accion: () => void): void {
+  const sucio =
+    (creando.value && borrador.value !== null && nuevoModificado(borrador.value)) ||
+    hayCambios.value;
+  if (!sucio) {
+    accion();
+    return;
+  }
+  $q.dialog({
+    title: 'Hay cambios sin guardar',
+    message: 'Si sigues, se pierden los cambios del ítem que estás editando.',
+    cancel: { label: 'Seguir editando', flat: true, noCaps: true },
+    ok: { label: 'Descartar', color: 'negative', noCaps: true },
+    persistent: true,
+  }).onOk(accion);
+}
+
+function limpiarMensajes(): void {
+  errores.value = {};
+  errorGeneral.value = null;
+}
+
+function seleccionar(item: MenuSistemaItem): void {
+  if (item.id === seleccion.value) return;
+  sinPerderCambios(() => {
+    limpiarMensajes();
+    seleccion.value = item.id;
+    borrador.value = borradorDe(item);
   });
-  return [...vistas].map(([ruta, etiqueta]) => ({ ruta, etiqueta }));
-});
-const permisos = computed(() =>
-  [...new Set(todos.value.map((x) => x.permiso ?? '').filter(Boolean))].sort(),
-);
-const modulos = computed(() =>
-  [...new Set(todos.value.map((x) => x.modulo).filter(Boolean))].sort(),
-);
-
-function marcar(): void {
-  pendiente.value = true;
-  publicado.value = false;
 }
 
-function alternarActivo(idx: number): void {
-  const x = items.value[idx];
-  if (!x) return;
-  x.activo = !x.activo;
-  marcar();
-}
-
-function elegirIcono(nombre: string): void {
-  if (!actual.value) return;
-  actual.value.icono = nombre;
-  marcar();
-}
-
-/** Mueve un ítem dentro de su mismo grupo; los grupos no se mueven (como el mockup). */
-function mover(idx: number, dir: -1 | 1): void {
-  const lista = items.value;
-  const x = lista[idx];
-  if (!x) return;
-  let j = idx + dir;
-  while (j >= 0 && j < lista.length && (lista[j]?.grupo ?? '') !== (x.grupo ?? '')) j += dir;
-  const destino = lista[j];
-  if (!destino || x.tipo === 'g' || destino.tipo === 'g') return;
-  lista[idx] = destino;
-  lista[j] = x;
-  seleccion.value = j;
-  marcar();
-}
-
-function agregar(tipo: 'i' | 'g'): void {
-  nuevos += 1;
-  const nuevo: ItemMenuSistema =
-    tipo === 'g'
-      ? {
-          clave: `nuevo-g-${nuevos}`,
-          tipo: 'g',
-          etiqueta: 'NUEVO GRUPO',
-          icono: 'dashboard',
-          modulo: '',
-          activo: true,
-          sistema: false,
-        }
-      : {
-          clave: `nuevo-i-${nuevos}`,
-          tipo: 'i',
-          etiqueta: 'Nuevo ítem',
-          icono: 'dashboard',
-          ruta: rutas.value[0]?.ruta ?? '',
-          permiso: '',
-          modulo: '',
-          activo: true,
-          sistema: false,
-        };
-  items.value.push(nuevo);
-  seleccion.value = items.value.length - 1;
-  marcar();
-}
-
-function publicar(): void {
-  if (!pendiente.value) return;
-  pendiente.value = false;
-  publicado.value = true;
-}
-
-// ---------- Vista previa ----------
-const rolPrevia = computed(
-  () => ROLES_VISTA_PREVIA.find((r) => r.valor === rol.value) ?? ROLES_VISTA_PREVIA[0]!,
-);
-
-function visible(x: ItemMenuSistema): boolean {
-  const r = rolPrevia.value;
-  if (!x.activo) return false;
-  if (x.modulo && !r.modulos.includes(x.modulo)) return false;
-  if (x.permiso && r.permisos !== '*' && !r.permisos.includes(x.permiso)) return false;
-  return true;
-}
-
-const vistaPrevia = computed(() => {
-  const lista = items.value;
-  const salida: {
-    clave: string;
-    etiqueta: string;
-    icono: string;
-    grupo: boolean;
-    activo: boolean;
-  }[] = [];
-  lista.forEach((x, idx) => {
-    if (x.tipo === 'g') {
-      const hijos = lista.filter((y) => y.grupo === x.clave && visible(y));
-      if (x.activo && hijos.length) {
-        salida.push({
-          clave: x.clave,
-          etiqueta: x.etiqueta,
-          icono: '',
-          grupo: true,
-          activo: false,
-        });
-      }
-      return;
-    }
-    const padre = x.grupo ? lista.find((y) => y.clave === x.grupo) : undefined;
-    if (visible(x) && (!x.grupo || padre?.activo)) {
-      salida.push({
-        clave: x.clave,
-        etiqueta: x.etiqueta,
-        icono: x.icono,
-        grupo: false,
-        activo: idx === seleccion.value,
-      });
-    }
+function nuevo(esGrupo: boolean): void {
+  sinPerderCambios(() => {
+    limpiarMensajes();
+    seleccion.value = null;
+    borrador.value = borradorNuevo(esGrupo);
   });
-  return salida;
-});
+}
 
-const ocultos = computed(() => items.value.filter((x) => x.tipo === 'i' && !visible(x)).length);
+function cancelar(): void {
+  limpiarMensajes();
+  borrador.value = null;
+}
+
+function cambiarAmbito(valor: AmbitoMenu): void {
+  if (valor === ambito.value || ocupado.value) return;
+  sinPerderCambios(() => {
+    limpiarMensajes();
+    seleccion.value = null;
+    borrador.value = null;
+    ambito.value = valor;
+  });
+}
+
+/** Errores de la API: bajo cada campo, o arriba si no son de un campo. */
+function mostrarError(error: unknown): void {
+  const e = aApiError(error);
+  const porCampo: Partial<Record<CampoError, string>> = {};
+  for (const campo of CAMPOS_API) {
+    const mensaje = e.campo(campo);
+    if (mensaje) porCampo[campo] = mensaje;
+  }
+  errores.value = porCampo;
+  errorGeneral.value = Object.keys(porCampo).length === 0 ? e.mensaje : null;
+}
+
+function guardar(): void {
+  const b = borrador.value;
+  if (!b) return;
+  limpiarMensajes();
+  const faltas = validarBorrador(b);
+  if (Object.keys(faltas).length > 0) {
+    errores.value = faltas;
+    return;
+  }
+
+  const ambitoAlGuardar = ambito.value;
+  const alExito = (item: MenuSistemaItem, mensaje: string): void => {
+    $q.notify({ type: 'positive', message: mensaje });
+    // Si mientras tanto se cambió de menú, no se abre un ítem de otro menú en el editor.
+    if (ambito.value !== ambitoAlGuardar) return;
+    seleccion.value = item.id;
+    borrador.value = borradorDe(item);
+  };
+
+  const item = itemActual.value;
+  if (creando.value) {
+    crear.mutate(peticionNueva(ambito.value, b), {
+      onSuccess: (creado) => alExito(creado, 'Ítem agregado al menú.'),
+      onError: mostrarError,
+    });
+    return;
+  }
+
+  if (!item) return;
+  const cambios = cambiosDe(item, b);
+  if (Object.keys(cambios).length === 0) return;
+  editar.mutate(
+    { id: item.id, cambios },
+    { onSuccess: (guardado) => alExito(guardado, 'Cambios guardados.'), onError: mostrarError },
+  );
+}
+
+function alternarActivo(item: MenuSistemaItem): void {
+  const aplicar = (): void => {
+    editar.mutate(
+      { id: item.id, cambios: { activo: !item.activo } },
+      {
+        onError: (error) => $q.notify({ type: 'negative', message: aApiError(error).mensaje }),
+      },
+    );
+  };
+
+  if (!item.activo) {
+    aplicar();
+    return;
+  }
+  $q.dialog({
+    title: `¿Desactivar «${item.etiqueta}»?`,
+    message: 'Dejará de aparecer en el menú de todos los condominios al instante.',
+    cancel: { label: 'Cancelar', flat: true, noCaps: true },
+    ok: { label: 'Desactivar', color: 'negative', noCaps: true },
+    persistent: true,
+  }).onOk(aplicar);
+}
+
+function mover(item: MenuSistemaItem, direccion: 'arriba' | 'abajo'): void {
+  mover_.mutate(
+    { id: item.id, direccion },
+    { onError: (error) => $q.notify({ type: 'negative', message: aApiError(error).mensaje }) },
+  );
+}
+
+// Si el ítem en edición desaparece del menú (otro super admin, otro ámbito), se cierra el editor.
+watch(items, (lista) => {
+  if (seleccion.value !== null && !lista.some((i) => i.id === seleccion.value)) {
+    seleccion.value = null;
+    borrador.value = null;
+  }
+});
 </script>
 
 <style scoped>
@@ -406,6 +563,12 @@ const ocultos = computed(() => items.value.filter((x) => x.tipo === 'i' && !visi
   font-weight: 700;
   font-family: inherit;
   cursor: pointer;
+}
+
+.menu__boton:disabled,
+.arbol__flecha:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 .menu__boton--primario-borde {
@@ -729,6 +892,48 @@ const ocultos = computed(() => items.value.filter((x) => x.tipo === 'i' && !visi
   font-size: 11px;
   color: var(--safic-texto-suave);
   line-height: 1.4;
+}
+
+/* ---------- Estados y avisos ---------- */
+
+.menu__aviso {
+  font-size: 12px;
+  color: var(--safic-texto-suave);
+}
+
+.arbol__estado {
+  padding: 14px;
+}
+
+.arbol__vacio {
+  padding: 28px 14px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--safic-texto-suave);
+}
+
+.editor__error {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--safic-error, #b3261e);
+}
+
+.editor__perfiles {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.editor__acciones {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.editor__vacio {
+  font-size: 13px;
+  color: var(--safic-texto-suave);
+  line-height: 1.5;
 }
 
 @media (max-width: 1279px) {
