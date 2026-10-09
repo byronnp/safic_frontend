@@ -177,6 +177,13 @@ export const MENU_BASE: ItemMenu[] = [
         vistaPrevia: true,
       },
       {
+        id: 'configuracion.cobro',
+        etiqueta: 'Cobro de cuotas',
+        icono: ICONOS.cobroCuotas,
+        ruta: 'configuracion-cobro',
+        permiso: 'condominio.editar',
+      },
+      {
         id: 'configuracion.amenidades',
         etiqueta: 'Amenidades',
         icono: ICONOS.amenidades,

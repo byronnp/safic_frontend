@@ -11,6 +11,7 @@ export const ICONOS = {
   residentes: 'sym_r_groups',
   finanzas: 'sym_r_account_balance_wallet',
   cuotas: 'sym_r_receipt_long',
+  cobroCuotas: 'sym_r_request_quote',
   pagos: 'sym_r_payments',
   proveedores: 'sym_r_local_shipping',
   reservas: 'sym_r_event_available',
