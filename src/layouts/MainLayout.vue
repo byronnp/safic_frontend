@@ -111,12 +111,7 @@
     <q-drawer v-model="menuAbierto" show-if-above :width="248">
       <div class="lateral fit column no-wrap">
         <div class="lateral__marca">
-          <img
-            v-if="session.condominioActivo?.marca?.logo_url"
-            :src="session.condominioActivo.marca.logo_url"
-            alt=""
-            class="lateral__logo-condominio"
-          />
+          <img v-if="logoMenu" :src="logoMenu" alt="" class="lateral__logo-condominio" />
           <div v-else class="safic-logo">S</div>
           <div class="lateral__nombre">SAFIC</div>
         </div>
@@ -159,6 +154,12 @@ const router = useRouter();
 const session = useSessionStore();
 
 const menuAbierto = ref(false);
+
+// El menú lateral es oscuro: se prefiere el logo para fondo oscuro
+const logoMenu = computed(() => {
+  const marca = session.condominioActivo?.marca;
+  return marca?.logo_oscuro_url ?? marca?.logo_url ?? null;
+});
 const busqueda = ref('');
 
 // Menú del perfil en el condominio activo (GET /me/menu)

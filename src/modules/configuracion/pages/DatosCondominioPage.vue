@@ -2,33 +2,44 @@
   <q-page class="safic-main datos-condominio">
     <PaginaEncabezado miga="Configuración / Datos del condominio" titulo="Datos del condominio" />
 
-    <div class="safic-pestanas" role="tablist" aria-label="Secciones">
-      <button
-        v-for="p in PESTANAS"
-        :id="`pestana-${p.id}`"
-        :key="p.id"
-        type="button"
-        role="tab"
-        class="safic-pestana"
-        :class="{ 'safic-pestana--activa': pestana === p.id }"
-        :aria-selected="pestana === p.id"
-        :aria-controls="`panel-${p.id}`"
-        @click="pestana = p.id"
-      >
-        {{ p.titulo }}
-      </button>
+    <div v-if="datos.isPending.value" class="datos-condominio__cargando" aria-busy="true">
+      <q-skeleton type="rect" height="320px" class="datos-condominio__skeleton" />
     </div>
 
-    <div
-      :id="`panel-${pestana}`"
-      class="datos-condominio__panel"
-      role="tabpanel"
-      :aria-labelledby="`pestana-${pestana}`"
-    >
-      <DatosCondominioGeneral v-if="pestana === 'general'" />
-      <DatosCondominioUbicacion v-else-if="pestana === 'ubicacion'" />
-      <DatosCondominioApariencia v-else />
+    <div v-else-if="datos.isError.value" class="safic-alerta" role="alert">
+      {{ datos.error.value?.mensaje }}
+      <q-btn flat no-caps dense label="Reintentar" @click="datos.refetch()" />
     </div>
+
+    <template v-else-if="datos.data.value">
+      <div class="safic-pestanas" role="tablist" aria-label="Secciones">
+        <button
+          v-for="p in PESTANAS"
+          :id="`pestana-${p.id}`"
+          :key="p.id"
+          type="button"
+          role="tab"
+          class="safic-pestana"
+          :class="{ 'safic-pestana--activa': pestana === p.id }"
+          :aria-selected="pestana === p.id"
+          :aria-controls="`panel-${p.id}`"
+          @click="pestana = p.id"
+        >
+          {{ p.titulo }}
+        </button>
+      </div>
+
+      <div
+        :id="`panel-${pestana}`"
+        class="datos-condominio__panel"
+        role="tabpanel"
+        :aria-labelledby="`pestana-${pestana}`"
+      >
+        <DatosCondominioGeneral v-if="pestana === 'general'" :datos="datos.data.value" />
+        <DatosCondominioUbicacion v-else-if="pestana === 'ubicacion'" :datos="datos.data.value" />
+        <DatosCondominioApariencia v-else :datos="datos.data.value" />
+      </div>
+    </template>
   </q-page>
 </template>
 
@@ -38,6 +49,7 @@ import PaginaEncabezado from '@/components/PaginaEncabezado.vue';
 import DatosCondominioApariencia from '../components/DatosCondominioApariencia.vue';
 import DatosCondominioGeneral from '../components/DatosCondominioGeneral.vue';
 import DatosCondominioUbicacion from '../components/DatosCondominioUbicacion.vue';
+import { useDatosCondominio } from '../composables/useDatosCondominio';
 
 type Pestana = 'general' | 'ubicacion' | 'apariencia';
 
@@ -47,7 +59,8 @@ const PESTANAS: { id: Pestana; titulo: string }[] = [
   { id: 'apariencia', titulo: 'Apariencia' },
 ];
 
-const pestana = ref<Pestana>('apariencia');
+const pestana = ref<Pestana>('general');
+const datos = useDatosCondominio();
 </script>
 
 <style scoped>
@@ -58,6 +71,10 @@ const pestana = ref<Pestana>('apariencia');
 
 .datos-condominio :deep(.safic-titulo) {
   font-size: 26px;
+}
+
+.datos-condominio__skeleton {
+  border-radius: 14px;
 }
 
 .datos-condominio__panel {

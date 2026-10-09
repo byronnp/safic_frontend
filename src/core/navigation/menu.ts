@@ -174,7 +174,6 @@ export const MENU_BASE: ItemMenu[] = [
         icono: ICONOS.datosCondominio,
         ruta: 'configuracion-condominio',
         permiso: 'condominio.editar',
-        vistaPrevia: true,
       },
       {
         id: 'configuracion.cobro',
