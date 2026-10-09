@@ -1,44 +1,71 @@
 <template>
   <!-- Panel "Cambiar <cargo>" del mockup F1Usuarios · Directiva -->
   <div class="cambio">
-    <h2 class="cambio__titulo">Cambiar {{ cargo.cargo.toLowerCase() }}</h2>
-    <div class="cambio__actual">
-      Actual: <strong>{{ cargo.nombre }}</strong
+    <h2 class="cambio__titulo">
+      {{ cargo.titular ? 'Cambiar' : 'Asignar' }} {{ cargo.etiqueta.toLowerCase() }}
+    </h2>
+    <div v-if="cargo.titular" class="cambio__actual">
+      Actual: <strong>{{ cargo.titular.nombre }}</strong
       >. Su periodo se cerrará hoy.
     </div>
+
+    <div v-if="error" class="safic-alerta" role="alert">
+      {{ error.mensaje }}
+      <router-link
+        v-if="error.codigo === 'LIMITE_USUARIOS'"
+        :to="{ name: 'configuracion-suscripcion' }"
+      >
+        Subir de plan
+      </router-link>
+    </div>
+
     <div id="cambio-nueva-persona" class="cambio__seccion">NUEVA PERSONA</div>
-    <div class="cambio__candidatos" role="radiogroup" aria-labelledby="cambio-nueva-persona">
+    <div v-if="candidatos.isPending.value" class="cambio__candidatos" aria-busy="true">
+      <q-skeleton v-for="i in 3" :key="i" type="rect" height="52px" />
+    </div>
+    <div v-else-if="candidatos.isError.value" class="safic-alerta" role="alert">
+      {{ candidatos.error.value?.mensaje }}
+      <q-btn flat no-caps dense label="Reintentar" @click="candidatos.refetch()" />
+    </div>
+    <div v-else class="cambio__candidatos" role="radiogroup" aria-labelledby="cambio-nueva-persona">
+      <div v-if="!candidatos.data.value?.length" class="cambio__vacio">
+        No hay propietarios para elegir. Registra a los propietarios en Unidades.
+      </div>
       <button
-        v-for="k in candidatos"
-        :key="k.nombre"
+        v-for="k in candidatos.data.value"
+        :key="k.persona_id"
         type="button"
         role="radio"
         class="cambio__candidato"
         :class="{
-          'cambio__candidato--elegido': k.nombre === elegido,
-          'cambio__candidato--bloqueado': !k.libre,
+          'cambio__candidato--elegido': k.persona_id === formulario.personaId,
+          'cambio__candidato--bloqueado': !k.disponible,
         }"
-        :aria-checked="k.nombre === elegido"
-        :aria-disabled="!k.libre"
-        @click="k.libre && (elegido = k.nombre)"
+        :aria-checked="k.persona_id === formulario.personaId"
+        :aria-disabled="!k.disponible"
+        @click="k.disponible && (formulario.personaId = k.persona_id)"
       >
         <div class="cambio__candidato-textos">
           <div class="cambio__candidato-nombre">{{ k.nombre }}</div>
-          <div class="cambio__candidato-unidad">Residente {{ k.unidad }}</div>
+          <div class="cambio__candidato-unidad">Propietario {{ k.unidad }}</div>
         </div>
-        <EstadoBadge :tono="k.libre ? 'exito' : 'error'" class="cambio__motivo">
-          {{ k.motivo }}
+        <EstadoBadge :tono="motivoCandidato(k).tono" class="cambio__motivo">
+          {{ motivoCandidato(k).texto }}
         </EstadoBadge>
       </button>
+      <div v-if="errores.personaId" class="cambio__error">{{ errores.personaId }}</div>
     </div>
+
     <div class="cambio__campos">
       <label class="cambio__campo">
         Acta que lo respalda
-        <input v-model="acta" />
+        <input v-model="formulario.acta" maxlength="80" placeholder="Acta 2026-03" />
+        <span v-if="errores.acta" class="cambio__error">{{ errores.acta }}</span>
       </label>
       <label class="cambio__campo">
         Periodo hasta
-        <input v-model="hasta" />
+        <input v-model="formulario.hasta" type="date" :min="hoy" />
+        <span v-if="errores.hasta" class="cambio__error">{{ errores.hasta }}</span>
       </label>
     </div>
     <div class="cambio__acciones">
@@ -46,55 +73,99 @@
       <button
         type="button"
         class="cambio__confirmar"
-        :class="{ 'cambio__confirmar--listo': !!candidatoElegido }"
-        :aria-disabled="!candidatoElegido"
+        :class="{ 'cambio__confirmar--listo': formulario.personaId !== null }"
+        :disabled="asignar.isPending.value"
         @click="confirmar"
       >
-        Confirmar cambio
+        {{ cargo.titular ? 'Confirmar cambio' : 'Confirmar nombramiento' }}
       </button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, reactive, ref, watch } from 'vue';
 
 import EstadoBadge from '@/components/EstadoBadge.vue';
+import { aApiError, type ApiError } from '@/core/api/errors';
 
-import { CANDIDATOS_DIRECTIVA, NUEVO_PERIODO, type CargoDirectiva } from '../demo/usuarios';
+import { useAsignarCargo, useCandidatosDirectiva } from '../composables/useDirectiva';
+import {
+  CAMPOS_API_CARGO,
+  motivoCandidato,
+  periodoPorOmision,
+  peticionCargo,
+  validarCargo,
+  type FormularioCargo,
+} from '../directiva.logica';
+import type { CargoDirectiva } from '../services/directiva.service';
+import { hoyEcuador } from '../usuarios.logica';
 
-export interface ConfirmacionCambio {
-  nombre: string;
-  unidad: string;
-  acta: string;
-  hasta: string;
-}
+const props = defineProps<{ cargo: CargoDirectiva }>();
+const emit = defineEmits<{
+  cancelar: [];
+  confirmado: [cargo: CargoDirectiva, anterior: string | null];
+}>();
 
-const props = defineProps<{ cargo: CargoDirectiva; cargos: CargoDirectiva[] }>();
-const emit = defineEmits<{ cancelar: []; confirmar: [datos: ConfirmacionCambio] }>();
+const hoy = hoyEcuador();
+const candidatos = useCandidatosDirectiva(computed(() => props.cargo.cargo));
+const asignar = useAsignarCargo();
 
-const elegido = ref<string | null>(null);
-const acta = ref<string>(NUEVO_PERIODO.acta);
-const hasta = ref<string>(NUEVO_PERIODO.hasta);
+const formulario = reactive<FormularioCargo>({
+  personaId: null,
+  acta: '',
+  hasta: periodoPorOmision(hoy),
+});
+const errores = reactive<Partial<Record<keyof FormularioCargo, string>>>({});
+const error = ref<ApiError | null>(null);
 
-/** Reglas del mockup: sin mora y sin otro cargo; quien ya ocupa este cargo no aparece. */
-const candidatos = computed(() =>
-  CANDIDATOS_DIRECTIVA.flatMap((r) => {
-    const ocupa = props.cargos.find((c) => c.nombre === r.nombre)?.cargo ?? null;
-    if (ocupa === props.cargo.cargo) return [];
-    const motivo = r.enMora ? 'En mora' : ocupa ? `Ya es ${ocupa.toLowerCase()}` : 'Disponible';
-    return [{ ...r, motivo, libre: !r.enMora && !ocupa }];
-  }),
+// Si al refrescar la lista la persona elegida ya no está disponible (ej. otro administrador
+// le dio un cargo), se desmarca para no reenviar un nombramiento que va a fallar
+watch(
+  () => candidatos.data.value,
+  (lista) => {
+    if (
+      formulario.personaId !== null &&
+      !lista?.some((k) => k.persona_id === formulario.personaId && k.disponible)
+    ) {
+      formulario.personaId = null;
+    }
+  },
 );
 
-const candidatoElegido = computed(
-  () => candidatos.value.find((k) => k.nombre === elegido.value && k.libre) ?? null,
-);
+async function confirmar(): Promise<void> {
+  for (const campo of Object.keys(errores) as (keyof FormularioCargo)[]) {
+    delete errores[campo];
+  }
+  error.value = null;
 
-function confirmar() {
-  const k = candidatoElegido.value;
-  if (!k) return;
-  emit('confirmar', { nombre: k.nombre, unidad: k.unidad, acta: acta.value, hasta: hasta.value });
+  Object.assign(errores, validarCargo(formulario, hoy));
+  if (Object.keys(errores).length > 0) {
+    return;
+  }
+
+  const anterior = props.cargo.titular?.nombre ?? null;
+  try {
+    const nuevo = await asignar.mutateAsync({
+      cargo: props.cargo.cargo,
+      datos: peticionCargo(formulario),
+    });
+    emit('confirmado', nuevo, anterior);
+  } catch (e) {
+    const apiError = aApiError(e);
+    let pintado = false;
+    for (const [campoApi, campo] of Object.entries(CAMPOS_API_CARGO)) {
+      const mensaje = apiError.campo(campoApi);
+      if (mensaje) {
+        errores[campo] = mensaje;
+        pintado = true;
+      }
+    }
+    if (!pintado) {
+      // NO_ES_PROPIETARIO, PERSONA_SIN_CORREO, PERSONA_CON_CARGO, LIMITE_USUARIOS…
+      error.value = apiError;
+    }
+  }
 }
 </script>
 
@@ -185,6 +256,18 @@ function confirmar() {
 
 .cambio__motivo {
   flex-shrink: 0;
+}
+
+.cambio__vacio {
+  font-size: 13px;
+  color: var(--safic-texto-suave);
+  padding: 8px 0;
+}
+
+.cambio__error {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--q-negative);
 }
 
 .cambio__campos {

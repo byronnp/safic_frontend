@@ -119,23 +119,34 @@
 
       <!-- Vista: directiva -->
       <div v-else class="usuarios-vista">
-        <div class="usuarios-previa" role="note">
-          Vista previa · datos de ejemplo. Los cargos de la directiva se conectan en la siguiente
-          entrega.
-        </div>
         <div class="usuarios-directiva__intro">
           Cada cargo lo ocupa <strong>una sola persona</strong> y una persona ocupa
           <strong>un solo cargo</strong>. Para reemplazar a alguien usa <strong>Cambiar</strong>: se
           cierra su periodo y se abre el del nuevo.
         </div>
         <div v-if="mensajeOk" class="usuarios-directiva__ok" role="status">{{ mensajeOk }}</div>
-        <div class="usuarios-directiva__rejilla">
+
+        <div v-if="directiva.isPending.value" class="usuarios-directiva__rejilla" aria-busy="true">
+          <q-skeleton
+            v-for="i in 4"
+            :key="i"
+            type="rect"
+            height="190px"
+            class="usuarios-skeleton"
+          />
+        </div>
+        <div v-else-if="directiva.isError.value" class="safic-alerta" role="alert">
+          {{ directiva.error.value?.mensaje }}
+          <q-btn flat no-caps dense label="Reintentar" @click="directiva.refetch()" />
+        </div>
+        <div v-else class="usuarios-directiva__rejilla">
           <UsuariosCargoTarjeta
-            v-for="(c, i) in cargos"
+            v-for="c in directiva.data.value"
             :key="c.cargo"
             :cargo="c"
-            :activo="i === cambio"
-            @cambiar="empezarCambio(i)"
+            :activo="c.cargo === cambio"
+            :deshabilitado="guardando > 0"
+            @cambiar="empezarCambio(c.cargo)"
           />
         </div>
       </div>
@@ -157,15 +168,14 @@
         v-else-if="cargoEnCambio"
         :key="cargoEnCambio.cargo"
         :cargo="cargoEnCambio"
-        :cargos="cargos"
         @cancelar="cambio = null"
-        @confirmar="confirmarCambio"
+        @confirmado="cargoAsignado"
       />
       <div v-else class="usuarios-reglas">
         <h2>Reglas de la directiva</h2>
         <div>• Un cargo, una persona. No puede haber dos presidentes.</div>
         <div>• Una persona, un cargo: el acta necesita firmas distintas.</div>
-        <div>• Solo residentes propietarios sin mora (Decreto 462).</div>
+        <div>• Solo propietarios con correo (la regla «sin mora» llega con Finanzas).</div>
         <div>
           • Al vencer el periodo el cargo sigue <strong>prorrogado</strong> hasta nombrar reemplazo.
         </div>
@@ -177,6 +187,7 @@
 </template>
 
 <script setup lang="ts">
+import { useIsMutating } from '@tanstack/vue-query';
 import { useQuasar } from 'quasar';
 import { computed, ref, watch } from 'vue';
 
@@ -187,13 +198,13 @@ import { useSessionStore } from '@/stores/session';
 import { formatoFecha } from '@/utils/formato';
 
 import UsuarioInvitarDialog from '../components/UsuarioInvitarDialog.vue';
-import UsuariosCambioCargo, {
-  type ConfirmacionCambio,
-} from '../components/UsuariosCambioCargo.vue';
+import UsuariosCambioCargo from '../components/UsuariosCambioCargo.vue';
 import UsuariosCargoTarjeta from '../components/UsuariosCargoTarjeta.vue';
 import UsuariosPanelAcceso from '../components/UsuariosPanelAcceso.vue';
+import { useDirectiva } from '../composables/useDirectiva';
 import { useUsuarios } from '../composables/useUsuarios';
-import { DIRECTIVA, NUEVO_PERIODO, type CargoDirectiva } from '../demo/usuarios';
+import { mensajeNombramiento } from '../directiva.logica';
+import type { CargoClave, CargoDirectiva } from '../services/directiva.service';
 import { ESTADOS, haySinCupo, porcentajeCupo, textoCupo, textoRoles } from '../usuarios.logica';
 
 type Vista = 'usuarios' | 'directiva';
@@ -233,13 +244,15 @@ function agregar(): void {
   });
 }
 
-// ---------- Directiva (vista previa con datos de ejemplo) ----------
-const cargos = ref<CargoDirectiva[]>(DIRECTIVA.map((c) => ({ ...c })));
-const cambio = ref<number | null>(null);
+// ---------- Directiva ----------
+const directiva = useDirectiva();
+// Mientras se guarda un nombramiento no se abre otro cargo
+const guardando = useIsMutating();
+const cambio = ref<CargoClave | null>(null);
 const mensajeOk = ref('');
 
-const cargoEnCambio = computed(() =>
-  cambio.value === null ? null : (cargos.value[cambio.value] ?? null),
+const cargoEnCambio = computed(
+  () => directiva.data.value?.find((c) => c.cargo === cambio.value) ?? null,
 );
 
 function elegirVista(v: Vista) {
@@ -248,27 +261,27 @@ function elegirVista(v: Vista) {
   mensajeOk.value = '';
 }
 
-function empezarCambio(i: number) {
-  cambio.value = i;
+function empezarCambio(cargo: CargoClave) {
+  if (guardando.value > 0) {
+    return;
+  }
+  cambio.value = cargo;
   mensajeOk.value = '';
 }
 
-function confirmarCambio(datos: ConfirmacionCambio) {
-  const i = cambio.value;
-  const actual = i === null ? undefined : cargos.value[i];
-  if (i === null || !actual) return;
-  const anterior = actual.nombre;
-  cargos.value[i] = {
-    cargo: actual.cargo,
-    nombre: datos.nombre,
-    unidad: datos.unidad,
-    periodo: `26 sep 2026 – ${datos.hasta || NUEVO_PERIODO.hasta}`,
-    acta: datos.acta.split(' · ')[0] || NUEVO_PERIODO.actaCorta,
-    prorrogado: false,
-  };
+function cargoAsignado(cargo: CargoDirectiva, anterior: string | null) {
   cambio.value = null;
-  mensajeOk.value = `${actual.cargo}: ${datos.nombre} desde hoy. El periodo de ${anterior} se cerró y conserva su rol de residente.`;
+  mensajeOk.value = mensajeNombramiento(cargo, anterior);
 }
+
+// Al cambiar de condominio no queda un cargo a medio cambiar
+watch(
+  () => session.condominioId,
+  () => {
+    cambio.value = null;
+    mensajeOk.value = '';
+  },
+);
 </script>
 
 <style scoped>
@@ -332,16 +345,6 @@ function confirmarCambio(datos: ConfirmacionCambio) {
   background: var(--safic-superficie);
   border: 1px solid var(--safic-borde);
   border-radius: 14px;
-}
-
-.usuarios-previa {
-  align-self: flex-start;
-  padding: 6px 12px;
-  border-radius: 10px;
-  background: #fff7ec;
-  color: #7a3808;
-  font-size: 12px;
-  font-weight: 700;
 }
 
 .usuarios-tabla__nombre {
