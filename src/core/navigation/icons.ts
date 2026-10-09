@@ -34,6 +34,10 @@ export const ICONOS = {
   volver: 'sym_r_chevron_left',
   info: 'sym_r_info',
   importar: 'sym_r_upload',
+  descargar: 'sym_r_download',
+  archivo: 'sym_r_upload_file',
+  correcto: 'sym_r_check_circle',
+  alerta: 'sym_r_error',
   siguiente: 'sym_r_chevron_right',
   sinResultados: 'sym_r_search_off',
   // Módulos y pantallas (mismos nombres que en los mockups)
