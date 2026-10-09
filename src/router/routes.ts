@@ -183,6 +183,12 @@ const routes: RouteRecordRaw[] = [
       ),
 
       // Configuración del condominio
+      {
+        path: 'configuracion/cobro',
+        name: 'configuracion-cobro',
+        component: () => import('@/modules/configuracion/pages/CobroCuotasPage.vue'),
+        meta: { permiso: 'condominio.editar', titulo: 'Cobro de cuotas' },
+      },
       previa(
         'configuracion/condominio',
         'configuracion-condominio',
