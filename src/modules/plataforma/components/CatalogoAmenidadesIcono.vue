@@ -6,7 +6,7 @@
       width: `${tamano}px`,
       height: `${tamano}px`,
       fontSize: `${tamano > 40 ? 16 : 13}px`,
-      background: CATEGORIAS_AMENIDAD[categoria].color,
+      background: categoria ? COLOR_CATEGORIA[categoria] : COLOR_SIN_CATEGORIA,
     }"
     aria-hidden="true"
   >
@@ -15,10 +15,10 @@
 </template>
 
 <script setup lang="ts">
-import { CATEGORIAS_AMENIDAD } from '@/modules/plataforma/demo/catalogo-amenidades';
-import type { CategoriaAmenidad } from '@/modules/plataforma/demo/catalogo-amenidades';
+import { COLOR_CATEGORIA, COLOR_SIN_CATEGORIA } from '@/modules/configuracion/amenidades.logica';
+import type { CategoriaAmenidad } from '@/modules/configuracion/services/amenidades.service';
 
-defineProps<{ texto: string; categoria: CategoriaAmenidad; tamano: number }>();
+defineProps<{ texto: string; categoria: CategoriaAmenidad | null; tamano: number }>();
 </script>
 
 <style scoped>
