@@ -195,12 +195,12 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/modules/configuracion/pages/CobroCuotasPage.vue'),
         meta: { permiso: 'condominio.editar', titulo: 'Cobro de cuotas' },
       },
-      previa(
-        'configuracion/amenidades',
-        'configuracion-amenidades',
-        'Amenidades',
-        () => import('@/modules/configuracion/pages/AmenidadesPage.vue'),
-      ),
+      {
+        path: 'configuracion/amenidades',
+        name: 'configuracion-amenidades',
+        component: () => import('@/modules/configuracion/pages/AmenidadesPage.vue'),
+        meta: { permiso: 'amenidades.gestionar', titulo: 'Amenidades' },
+      },
       {
         path: 'configuracion/usuarios',
         name: 'configuracion-usuarios',

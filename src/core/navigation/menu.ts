@@ -188,7 +188,6 @@ export const MENU_BASE: ItemMenu[] = [
         icono: ICONOS.amenidades,
         ruta: 'configuracion-amenidades',
         permiso: 'amenidades.gestionar',
-        vistaPrevia: true,
       },
       {
         id: 'configuracion.usuarios',
