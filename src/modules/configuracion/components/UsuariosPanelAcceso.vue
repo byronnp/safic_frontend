@@ -1,135 +1,241 @@
 <template>
-  <!-- Panel lateral del usuario elegido (mockup F1Usuarios: contadora externa) -->
+  <!-- Panel lateral de la persona elegida: perfil, vigencia y acciones de acceso (mockup F1Usuarios) -->
   <div class="panel">
     <div class="panel__cabecera">
-      <div class="panel__persona">
-        <div class="panel__avatar" :style="{ background: color.fondo, color: color.texto }">
-          {{ esContadora ? CONTADORA.iniciales : iniciales(usuario.nombre) }}
-        </div>
-        <div class="panel__persona-textos">
-          <div class="panel__nombre">{{ usuario.nombre }}</div>
-          <div class="panel__descripcion">
-            {{ esContadora ? CONTADORA.descripcion : usuario.roles }}
-          </div>
-        </div>
+      <div class="panel__avatar" :style="{ background: color.fondo, color: color.texto }">
+        {{ iniciales(usuario.nombre) }}
       </div>
-      <div v-if="esContadora" class="panel__pestanas" role="tablist">
-        <button
-          v-for="t in PESTANAS"
-          :key="t.clave"
-          type="button"
-          role="tab"
-          class="panel__pestana"
-          :class="{ 'panel__pestana--activa': t.clave === pestana }"
-          :aria-selected="t.clave === pestana"
-          @click="pestana = t.clave"
-        >
-          {{ t.texto }}
-        </button>
+      <div class="panel__persona-textos">
+        <div class="panel__nombre">{{ usuario.nombre }}</div>
+        <div class="panel__descripcion">{{ usuario.email }}</div>
       </div>
+      <EstadoBadge :tono="ESTADOS[usuario.estado].tono">
+        {{ ESTADOS[usuario.estado].texto }}
+      </EstadoBadge>
     </div>
 
-    <template v-if="esContadora">
-      <div v-if="pestana === 'acceso'" class="panel__acceso">
-        <div class="panel__acuerdo">{{ CONTADORA.acuerdo }}</div>
-        <div v-for="d in CONTADORA.datos" :key="d.etiqueta" class="panel__dato">
-          <span class="panel__dato-etiqueta">{{ d.etiqueta }}</span>
-          <strong>{{ d.valor }}</strong>
-        </div>
-        <label class="panel__campo">
-          Acceso hasta
-          <input v-model="accesoHasta" />
-        </label>
-        <label class="panel__casilla">
-          <input v-model="avisar" type="checkbox" />
-          Avisarme por correo en cada exportación
-        </label>
-        <div class="panel__nota">
-          Al llegar la fecha, el rol se desactiva solo. Su acceso como residente de
-          {{ CONTADORA.unidad }} no cambia.
-        </div>
-        <button type="button" class="panel__revocar" :disabled="revocado" @click="revocar">
-          {{ revocado ? 'Acceso de contadora revocado' : 'Revocar acceso de contadora' }}
-        </button>
+    <div class="panel__cuerpo">
+      <div v-if="error" class="safic-alerta" role="alert">
+        {{ error.mensaje }}
+        <router-link
+          v-if="error.codigo === 'LIMITE_USUARIOS'"
+          :to="{ name: 'configuracion-suscripcion' }"
+        >
+          Subir de plan
+        </router-link>
       </div>
 
-      <div v-else class="panel__bitacora">
-        <div v-for="b in BITACORA_CONTADORA" :key="b.hora + b.recurso" class="panel__evento">
-          <div class="panel__evento-hora">{{ b.hora }}</div>
-          <div class="panel__evento-textos">
-            <div class="panel__evento-recurso">{{ b.recurso }}</div>
-            <div class="panel__evento-detalle">{{ b.detalle }}</div>
-          </div>
-          <EstadoBadge
-            :tono="b.tipo === 'Exportó' ? 'alerta' : 'neutro'"
-            class="panel__evento-tipo"
+      <div class="panel__dato">
+        <span class="panel__dato-etiqueta">Perfiles</span>
+        <strong>{{ textoRoles(usuario.roles) }}</strong>
+      </div>
+      <div class="panel__dato">
+        <span class="panel__dato-etiqueta">Cuenta cupo del plan</span>
+        <strong>{{ usuario.cuenta_cupo ? 'Sí' : 'No' }}</strong>
+      </div>
+      <div v-if="usuario.celular" class="panel__dato">
+        <span class="panel__dato-etiqueta">Celular</span>
+        <strong>{{ usuario.celular }}</strong>
+      </div>
+
+      <div v-if="usuario.es_yo" class="panel__nota" role="note">
+        Esta es tu cuenta. No puedes cambiar tu propio acceso: pídeselo a otro administrador.
+      </div>
+
+      <template v-else>
+        <div class="panel__campo">
+          <label for="usuario-perfil" class="panel__etiqueta">Perfil</label>
+          <select id="usuario-perfil" v-model="formulario.perfil" class="panel__control">
+            <option v-if="formulario.perfil === null" :value="null" disabled>
+              Sin perfil asignado
+            </option>
+            <option v-for="p in PERFILES" :key="p.valor" :value="p.valor">{{ p.etiqueta }}</option>
+          </select>
+          <div v-if="errores.perfil" class="panel__error">{{ errores.perfil }}</div>
+          <div v-else class="panel__ayuda">{{ ayudaPerfil }}</div>
+        </div>
+
+        <div class="panel__campo">
+          <label for="usuario-hasta" class="panel__etiqueta">
+            Acceso hasta
+            <span v-if="!requiereVigencia(formulario.perfil)" class="panel__opcional"
+              >(opcional)</span
+            >
+          </label>
+          <input
+            id="usuario-hasta"
+            v-model="formulario.accesoHasta"
+            type="date"
+            class="panel__control"
+            :class="{ 'panel__control--error': errores.accesoHasta }"
+            :min="hoy"
+          />
+          <div v-if="errores.accesoHasta" class="panel__error">{{ errores.accesoHasta }}</div>
+          <div v-else class="panel__ayuda">Al llegar la fecha, el acceso se desactiva solo.</div>
+        </div>
+
+        <q-btn
+          unelevated
+          no-caps
+          color="primary"
+          class="panel__boton"
+          label="Guardar cambios"
+          :disable="!hayCambios"
+          :loading="actualizar.isPending.value"
+          @click="guardar"
+        />
+
+        <div class="panel__acciones">
+          <button
+            v-if="usuario.estado === 'pendiente'"
+            type="button"
+            class="panel__secundario"
+            :disabled="reenviar.isPending.value"
+            @click="reenviarInvitacion"
           >
-            {{ b.tipo }}
-          </EstadoBadge>
+            Reenviar invitación
+          </button>
+          <button
+            v-if="usuario.estado !== 'desactivado'"
+            type="button"
+            class="panel__peligro"
+            :disabled="actualizar.isPending.value"
+            @click="cambiarActivo(false)"
+          >
+            Desactivar acceso
+          </button>
+          <button
+            v-else
+            type="button"
+            class="panel__secundario"
+            :disabled="actualizar.isPending.value"
+            @click="cambiarActivo(true)"
+          >
+            Reactivar acceso
+          </button>
         </div>
-        <div class="panel__inmutable">Registro inmutable · se conserva 5 años.</div>
-      </div>
-    </template>
-
-    <div v-else class="panel__acceso">
-      <div class="panel__dato">
-        <span class="panel__dato-etiqueta">Correo o ubicación</span>
-        <strong>{{ usuario.correo }}</strong>
-      </div>
-      <div class="panel__dato">
-        <span class="panel__dato-etiqueta">Cuenta para el cupo</span>
-        <strong>{{ usuario.cuentaCupo ? 'Sí' : 'No' }}</strong>
-      </div>
-      <div class="panel__dato">
-        <span class="panel__dato-etiqueta">Acceso hasta</span>
-        <strong>{{
-          usuario.accesoHasta === '—' ? 'Sin fecha de fin' : usuario.accesoHasta
-        }}</strong>
-      </div>
-      <div class="panel__nota">
-        {{
-          usuario.cuentaCupo
-            ? 'Este usuario ocupa uno de los cupos administrativos de tu plan.'
-            : 'Este rol no cuenta para el límite de usuarios administrativos del plan.'
-        }}
-      </div>
+      </template>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { useQuasar } from 'quasar';
-import { computed, ref } from 'vue';
+import { computed, reactive, ref, watch } from 'vue';
 
 import EstadoBadge from '@/components/EstadoBadge.vue';
+import { aApiError, type ApiError } from '@/core/api/errors';
 import { colorAvatar, iniciales } from '@/core/theme/avatar';
 
-import { BITACORA_CONTADORA, CONTADORA, USUARIOS, type UsuarioDemo } from '../demo/usuarios';
+import { useActualizarUsuario, useReenviarInvitacion } from '../composables/useUsuarios';
+import type { UsuarioCondominio } from '../services/usuarios.service';
+import {
+  cambiosUsuario,
+  ESTADOS,
+  formularioUsuarioDesde,
+  hoyEcuador,
+  PERFILES,
+  requiereVigencia,
+  textoRoles,
+  validarUsuario,
+  type FormularioUsuario,
+} from '../usuarios.logica';
 
-type Pestana = 'acceso' | 'bitacora';
-
-const PESTANAS: { clave: Pestana; texto: string }[] = [
-  { clave: 'acceso', texto: 'Acceso y confidencialidad' },
-  { clave: 'bitacora', texto: 'Bitácora' },
-];
-
-const props = defineProps<{ usuario: UsuarioDemo }>();
+const props = defineProps<{ usuario: UsuarioCondominio }>();
 
 const $q = useQuasar();
+const actualizar = useActualizarUsuario();
+const reenviar = useReenviarInvitacion();
 
-const pestana = ref<Pestana>('acceso');
-const accesoHasta = ref<string>(CONTADORA.accesoHasta);
-const avisar = ref<boolean>(CONTADORA.avisarExportaciones);
-const revocado = ref(false);
+const hoy = hoyEcuador();
+const formulario = reactive<FormularioUsuario>(formularioUsuarioDesde(props.usuario));
+const errores = reactive<Partial<Record<keyof FormularioUsuario, string>>>({});
+const error = ref<ApiError | null>(null);
 
-const esContadora = computed(() => props.usuario.nombre === CONTADORA.nombre);
+const color = computed(() => colorAvatar(props.usuario.id));
+const ayudaPerfil = computed(
+  () =>
+    PERFILES.find((p) => p.valor === formulario.perfil)?.ayuda ??
+    'Solo tiene cargos de directiva o es residente.',
+);
+const hayCambios = computed(
+  () => Object.keys(cambiosUsuario(formulario, props.usuario)).length > 0,
+);
 
-/** Ana Villacís usa el azul del mockup (#E6ECF7 / #23407A = colorAvatar(2)). */
-const color = computed(() => colorAvatar(USUARIOS.indexOf(props.usuario)));
+// Cuando la lista se actualiza, el formulario parte de lo guardado; no pisa lo que se está editando
+watch(
+  () => props.usuario,
+  (nuevo) => {
+    if (!hayCambios.value) {
+      Object.assign(formulario, formularioUsuarioDesde(nuevo));
+    }
+  },
+);
 
-function revocar() {
-  revocado.value = true;
-  $q.notify({ type: 'positive', message: 'Se revocó el acceso de contadora de Ana Villacís.' });
+function limpiar(): void {
+  for (const campo of Object.keys(errores) as (keyof FormularioUsuario)[]) {
+    delete errores[campo];
+  }
+  error.value = null;
+}
+
+async function ejecutar(accion: () => Promise<unknown>, mensaje: string): Promise<void> {
+  limpiar();
+  try {
+    await accion();
+    $q.notify({ type: 'positive', message: mensaje });
+  } catch (e) {
+    const apiError = aApiError(e);
+    const fecha = apiError.campo('acceso_hasta');
+    const perfil = apiError.campo('rol');
+    if (fecha || perfil) {
+      if (fecha) errores.accesoHasta = fecha;
+      if (perfil) errores.perfil = perfil;
+    } else {
+      error.value = apiError;
+    }
+  }
+}
+
+async function guardar(): Promise<void> {
+  limpiar();
+  Object.assign(errores, validarUsuario(formulario, hoy));
+  if (Object.keys(errores).length > 0) {
+    return;
+  }
+  await ejecutar(
+    () =>
+      actualizar.mutateAsync({
+        id: props.usuario.id,
+        datos: cambiosUsuario(formulario, props.usuario),
+      }),
+    'Cambios guardados.',
+  );
+}
+
+function cambiarActivo(activo: boolean): void {
+  const accion = () =>
+    ejecutar(
+      () => actualizar.mutateAsync({ id: props.usuario.id, datos: { activo } }),
+      activo ? 'Acceso reactivado.' : 'Acceso desactivado.',
+    );
+
+  if (activo) {
+    void accion();
+    return;
+  }
+  // Quitar el acceso es lo único que no se deshace con un clic: se pide confirmar
+  $q.dialog({
+    title: 'Desactivar acceso',
+    message: `${props.usuario.nombre} dejará de entrar a este condominio. Puedes reactivarlo cuando quieras.`,
+    cancel: { label: 'Cancelar', flat: true, noCaps: true },
+    ok: { label: 'Desactivar', color: 'negative', unelevated: true, noCaps: true },
+    persistent: true,
+  }).onOk(() => void accion());
+}
+
+async function reenviarInvitacion(): Promise<void> {
+  await ejecutar(() => reenviar.mutateAsync(props.usuario.id), 'Invitación reenviada.');
 }
 </script>
 
@@ -137,17 +243,14 @@ function revocar() {
 .panel {
   display: flex;
   flex-direction: column;
-  min-height: 0;
 }
 
 .panel__cabecera {
-  padding: 18px 20px 0 20px;
-}
-
-.panel__persona {
   display: flex;
   align-items: center;
   gap: 12px;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--safic-linea);
 }
 
 .panel__avatar {
@@ -174,57 +277,15 @@ function revocar() {
 .panel__descripcion {
   font-size: 12px;
   color: var(--safic-texto-suave);
+  overflow-wrap: anywhere;
 }
 
-.panel__pestanas {
-  display: flex;
-  gap: 4px;
-  margin-top: 14px;
-  border-bottom: 1px solid var(--safic-linea);
-}
-
-.panel__pestana {
-  height: 42px;
-  padding: 0 12px;
-  border: none;
-  border-bottom: 3px solid transparent;
-  margin-bottom: -1px;
-  background: none;
-  cursor: pointer;
-  font-size: 13px;
-  font-weight: 700;
-  font-family: inherit;
-  color: var(--safic-texto-tenue);
-}
-
-.panel__pestana--activa {
-  color: var(--safic-texto);
-  border-bottom-color: var(--q-primary);
-}
-
-.panel__pestana:focus-visible,
-.panel__revocar:focus-visible {
-  outline: 2px solid var(--q-primary);
-  outline-offset: 2px;
-}
-
-.panel__acceso {
+.panel__cuerpo {
   padding: 16px 20px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
   font-size: 13px;
-}
-
-.panel__acuerdo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: #e3efec;
-  color: #0b4a47;
-  border-radius: 10px;
-  padding: 10px 12px;
-  font-weight: 700;
 }
 
 .panel__dato {
@@ -241,16 +302,32 @@ function revocar() {
   text-align: right;
 }
 
+.panel__nota {
+  background: var(--safic-fondo-2);
+  border: 1px solid var(--safic-linea);
+  border-radius: 10px;
+  padding: 10px 12px;
+  color: var(--safic-texto-2);
+  line-height: 1.45;
+}
+
 .panel__campo {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  font-weight: 700;
-  color: var(--safic-texto-2);
-  margin-top: 4px;
 }
 
-.panel__campo input {
+.panel__etiqueta {
+  font-weight: 700;
+  color: var(--safic-texto-2);
+}
+
+.panel__opcional {
+  font-weight: 600;
+  color: var(--safic-texto-suave);
+}
+
+.panel__control {
   height: 42px;
   border: 1px solid var(--safic-borde-campo);
   border-radius: 9px;
@@ -258,98 +335,75 @@ function revocar() {
   font-size: 15px;
   font-family: inherit;
   color: var(--safic-texto);
+  background: #ffffff;
+  box-sizing: border-box;
+  width: 100%;
 }
 
-.panel__campo input:focus {
-  outline: none;
-  border-color: var(--q-primary);
+.panel__control:focus {
+  outline: 2px solid var(--q-primary);
+  outline-offset: 1px;
 }
 
-.panel__casilla {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-weight: 600;
-  color: var(--safic-texto-2);
-  cursor: pointer;
+.panel__control--error {
+  border-color: var(--q-negative);
 }
 
-.panel__casilla input {
-  width: 18px;
-  height: 18px;
-  margin: 0;
-  accent-color: var(--q-primary);
-}
-
-.panel__nota {
+.panel__ayuda {
   font-size: 12px;
   color: var(--safic-texto-suave);
-  line-height: 1.5;
 }
 
-.panel__revocar {
-  height: 42px;
+.panel__error {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--q-negative);
+}
+
+.panel__boton {
+  height: 44px;
   border-radius: 10px;
-  border: 1px solid #9b1c12;
-  background: #ffffff;
-  color: #9b1c12;
+  font-weight: 700;
+}
+
+.panel__acciones {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-top: 1px solid var(--safic-linea);
+  padding-top: 14px;
+}
+
+.panel__secundario,
+.panel__peligro {
+  height: 44px;
+  border-radius: 10px;
   font-size: 14px;
   font-weight: 700;
   font-family: inherit;
   cursor: pointer;
-  margin-top: 6px;
+  background: #ffffff;
 }
 
-.panel__revocar:disabled {
+.panel__secundario {
+  border: 1px solid var(--safic-borde-2);
+  color: var(--safic-texto);
+}
+
+.panel__peligro {
+  border: 1px solid #f3b8b2;
+  color: #9b1c12;
+}
+
+.panel__secundario:disabled,
+.panel__peligro:disabled {
+  opacity: 0.5;
   cursor: default;
-  opacity: 0.6;
 }
 
-.panel__bitacora {
-  padding: 8px 20px 16px 20px;
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-}
-
-.panel__evento {
-  display: flex;
-  gap: 12px;
-  padding: 10px 0;
-  border-bottom: 1px solid var(--safic-linea-2);
-}
-
-.panel__evento-hora {
-  width: 70px;
-  flex-shrink: 0;
-  font-size: 12px;
-  color: var(--safic-texto-suave);
-  font-weight: 700;
-}
-
-.panel__evento-textos {
-  flex-grow: 1;
-  min-width: 0;
-}
-
-.panel__evento-recurso {
-  font-size: 13px;
-  font-weight: 700;
-}
-
-.panel__evento-detalle {
-  font-size: 12px;
-  color: var(--safic-texto-suave);
-}
-
-.panel__evento-tipo {
-  flex-shrink: 0;
-  align-self: center;
-}
-
-.panel__inmutable {
-  font-size: 12px;
-  color: var(--safic-texto-suave);
-  margin-top: 10px;
+.panel__secundario:focus-visible,
+.panel__peligro:focus-visible {
+  outline: 2px solid var(--q-primary);
+  outline-offset: 2px;
 }
 </style>

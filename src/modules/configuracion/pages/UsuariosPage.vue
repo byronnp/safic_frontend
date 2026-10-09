@@ -3,9 +3,7 @@
     <section class="usuarios-principal">
       <PaginaEncabezado miga="Configuración / Usuarios y roles" titulo="Usuarios y roles">
         <template #acciones>
-          <button type="button" class="usuarios-boton" @click="error = true">
-            Asignar rol administrativo
-          </button>
+          <button type="button" class="usuarios-boton" @click="agregar">Agregar persona</button>
         </template>
       </PaginaEncabezado>
 
@@ -26,74 +24,105 @@
 
       <!-- Vista: todos los usuarios -->
       <div v-if="vista === 'usuarios'" class="usuarios-vista">
-        <div class="usuarios-cupo">
-          <div class="usuarios-cupo__textos">
-            <div class="usuarios-cupo__etiqueta">
-              Usuarios administrativos · plan {{ CUPO_PLAN.plan }}
-            </div>
-            <div
-              class="usuarios-cupo__barra"
-              role="progressbar"
-              aria-label="Cupo de usuarios administrativos usado"
-              :aria-valuenow="CUPO_PLAN.usados"
-              aria-valuemin="0"
-              :aria-valuemax="CUPO_PLAN.limite"
-            >
-              <div class="usuarios-cupo__relleno" :style="{ width: `${porcentajeCupo}%` }" />
-            </div>
-          </div>
-          <div class="usuarios-cupo__valor">{{ CUPO_PLAN.usados }} de {{ CUPO_PLAN.limite }}</div>
+        <div v-if="usuarios.isPending.value" class="usuarios-vista" aria-busy="true">
+          <q-skeleton type="rect" height="64px" class="usuarios-skeleton" />
+          <q-skeleton type="rect" height="320px" class="usuarios-skeleton" />
         </div>
 
-        <div v-if="error" class="usuarios-error" role="alert">
-          <div class="usuarios-error__texto">
-            <strong>Tu plan permite {{ CUPO_PLAN.limite }} usuarios administrativos.</strong>
-            Desactiva a uno o sube al plan Completo (4 usuarios). Presidente, vicepresidente,
-            secretario, guardia y residentes no cuentan.
-          </div>
-          <router-link :to="{ name: 'configuracion-suscripcion' }" class="usuarios-error__subir">
-            Subir de plan
-          </router-link>
-          <button type="button" class="usuarios-error__cerrar" @click="error = false">
-            Entendido
-          </button>
+        <div v-else-if="usuarios.isError.value" class="safic-alerta" role="alert">
+          {{ usuarios.error.value?.mensaje }}
+          <q-btn flat no-caps dense label="Reintentar" @click="usuarios.refetch()" />
         </div>
 
-        <div class="usuarios-tabla">
-          <div class="usuarios-tabla__desplazable">
-            <div class="usuarios-tabla__rejilla usuarios-tabla__cabecera">
-              <div>PERSONA</div>
-              <div>ROLES</div>
-              <div>CUENTA CUPO</div>
-              <div>ACCESO HASTA</div>
+        <template v-else-if="lista">
+          <div class="usuarios-cupo">
+            <div class="usuarios-cupo__textos">
+              <div class="usuarios-cupo__etiqueta">
+                Usuarios administrativos<template v-if="lista.cupo.plan">
+                  · plan {{ lista.cupo.plan }}</template
+                >
+              </div>
+              <div
+                v-if="lista.cupo.limite !== null"
+                class="usuarios-cupo__barra"
+                role="progressbar"
+                aria-label="Cupo de usuarios administrativos usado"
+                :aria-valuenow="lista.cupo.usados"
+                aria-valuemin="0"
+                :aria-valuemax="lista.cupo.limite"
+              >
+                <div
+                  class="usuarios-cupo__relleno"
+                  :style="{ width: `${porcentajeCupo(lista.cupo)}%` }"
+                />
+              </div>
             </div>
-            <button
-              v-for="(u, i) in USUARIOS"
-              :key="u.nombre"
-              type="button"
-              class="usuarios-tabla__rejilla usuarios-tabla__fila"
-              :class="{ 'usuarios-tabla__fila--activa': i === seleccionado }"
-              :aria-pressed="i === seleccionado"
-              @click="seleccionado = i"
-            >
-              <div>
-                <div class="usuarios-tabla__nombre">{{ u.nombre }}</div>
-                <div class="usuarios-tabla__correo">{{ u.correo }}</div>
-              </div>
-              <div class="usuarios-tabla__suave">{{ u.roles }}</div>
-              <div>
-                <EstadoBadge :tono="u.cuentaCupo ? 'alerta' : 'neutro'">
-                  {{ u.cuentaCupo ? 'Sí' : 'No' }}
-                </EstadoBadge>
-              </div>
-              <div class="usuarios-tabla__suave">{{ u.accesoHasta }}</div>
-            </button>
+            <div class="usuarios-cupo__valor">{{ textoCupo(lista.cupo) }}</div>
           </div>
-        </div>
+
+          <div v-if="haySinCupo(lista.cupo)" class="usuarios-error" role="status">
+            <div class="usuarios-error__texto">
+              <strong>Tu plan permite {{ lista.cupo.limite }} usuarios administrativos.</strong>
+              Desactiva a uno o sube de plan. Presidente, vicepresidente, secretario, guardia,
+              mantenimiento y residentes no cuentan.
+            </div>
+            <router-link :to="{ name: 'configuracion-suscripcion' }" class="usuarios-error__subir">
+              Subir de plan
+            </router-link>
+          </div>
+
+          <div v-if="!lista.usuarios.length" class="usuarios-vacio">
+            <q-icon :name="ICONOS.vacio" size="36px" />
+            <div>Todavía no hay personas en el equipo.</div>
+          </div>
+
+          <div v-else class="usuarios-tabla">
+            <div class="usuarios-tabla__desplazable">
+              <div class="usuarios-tabla__rejilla usuarios-tabla__cabecera">
+                <div>PERSONA</div>
+                <div>ROLES</div>
+                <div>CUENTA CUPO</div>
+                <div>ACCESO HASTA</div>
+              </div>
+              <button
+                v-for="u in lista.usuarios"
+                :key="u.id"
+                type="button"
+                class="usuarios-tabla__rejilla usuarios-tabla__fila"
+                :class="{ 'usuarios-tabla__fila--activa': u.id === usuarioSeleccionado?.id }"
+                :aria-pressed="u.id === usuarioSeleccionado?.id"
+                @click="seleccionadoId = u.id"
+              >
+                <div>
+                  <div class="usuarios-tabla__nombre">
+                    {{ u.nombre }}
+                    <EstadoBadge v-if="u.estado !== 'activo'" :tono="ESTADOS[u.estado].tono">
+                      {{ ESTADOS[u.estado].texto }}
+                    </EstadoBadge>
+                  </div>
+                  <div class="usuarios-tabla__correo">{{ u.email }}</div>
+                </div>
+                <div class="usuarios-tabla__suave">{{ textoRoles(u.roles) }}</div>
+                <div>
+                  <EstadoBadge :tono="u.cuenta_cupo ? 'alerta' : 'neutro'">
+                    {{ u.cuenta_cupo ? 'Sí' : 'No' }}
+                  </EstadoBadge>
+                </div>
+                <div class="usuarios-tabla__suave">
+                  {{ u.acceso_hasta ? formatoFecha(u.acceso_hasta) : '—' }}
+                </div>
+              </button>
+            </div>
+          </div>
+        </template>
       </div>
 
       <!-- Vista: directiva -->
       <div v-else class="usuarios-vista">
+        <div class="usuarios-previa" role="note">
+          Vista previa · datos de ejemplo. Los cargos de la directiva se conectan en la siguiente
+          entrega.
+        </div>
         <div class="usuarios-directiva__intro">
           Cada cargo lo ocupa <strong>una sola persona</strong> y una persona ocupa
           <strong>un solo cargo</strong>. Para reemplazar a alguien usa <strong>Cambiar</strong>: se
@@ -113,7 +142,17 @@
     </section>
 
     <aside class="usuarios-lateral">
-      <UsuariosPanelAcceso v-if="vista === 'usuarios'" :usuario="usuarioSeleccionado" />
+      <template v-if="vista === 'usuarios'">
+        <UsuariosPanelAcceso
+          v-if="usuarioSeleccionado"
+          :key="usuarioSeleccionado.id"
+          :usuario="usuarioSeleccionado"
+        />
+        <div v-else class="usuarios-reglas">
+          <h2>Acceso de cada persona</h2>
+          <div>Elige a alguien de la lista para cambiar su perfil, su vigencia o su acceso.</div>
+        </div>
+      </template>
       <UsuariosCambioCargo
         v-else-if="cargoEnCambio"
         :key="cargoEnCambio.cargo"
@@ -138,24 +177,24 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { useQuasar } from 'quasar';
+import { computed, ref, watch } from 'vue';
 
 import EstadoBadge from '@/components/EstadoBadge.vue';
 import PaginaEncabezado from '@/components/PaginaEncabezado.vue';
+import { ICONOS } from '@/core/navigation/icons';
+import { useSessionStore } from '@/stores/session';
+import { formatoFecha } from '@/utils/formato';
 
+import UsuarioInvitarDialog from '../components/UsuarioInvitarDialog.vue';
 import UsuariosCambioCargo, {
   type ConfirmacionCambio,
 } from '../components/UsuariosCambioCargo.vue';
 import UsuariosCargoTarjeta from '../components/UsuariosCargoTarjeta.vue';
 import UsuariosPanelAcceso from '../components/UsuariosPanelAcceso.vue';
-import {
-  CUPO_PLAN,
-  DIRECTIVA,
-  NUEVO_PERIODO,
-  USUARIO_INICIAL,
-  USUARIOS,
-  type CargoDirectiva,
-} from '../demo/usuarios';
+import { useUsuarios } from '../composables/useUsuarios';
+import { DIRECTIVA, NUEVO_PERIODO, type CargoDirectiva } from '../demo/usuarios';
+import { ESTADOS, haySinCupo, porcentajeCupo, textoCupo, textoRoles } from '../usuarios.logica';
 
 type Vista = 'usuarios' | 'directiva';
 
@@ -164,19 +203,40 @@ const VISTAS: { clave: Vista; texto: string }[] = [
   { clave: 'directiva', texto: 'Directiva' },
 ];
 
+const $q = useQuasar();
+const session = useSessionStore();
+const usuarios = useUsuarios();
 const vista = ref<Vista>('usuarios');
-const seleccionado = ref(USUARIO_INICIAL);
-const error = ref(false);
+const seleccionadoId = ref<number | null>(null);
 
+const lista = computed(() => usuarios.data.value ?? null);
+
+// Un id de persona de otro condominio no debe quedar preseleccionado
+watch(
+  () => session.condominioId,
+  () => {
+    seleccionadoId.value = null;
+  },
+);
+
+// Por omisión se muestra a la primera persona; si desaparece de la lista, vuelve a la primera
+const usuarioSeleccionado = computed(
+  () =>
+    lista.value?.usuarios.find((u) => u.id === seleccionadoId.value) ??
+    lista.value?.usuarios[0] ??
+    null,
+);
+
+function agregar(): void {
+  $q.dialog({ component: UsuarioInvitarDialog }).onOk((persona: { id: number }) => {
+    seleccionadoId.value = persona.id;
+  });
+}
+
+// ---------- Directiva (vista previa con datos de ejemplo) ----------
 const cargos = ref<CargoDirectiva[]>(DIRECTIVA.map((c) => ({ ...c })));
 const cambio = ref<number | null>(null);
 const mensajeOk = ref('');
-
-const porcentajeCupo = computed(() =>
-  Math.min(100, Math.round((CUPO_PLAN.usados / CUPO_PLAN.limite) * 100)),
-);
-
-const usuarioSeleccionado = computed(() => USUARIOS[seleccionado.value] ?? USUARIOS[0]!);
 
 const cargoEnCambio = computed(() =>
   cambio.value === null ? null : (cargos.value[cambio.value] ?? null),
@@ -256,6 +316,39 @@ function confirmarCambio(datos: ConfirmacionCambio) {
   gap: 14px;
   flex-grow: 1;
   min-height: 0;
+}
+
+.usuarios-skeleton {
+  border-radius: 14px;
+}
+
+.usuarios-vacio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 40px 16px;
+  color: var(--safic-texto-suave);
+  background: var(--safic-superficie);
+  border: 1px solid var(--safic-borde);
+  border-radius: 14px;
+}
+
+.usuarios-previa {
+  align-self: flex-start;
+  padding: 6px 12px;
+  border-radius: 10px;
+  background: #fff7ec;
+  color: #7a3808;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.usuarios-tabla__nombre {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 /* Cupo del plan */

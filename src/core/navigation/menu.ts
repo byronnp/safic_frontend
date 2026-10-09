@@ -196,7 +196,6 @@ export const MENU_BASE: ItemMenu[] = [
         icono: ICONOS.usuarios,
         ruta: 'configuracion-usuarios',
         permiso: 'usuarios.gestionar',
-        vistaPrevia: true,
       },
       {
         id: 'configuracion.roles',
