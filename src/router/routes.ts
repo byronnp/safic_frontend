@@ -290,12 +290,12 @@ const routes: RouteRecordRaw[] = [
         'Planes y módulos',
         () => import('@/modules/plataforma/pages/PlanesPage.vue'),
       ),
-      previa(
-        'amenidades',
-        'plataforma-amenidades',
-        'Catálogo de amenidades',
-        () => import('@/modules/plataforma/pages/CatalogoAmenidadesPage.vue'),
-      ),
+      {
+        path: 'amenidades',
+        name: 'plataforma-amenidades',
+        component: () => import('@/modules/plataforma/pages/CatalogoAmenidadesPage.vue'),
+        meta: { permiso: 'plataforma.condominios', titulo: 'Catálogo de amenidades' },
+      },
       previa(
         'roles',
         'plataforma-roles',

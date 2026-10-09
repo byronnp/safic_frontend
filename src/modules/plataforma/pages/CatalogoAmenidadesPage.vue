@@ -9,6 +9,7 @@
             color="primary"
             class="safic-btn catalogo__nueva"
             label="Nueva amenidad"
+            :disable="ocupado"
             @click="nueva"
           />
         </template>
@@ -52,97 +53,132 @@
             <div>{{ ambito === 'global' ? 'EN USO' : 'CONDOMINIO' }}</div>
             <div>ESTADO</div>
           </div>
-          <button
-            v-for="x in filas"
-            :key="x.id"
-            type="button"
-            class="catalogo__fila catalogo__registro"
-            :class="{
-              'catalogo__registro--activo': !nuevoActivo && x.id === seleccion?.id,
-              'catalogo__registro--inactivo': !x.activa,
-            }"
-            :style="{ gridTemplateColumns: columnas }"
-            :aria-pressed="!nuevoActivo && x.id === seleccion?.id"
-            @click="seleccionar(x.id)"
+
+          <div v-if="consulta.isPending.value" class="catalogo__estado" aria-busy="true">
+            <q-skeleton v-for="i in 5" :key="i" type="rect" height="44px" class="q-mb-sm" />
+          </div>
+          <div
+            v-else-if="consulta.isError.value"
+            class="catalogo__estado safic-alerta"
+            role="alert"
           >
-            <div class="catalogo__amenidad">
-              <CatalogoAmenidadesIcono
-                :texto="iniciales(x.nombre)"
-                :categoria="x.categoria"
-                :tamano="36"
-              />
-              <div class="catalogo__textos">
-                <div class="catalogo__nombre" :title="x.nombre">{{ x.nombre }}</div>
-                <div class="catalogo__descripcion" :title="x.descripcion">{{ x.descripcion }}</div>
+            {{ consulta.error.value?.mensaje }}
+            <q-btn flat no-caps dense label="Reintentar" @click="consulta.refetch()" />
+          </div>
+          <template v-else>
+            <button
+              v-for="x in filas"
+              :key="`${ambito}-${x.id}-${'condominio_id' in x ? x.condominio_id : 0}`"
+              type="button"
+              class="catalogo__fila catalogo__registro"
+              :class="{
+                'catalogo__registro--activo': !nuevoActivo && clave(x) === claveSeleccion,
+                'catalogo__registro--inactivo': !x.activa,
+              }"
+              :style="{ gridTemplateColumns: columnas }"
+              :aria-pressed="!nuevoActivo && clave(x) === claveSeleccion"
+              @click="seleccionar(x)"
+            >
+              <div class="catalogo__amenidad">
+                <CatalogoAmenidadesIcono
+                  :texto="inicialesTipo(x.nombre)"
+                  :categoria="x.categoria"
+                  :tamano="36"
+                />
+                <div class="catalogo__textos">
+                  <div class="catalogo__nombre" :title="x.nombre">{{ x.nombre }}</div>
+                  <div
+                    v-if="'descripcion' in x"
+                    class="catalogo__descripcion"
+                    :title="x.descripcion ?? ''"
+                  >
+                    {{ x.descripcion }}
+                  </div>
+                </div>
               </div>
-            </div>
-            <div class="catalogo__celda">{{ CATEGORIAS_AMENIDAD[x.categoria].nombre }}</div>
-            <div class="catalogo__chips">
-              <span
-                v-for="t in etiquetas(x)"
-                :key="t.texto"
-                class="chip"
-                :class="`chip--${t.tono}`"
-              >
-                {{ t.texto }}
-              </span>
-            </div>
-            <div class="catalogo__celda catalogo__celda--fuerte">
+              <div class="catalogo__celda">{{ etiquetaCategoria(x.categoria) }}</div>
+              <div class="catalogo__chips">
+                <span
+                  v-for="t in etiquetasTipo(x)"
+                  :key="t.texto"
+                  class="chip"
+                  :class="`chip--${t.tono}`"
+                >
+                  {{ t.texto }}
+                </span>
+              </div>
+              <div class="catalogo__celda catalogo__celda--fuerte">
+                {{ textoUso(x) }}
+              </div>
+              <div>
+                <span class="chip" :class="x.activa ? 'chip--exito' : 'chip--apagada'">
+                  {{ x.activa ? 'Activa' : 'Inactiva' }}
+                </span>
+              </div>
+            </button>
+            <div v-if="!filas.length" class="catalogo__vacio">
               {{
-                ambito === 'global' ? (x.uso ? `${x.uso} condominios` : 'Sin uso') : x.condominio
+                ambito === 'global'
+                  ? 'No hay amenidades en esta categoría.'
+                  : 'Ningún condominio ha creado amenidades propias en esta categoría.'
               }}
             </div>
-            <div>
-              <span class="chip" :class="x.activa ? 'chip--exito' : 'chip--apagada'">
-                {{ x.activa ? 'Activa' : 'Inactiva' }}
-              </span>
-            </div>
-          </button>
-          <div v-if="!filas.length" class="catalogo__vacio">
-            No hay amenidades en esta categoría.
-          </div>
+          </template>
         </div>
       </div>
     </section>
 
-    <aside v-if="actual" class="panel" aria-label="Detalle de la amenidad">
+    <aside v-if="formulario" class="panel" aria-label="Detalle de la amenidad">
       <div class="panel__cabecera">
         <CatalogoAmenidadesIcono
-          :texto="nuevoActivo ? '+' : iniciales(actual.nombre)"
-          :categoria="actual.categoria"
+          :texto="nuevoActivo ? '+' : inicialesTipo(formulario.nombre)"
+          :categoria="formulario.categoria"
           :tamano="48"
         />
         <div class="panel__titulos">
           <div class="panel__tipo">{{ tituloPanel }}</div>
-          <div class="panel__nombre">{{ actual.nombre || 'Nueva amenidad' }}</div>
+          <div class="panel__nombre">{{ formulario.nombre || 'Nueva amenidad' }}</div>
         </div>
       </div>
 
-      <div v-if="ambito === 'propias' && !nuevoActivo" class="panel__propia">
-        Creada por el administrador de <strong>{{ actual.condominio }}</strong
+      <div v-if="propiaActual" class="panel__propia">
+        Creada por el administrador de <strong>{{ propiaActual.condominio }}</strong
         >. Solo ese condominio la ve. Si otros la piden, promuévela al catálogo global.
       </div>
 
       <label class="panel__campo">
         Nombre
-        <input v-model="actual.nombre" class="panel__control" />
+        <input
+          v-model="formulario.nombre"
+          class="panel__control"
+          maxlength="80"
+          :disabled="soloLectura"
+        />
+      </label>
+      <label v-if="!propiaActual" class="panel__campo">
+        Descripción
+        <input v-model="formulario.descripcion" class="panel__control" maxlength="200" />
       </label>
       <div class="panel__par">
         <label class="panel__campo">
           Categoría
-          <select v-model="actual.categoria" class="panel__control panel__control--select">
-            <option v-for="(c, clave) in CATEGORIAS_AMENIDAD" :key="clave" :value="clave">
-              {{ c.nombre }}
+          <select
+            v-model="formulario.categoria"
+            class="panel__control panel__control--select"
+            :disabled="soloLectura"
+          >
+            <option v-for="c in CATEGORIAS" :key="c.valor" :value="c.valor">
+              {{ c.etiqueta }}
             </option>
           </select>
         </label>
         <label class="panel__campo">
           Orden
           <input
+            v-model="formulario.orden"
             class="panel__control"
             inputmode="numeric"
-            :value="actual.orden"
-            @input="actual.orden = Number(($event.target as HTMLInputElement).value) || 0"
+            :disabled="soloLectura"
           />
         </label>
       </div>
@@ -154,29 +190,31 @@
             <div class="panel__interruptor-ayuda">{{ s.ayuda }}</div>
           </div>
           <CatalogoAmenidadesInterruptor
-            :model-value="actual[s.campo]"
+            :model-value="formulario[s.campo]"
             :etiqueta="s.etiqueta"
+            :disabled="soloLectura"
             @update:model-value="alternar(s.campo, $event)"
           />
         </div>
       </div>
 
-      <div v-if="actual.reservable" class="panel__par">
+      <div v-if="formulario.reservable" class="panel__par">
         <label class="panel__campo">
           Capacidad sugerida
           <input
+            v-model="formulario.capacidad"
             class="panel__control"
             inputmode="numeric"
-            :value="actual.capacidad || ''"
-            @input="actual.capacidad = Number(($event.target as HTMLInputElement).value) || 0"
+            :disabled="soloLectura"
           />
         </label>
         <label class="panel__campo">
           Duración máxima
           <input
+            v-model="formulario.duracion"
             class="panel__control"
-            :value="actual.duracion === '—' ? '' : actual.duracion"
-            @input="actual.duracion = ($event.target as HTMLInputElement).value || '—'"
+            placeholder="3 h"
+            :disabled="soloLectura"
           />
         </label>
       </div>
@@ -190,12 +228,24 @@
           type="button"
           class="panel__boton panel__boton--secundario"
           :class="`panel__boton--${secundario.tono}`"
-          @click="accionSecundaria"
+          :disabled="ocupado || (secundario.accion === 'alternar' && hayCambios)"
+          :title="
+            secundario.accion === 'alternar' && hayCambios
+              ? 'Guarda o descarta los cambios antes'
+              : undefined
+          "
+          @click="ejecutarSecundaria"
         >
           {{ secundario.texto }}
         </button>
-        <button type="button" class="panel__boton panel__boton--principal" @click="guardar">
-          {{ nuevoActivo ? 'Crear amenidad' : 'Guardar cambios' }}
+        <button
+          v-if="!propiaActual"
+          type="button"
+          class="panel__boton panel__boton--principal"
+          :disabled="ocupado || (!nuevoActivo && !hayCambios)"
+          @click="guardar"
+        >
+          {{ ocupado ? 'Guardando…' : nuevoActivo ? 'Crear amenidad' : 'Guardar cambios' }}
         </button>
       </div>
     </aside>
@@ -204,24 +254,42 @@
 
 <script setup lang="ts">
 import { useQuasar } from 'quasar';
-import { computed, ref, watch } from 'vue';
+import { computed, nextTick, reactive, ref, watch } from 'vue';
 
 import PaginaEncabezado from '@/components/PaginaEncabezado.vue';
+import { aApiError } from '@/core/api/errors';
+import { CATEGORIAS } from '@/modules/configuracion/amenidades.logica';
+import type { CategoriaAmenidad } from '@/modules/configuracion/services/amenidades.service';
 import CatalogoAmenidadesIcono from '@/modules/plataforma/components/CatalogoAmenidadesIcono.vue';
 import CatalogoAmenidadesInterruptor from '@/modules/plataforma/components/CatalogoAmenidadesInterruptor.vue';
+
 import {
-  AMENIDADES_GLOBALES,
-  AMENIDADES_PROPIAS,
-  CATEGORIAS_AMENIDAD,
-} from '@/modules/plataforma/demo/catalogo-amenidades';
-import type {
-  AmenidadCatalogo,
-  CategoriaAmenidad,
-} from '@/modules/plataforma/demo/catalogo-amenidades';
+  accionSecundaria,
+  alternarInterruptor,
+  avisoTipo,
+  CAMPOS_API_TIPO,
+  cambiosTipo,
+  etiquetasTipo,
+  formularioDesde,
+  formularioNuevo,
+  inicialesTipo,
+  peticionNueva,
+  validarTipo,
+  type CampoInterruptor,
+  type FormularioTipo,
+} from '../catalogo-amenidades.logica';
+import {
+  useCrearTipo,
+  useEditarTipo,
+  useEliminarTipo,
+  usePromoverPropia,
+  usePropiasCatalogo,
+  useTiposCatalogo,
+} from '../composables/useCatalogoAmenidades';
+import type { AmenidadPropia, TipoCatalogo } from '../services/catalogo-amenidades.service';
 
 type Ambito = 'global' | 'propias';
-type CampoInterruptor = 'reservable' | 'esencial' | 'requiereAprobacion' | 'activa';
-type Tono = 'exito' | 'info' | 'alerta' | 'neutro' | 'error';
+type Fila = TipoCatalogo | AmenidadPropia;
 
 const $q = useQuasar();
 
@@ -240,222 +308,324 @@ const INTERRUPTORES: { campo: CampoInterruptor; etiqueta: string; ayuda: string 
   { campo: 'activa', etiqueta: 'Activa', ayuda: 'Inactiva: no aparece para nuevos condominios' },
 ];
 
-const globales = ref<AmenidadCatalogo[]>(AMENIDADES_GLOBALES.map((x) => ({ ...x })));
-const propias = ref<AmenidadCatalogo[]>(AMENIDADES_PROPIAS.map((x) => ({ ...x })));
-
 const ambito = ref<Ambito>('global');
 const categoria = ref<CategoriaAmenidad | 'todas'>('todas');
-const seleccionId = ref<number>(globales.value[0]?.id ?? 0);
+const claveSeleccion = ref<string | null>(null);
 const nuevoActivo = ref(false);
 const guardado = ref(false);
-const errorNombre = ref('');
-const borrador = ref<AmenidadCatalogo>(borradorVacio());
+const errorGeneral = ref<string | null>(null);
 
-function borradorVacio(): AmenidadCatalogo {
-  return {
-    id: 0,
-    nombre: 'Nueva amenidad',
-    categoria: 'rec',
-    descripcion: '',
-    reservable: true,
-    esencial: false,
-    requiereAprobacion: false,
-    activa: true,
-    capacidad: 0,
-    duracion: '—',
-    orden: globales.value.length + 1,
-    uso: 0,
-    condominio: '',
-  };
-}
+const tipos = useTiposCatalogo();
+const propias = usePropiasCatalogo(computed(() => ambito.value === 'propias'));
+const crear = useCrearTipo();
+const editar = useEditarTipo();
+const eliminar = useEliminarTipo();
+const promover = usePromoverPropia();
 
-const lista = computed(() => (ambito.value === 'global' ? globales.value : propias.value));
+const consulta = computed(() => (ambito.value === 'global' ? tipos : propias));
+const ocupado = computed(
+  () =>
+    crear.isPending.value ||
+    editar.isPending.value ||
+    eliminar.isPending.value ||
+    promover.isPending.value,
+);
+
+const lista = computed<Fila[]>(
+  () => (ambito.value === 'global' ? tipos.data.value : propias.data.value) ?? [],
+);
 const columnas = computed(() =>
   ambito.value === 'global' ? '1.6fr 110px 190px 130px 100px' : '1.6fr 110px 190px 170px 100px',
 );
 
 const ambitos = computed<{ valor: Ambito; etiqueta: string }[]>(() => [
-  { valor: 'global', etiqueta: `Globales (${globales.value.length})` },
-  { valor: 'propias', etiqueta: `Propias de condominios (${propias.value.length})` },
+  {
+    valor: 'global',
+    etiqueta: `Globales${tipos.data.value ? ` (${tipos.data.value.length})` : ''}`,
+  },
+  {
+    valor: 'propias',
+    etiqueta: `Propias de condominios${propias.data.value ? ` (${propias.data.value.length})` : ''}`,
+  },
 ]);
 
-const categorias: { valor: CategoriaAmenidad | 'todas'; etiqueta: string }[] = [
+const categorias = computed<{ valor: CategoriaAmenidad | 'todas'; etiqueta: string }[]>(() => [
   { valor: 'todas', etiqueta: 'Todas' },
-  ...(Object.keys(CATEGORIAS_AMENIDAD) as CategoriaAmenidad[]).map((k) => ({
-    valor: k,
-    etiqueta: CATEGORIAS_AMENIDAD[k].nombre,
-  })),
-];
+  ...CATEGORIAS.map((c) => ({ valor: c.valor, etiqueta: c.etiqueta })),
+]);
 
 const filas = computed(() =>
   lista.value.filter((x) => categoria.value === 'todas' || x.categoria === categoria.value),
 );
 
-const seleccion = computed(
-  () => lista.value.find((x) => x.id === seleccionId.value) ?? lista.value[0],
+/** Una fila se identifica por ámbito, condominio (si es propia) e id. */
+function clave(x: Fila): string {
+  return `${ambito.value}:${'condominio_id' in x ? x.condominio_id : 0}:${x.id}`;
+}
+
+const seleccion = computed<Fila | null>(
+  () => lista.value.find((x) => clave(x) === claveSeleccion.value) ?? lista.value[0] ?? null,
 );
-const actual = computed(() => (nuevoActivo.value ? borrador.value : seleccion.value));
+const propiaActual = computed(() =>
+  !nuevoActivo.value &&
+  ambito.value === 'propias' &&
+  seleccion.value &&
+  'condominio_id' in seleccion.value
+    ? seleccion.value
+    : null,
+);
+const tipoActual = computed(() =>
+  !nuevoActivo.value && ambito.value === 'global' && seleccion.value && 'orden' in seleccion.value
+    ? seleccion.value
+    : null,
+);
+const soloLectura = computed(() => propiaActual.value !== null);
 
-/** Iniciales como en el mockup: palabras de más de 2 letras o con números. */
-function iniciales(nombre: string): string {
-  return nombre
-    .split(' ')
-    .filter((w) => w.length > 2 || /\d/.test(w))
-    .map((w) => w.charAt(0).toUpperCase())
-    .join('')
-    .slice(0, 2);
-}
+const formulario = ref<FormularioTipo | null>(null);
+const errores = reactive<{
+  nombre?: string | undefined;
+  orden?: string | undefined;
+  capacidad?: string | undefined;
+  duracion?: string | undefined;
+}>({});
 
-function etiquetas(x: AmenidadCatalogo): { texto: string; tono: Tono | 'apagada' }[] {
-  const t: { texto: string; tono: Tono | 'apagada' }[] = [];
-  if (x.reservable) t.push({ texto: 'Reservable', tono: 'exito' });
-  if (x.esencial) t.push({ texto: 'Esencial', tono: 'info' });
-  if (x.requiereAprobacion) t.push({ texto: 'Con aprobación', tono: 'alerta' });
-  if (!t.length) t.push({ texto: 'Informativa', tono: 'neutro' });
-  return t;
-}
+// El panel parte de lo guardado cuando cambia la fila elegida (no en cada refresco de la
+// lista, que borraría lo que se está escribiendo)
+const claveActual = computed(() => (seleccion.value ? clave(seleccion.value) : null));
+watch(
+  [claveActual, nuevoActivo],
+  () => {
+    if (nuevoActivo.value) {
+      return;
+    }
+    formulario.value = seleccion.value ? formularioDesde(seleccion.value) : null;
+    limpiar();
+  },
+  { immediate: true },
+);
+
+const hayCambios = computed(
+  () =>
+    !!formulario.value &&
+    !!tipoActual.value &&
+    Object.keys(cambiosTipo(formulario.value, tipoActual.value)).length > 0,
+);
 
 const tituloPanel = computed(() => {
   if (nuevoActivo.value) return 'Nueva amenidad global';
   return ambito.value === 'global' ? 'Amenidad global' : 'Amenidad propia';
 });
 
-const aviso = computed<{ texto: string; tono: Tono | 'uso' }>(() => {
-  const x = actual.value;
-  if (errorNombre.value) return { texto: errorNombre.value, tono: 'error' };
-  if (guardado.value) {
-    return {
-      texto: 'Cambios guardados. Los condominios que ya la usan conservan su propia configuración.',
-      tono: 'exito',
-    };
-  }
-  if (nuevoActivo.value) {
-    return { texto: 'El nombre no puede repetirse en el catálogo global.', tono: 'neutro' };
-  }
-  if (ambito.value === 'global' && x && x.uso > 0) {
-    return {
-      texto: `Usada en ${x.uso} condominios: no se puede eliminar, solo desactivar. Cambiar los valores sugeridos no altera a quienes ya la configuraron.`,
-      tono: 'uso',
-    };
-  }
-  if (ambito.value === 'global') {
-    return { texto: 'Ningún condominio la usa. Se puede eliminar.', tono: 'neutro' };
-  }
-  return {
-    texto: 'Al promoverla pasa al catálogo global y el condominio la conserva sin cambios.',
-    tono: 'info',
-  };
-});
+const uso = computed(() => tipoActual.value?.uso ?? 0);
 
-const secundario = computed<{ texto: string; tono: 'normal' | 'peligro' | 'azul' }>(() => {
-  if (ambito.value === 'propias' && !nuevoActivo.value) {
-    return { texto: 'Promover a global', tono: 'azul' };
-  }
-  if (nuevoActivo.value) return { texto: 'Cancelar', tono: 'normal' };
-  const x = actual.value;
-  if (x && x.uso > 0) return { texto: x.activa ? 'Desactivar' : 'Activar', tono: 'normal' };
-  return { texto: 'Eliminar', tono: 'peligro' };
-});
+const aviso = computed(() =>
+  avisoTipo({
+    ambito: ambito.value,
+    nuevo: nuevoActivo.value,
+    guardado: guardado.value,
+    error: errorGeneral.value ?? Object.values(errores)[0] ?? null,
+    uso: uso.value,
+  }),
+);
 
-// Cualquier edición del registro abierto quita el aviso de "guardado".
+const secundario = computed(() =>
+  accionSecundaria({
+    ambito: ambito.value,
+    nuevo: nuevoActivo.value,
+    uso: uso.value,
+    // Lo guardado, no el interruptor sin guardar: la acción usa este mismo valor
+    activa: tipoActual.value?.activa ?? true,
+  }),
+);
+
+function etiquetaCategoria(c: CategoriaAmenidad | null): string {
+  return CATEGORIAS.find((x) => x.valor === c)?.etiqueta ?? '—';
+}
+
+function textoUso(x: Fila): string {
+  if ('condominio' in x) return x.condominio;
+  return x.uso ? `${x.uso} ${x.uso === 1 ? 'condominio' : 'condominios'}` : 'Sin uso';
+}
+
+function limpiar(): void {
+  errores.nombre = undefined;
+  errores.orden = undefined;
+  errores.capacidad = undefined;
+  errores.duracion = undefined;
+  errorGeneral.value = null;
+  guardado.value = false;
+}
+
+// Cualquier edición quita el aviso de "guardado"
 watch(
-  () => (actual.value ? { ...actual.value } : null),
+  () => (formulario.value ? { ...formulario.value } : null),
   (nuevo, anterior) => {
-    if (nuevo && anterior && nuevo.id === anterior.id) {
+    if (nuevo && anterior) {
       guardado.value = false;
-      errorNombre.value = '';
     }
   },
 );
 
 function cambiarAmbito(valor: Ambito): void {
+  if (ocupado.value) return;
   ambito.value = valor;
   categoria.value = 'todas';
   nuevoActivo.value = false;
-  guardado.value = false;
-  errorNombre.value = '';
-  seleccionId.value = lista.value[0]?.id ?? 0;
+  claveSeleccion.value = null;
+  limpiar();
 }
 
-function seleccionar(id: number): void {
-  seleccionId.value = id;
+function seleccionar(x: Fila): void {
+  if (ocupado.value) return;
+  claveSeleccion.value = clave(x);
   nuevoActivo.value = false;
-  guardado.value = false;
-  errorNombre.value = '';
+  limpiar();
 }
 
 function nueva(): void {
   ambito.value = 'global';
-  borrador.value = borradorVacio();
+  formulario.value = formularioNuevo(
+    Math.max(0, ...(tipos.data.value ?? []).map((t) => t.orden)) + 1,
+  );
   nuevoActivo.value = true;
-  guardado.value = false;
-  errorNombre.value = '';
+  limpiar();
 }
 
 function alternar(campo: CampoInterruptor, valor: boolean): void {
-  const x = actual.value;
-  if (!x) return;
-  x[campo] = valor;
-  // Reservable y esencial se excluyen: una esencial no se reserva.
-  if (campo === 'esencial' && valor) x.reservable = false;
-  if (campo === 'reservable' && valor) x.esencial = false;
+  if (formulario.value && !soloLectura.value) {
+    alternarInterruptor(formulario.value, campo, valor);
+  }
 }
 
-function guardar(): void {
-  const x = actual.value;
-  if (!x) return;
-  const nombre = x.nombre.trim();
-  if (!nombre) {
-    errorNombre.value = 'Escribe el nombre de la amenidad.';
-    return;
-  }
-  if (nuevoActivo.value) {
-    const repetida = globales.value.some((g) => g.nombre.toLowerCase() === nombre.toLowerCase());
-    if (repetida) {
-      errorNombre.value = `Ya existe «${nombre}» en el catálogo global.`;
-      return;
+function pintarErrorApi(e: unknown): void {
+  const apiError = aApiError(e);
+  let pintado = false;
+  for (const [campoApi, campo] of Object.entries(CAMPOS_API_TIPO)) {
+    const mensaje = apiError.campo(campoApi);
+    if (
+      mensaje &&
+      (campo === 'nombre' || campo === 'orden' || campo === 'capacidad' || campo === 'duracion')
+    ) {
+      errores[campo] = mensaje;
+      pintado = true;
+    } else if (mensaje) {
+      errorGeneral.value = mensaje;
+      pintado = true;
     }
-    const id = Math.max(0, ...globales.value.map((g) => g.id)) + 1;
-    globales.value.push({ ...x, id, nombre });
-    nuevoActivo.value = false;
-    seleccionId.value = id;
-    $q.notify({ type: 'positive', message: `${nombre} se agregó al catálogo global.` });
-    return;
   }
-  guardado.value = true;
+  if (!pintado) {
+    errorGeneral.value = apiError.mensaje;
+  }
 }
 
-function accionSecundaria(): void {
-  const x = actual.value;
-  if (!x) return;
-  if (nuevoActivo.value) {
+async function guardar(): Promise<void> {
+  const f = formulario.value;
+  if (!f || soloLectura.value) return;
+  limpiar();
+  Object.assign(errores, validarTipo(f));
+  if (Object.values(errores).some(Boolean)) return;
+
+  try {
+    if (nuevoActivo.value) {
+      const creado = await crear.mutateAsync(peticionNueva(f));
+      nuevoActivo.value = false;
+      claveSeleccion.value = `global:0:${creado.id}`;
+      $q.notify({ type: 'positive', message: `${creado.nombre} se agregó al catálogo global.` });
+    } else if (tipoActual.value) {
+      const actualizado = await editar.mutateAsync({
+        id: tipoActual.value.id,
+        datos: cambiosTipo(f, tipoActual.value),
+      });
+      formulario.value = formularioDesde(actualizado);
+      await nextTick(); // la edición del formulario quita el aviso: se muestra después
+      guardado.value = true;
+    }
+  } catch (e) {
+    pintarErrorApi(e);
+  }
+}
+
+function confirmar(
+  titulo: string,
+  mensaje: string,
+  boton: string,
+  color: string,
+  accion: () => void,
+): void {
+  $q.dialog({
+    title: titulo,
+    message: mensaje,
+    cancel: { label: 'Cancelar', flat: true, noCaps: true },
+    ok: { label: boton, color, unelevated: true, noCaps: true },
+    persistent: true,
+  }).onOk(accion);
+}
+
+async function promoverPropia(propia: AmenidadPropia): Promise<void> {
+  try {
+    await promover.mutateAsync({ condominioId: propia.condominio_id, amenidadId: propia.id });
+    $q.notify({ type: 'positive', message: `${propia.nombre} pasó al catálogo global.` });
+    claveSeleccion.value = null;
+  } catch (e) {
+    pintarErrorApi(e);
+  }
+}
+
+async function eliminarTipo(tipo: TipoCatalogo): Promise<void> {
+  try {
+    await eliminar.mutateAsync(tipo.id);
+    $q.notify({ type: 'positive', message: `${tipo.nombre} se eliminó del catálogo.` });
+    claveSeleccion.value = null;
+  } catch (e) {
+    pintarErrorApi(e);
+  }
+}
+
+function ejecutarSecundaria(): void {
+  const { accion } = secundario.value;
+  if (accion === 'cancelar') {
     nuevoActivo.value = false;
     return;
   }
-  if (ambito.value === 'propias') {
-    propias.value = propias.value.filter((p) => p.id !== x.id);
-    globales.value.push({
-      ...x,
-      id: Math.max(0, ...globales.value.map((g) => g.id)) + 1,
-      uso: 1,
-      condominio: '',
-      orden: globales.value.length + 1,
-    });
-    seleccionId.value = propias.value[0]?.id ?? 0;
-    $q.notify({ type: 'positive', message: `${x.nombre} pasó al catálogo global.` });
+
+  if (accion === 'promover' && propiaActual.value) {
+    // Se toma la fila al abrir el diálogo, no al confirmar
+    const propia = propiaActual.value;
+    confirmar(
+      'Promover a global',
+      `«${propia.nombre}» pasará al catálogo global y ${propia.condominio} la conserva sin cambios.`,
+      'Promover',
+      'primary',
+      () => void promoverPropia(propia),
+    );
     return;
   }
-  if (x.uso > 0) {
-    x.activa = !x.activa;
-    $q.notify({
-      type: 'positive',
-      message: x.activa ? `${x.nombre} está activa.` : `${x.nombre} quedó desactivada.`,
-    });
+
+  const tipo = tipoActual.value;
+  if (!tipo) return;
+
+  if (accion === 'alternar') {
+    void editar
+      .mutateAsync({ id: tipo.id, datos: { activa: !tipo.activa } })
+      .then(() =>
+        $q.notify({
+          type: 'positive',
+          message: tipo.activa
+            ? `${tipo.nombre} quedó desactivada.`
+            : `${tipo.nombre} está activa.`,
+        }),
+      )
+      .catch(pintarErrorApi);
     return;
   }
-  globales.value = globales.value.filter((g) => g.id !== x.id);
-  seleccionId.value = globales.value[0]?.id ?? 0;
-  $q.notify({ type: 'positive', message: `${x.nombre} se eliminó del catálogo.` });
+
+  confirmar(
+    'Eliminar del catálogo',
+    `«${tipo.nombre}» se elimina del catálogo. Ningún condominio la usa.`,
+    'Eliminar',
+    'negative',
+    () => void eliminarTipo(tipo),
+  );
 }
 </script>
 
@@ -592,6 +762,10 @@ function accionSecundaria(): void {
   display: flex;
   gap: 6px;
   flex-wrap: wrap;
+}
+
+.catalogo__estado {
+  padding: 16px;
 }
 
 .catalogo__vacio {
