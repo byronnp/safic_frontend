@@ -133,6 +133,12 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/modules/finanzas/pages/CuotasPage.vue'),
         meta: { permiso: 'finanzas.ver', titulo: 'Cuotas del mes' },
       },
+      {
+        path: 'finanzas/cierre',
+        name: 'finanzas-cierre-mes',
+        component: () => import('@/modules/finanzas/pages/CierreMesPage.vue'),
+        meta: { permiso: 'finanzas.ver', titulo: 'Cierre de mes' },
+      },
       previa(
         'finanzas/conciliacion',
         'finanzas-conciliacion',
