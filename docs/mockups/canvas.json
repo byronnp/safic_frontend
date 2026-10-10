@@ -618,6 +618,15 @@
       "h": 900,
       "page": "f6",
       "title": "Super admin y contador de plataforma · Reportes contables"
+    },
+    "F1EditarCondominio.dc.html": {
+      "x": 11580,
+      "y": 1300,
+      "w": 1440,
+      "h": 900,
+      "page": "f1",
+      "title": "Super admin · Editar condominio",
+      "is_interactive": true
     }
   },
   "createdOnFiles": {
@@ -829,7 +838,8 @@
     "F5RegistroMesa.dc.html",
     "F5Poder.dc.html",
     "F5MisAsambleas.dc.html",
-    "F6Reportes.dc.html"
+    "F6Reportes.dc.html",
+    "F1EditarCondominio.dc.html"
   ],
   "pages": [
     {
