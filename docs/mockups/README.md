@@ -50,6 +50,49 @@ tamaños, colores, espaciados e íconos (Material Symbols Rounded, `sym_r_<nombr
 | Guardia.dc.html | Guardia · Directorio | `/guardia/directorio` | modules/app-guardia/pages/DirectorioPage.vue |
 | F3GuardiaHoy.dc.html | Guardia · Reservas de hoy | `/guardia/reservas-hoy` | modules/app-guardia/pages/ReservasHoyPage.vue |
 
+### Agregados el 9-oct-2026
+
+Pantallas que pedían los documentos de arquitectura y no tenían mockup. Las rutas y archivos de las que aún no existen son propuestas: se confirman al construirlas.
+
+| Mockup | Pantalla | Ruta | Archivo |
+| --- | --- | --- | --- |
+| AuthRecuperar.dc.html | Recuperar contraseña (4 pasos) | `/recuperar` | modules/auth/pages/RecuperarPage.vue |
+| AuthInvitacion.dc.html | Aceptar invitación (aviso LOPDP) | `/invitacion/:token` | modules/auth/pages/InvitacionPage.vue |
+| AuthSelector.dc.html | Elegir condominio | `/condominios` | modules/auth/pages/SeleccionarCondominioPage.vue |
+| F1ContadorAcceso.dc.html | Contador · Primer ingreso: 2FA y acuerdo de confidencialidad | `/contador/acceso` | modules/auth/pages/ContadorAccesoPage.vue |
+| F1MisDispositivos.dc.html | Todos · Seguridad de mi cuenta y dispositivos | `/perfil/seguridad` | modules/perfil/pages/SeguridadPage.vue |
+| F1SinPermiso.dc.html | Todos · Sin permiso / módulo no incluido en el plan | `/sin-permiso` | pages/SinPermisoPage.vue |
+| F1Inicio.dc.html | Admin · Inicio | `/` | modules/inicio/pages/InicioPage.vue |
+| F1Bloques.dc.html | Admin · Bloques | `/unidades/bloques` | modules/unidades/pages/BloquesPage.vue |
+| F1Importar.dc.html | Admin · Importar Excel (vista previa) | `/unidades/importar` | modules/unidades/pages/ImportarPage.vue |
+| F1Persona.dc.html | Admin · Ficha de persona | `/personas/:id` | modules/unidades/pages/PersonaPage.vue |
+| F1Registros.dc.html | Admin · Registros de errores | `/configuracion/registros` | modules/configuracion/pages/RegistrosPage.vue |
+| F2Cuotas.dc.html | Admin · Cuotas del mes | `/finanzas/cuotas` | modules/finanzas/pages/CuotasPage.vue |
+| F2EstadoCuenta.dc.html | Admin · Detalle de unidad › Estado de cuenta | `/unidades/:id/estado-cuenta` | modules/unidades/pages/UnidadDetallePage.vue (pestaña) |
+| F2Aprobaciones.dc.html | Presidente · Aprobaciones pendientes (nivel 2) | `/finanzas/aprobaciones` | modules/finanzas/pages/AprobacionesPage.vue |
+| F2Proveedores.dc.html | Admin · Proveedores | `/finanzas/proveedores` | modules/finanzas/pages/ProveedoresPage.vue |
+| F2Recurrentes.dc.html | Admin · Gastos recurrentes | `/finanzas/recurrentes` | modules/finanzas/pages/GastosRecurrentesPage.vue |
+| F2CajaChica.dc.html | Admin · Caja chica | `/finanzas/caja-chica` | modules/finanzas/pages/CajaChicaPage.vue |
+| F2Morosidad.dc.html | Admin · Morosidad | `/finanzas/morosidad` | modules/finanzas/pages/MorosidadPage.vue |
+| F2CierreMes.dc.html | Admin · Cierre de mes | `/finanzas/cierre` | modules/finanzas/pages/CierreMesPage.vue |
+| F2Reportes.dc.html | Admin y contador · Reportes | `/finanzas/reportes` | modules/finanzas/pages/ReportesPage.vue |
+| F4Bitacora.dc.html | Admin · Bitácora de garita | `/comunicacion/bitacora` | modules/comunicacion/pages/BitacoraPage.vue |
+| F5Constancia.dc.html | Admin · Constancia de convocatoria y poderes | `/asambleas/constancia` | modules/asambleas/pages/ConstanciaPage.vue |
+| F5RegistroMesa.dc.html | Secretario · Registro en mesa | `/asambleas/registro-mesa` | modules/asambleas/pages/RegistroMesaPage.vue |
+| F1PlataformaRegistros.dc.html | Super admin · Registros del sistema | `/plataforma/registros` | modules/plataforma/pages/RegistrosSistemaPage.vue |
+| F1PlataformaSolicitudes.dc.html | Super admin · Solicitudes de rol | `/plataforma/solicitudes-rol` | modules/plataforma/pages/SolicitudesRolPage.vue |
+| F6Reportes.dc.html | Super admin y contador de plataforma · Reportes contables | `/plataforma/reportes` | modules/plataforma/pages/ReportesContablesPage.vue |
+| F3Areas.dc.html | Residente · Áreas comunes | `/app/areas` | modules/app-residente/pages/AreasPage.vue |
+| F3MisReservas.dc.html | Residente · Mis reservas | `/app/reservas` | modules/app-residente/pages/MisReservasPage.vue |
+| F4MisVisitas.dc.html | Residente · Mis visitas | `/app/visitas` | modules/app-residente/pages/MisVisitasPage.vue |
+| F4Avisos.dc.html | Residente · Avisos (visita no anunciada) | `/app/avisos` | modules/app-residente/pages/AvisosPage.vue |
+| F4MisIncidencias.dc.html | Residente · Incidencias | `/app/incidencias` | modules/app-residente/pages/IncidenciasPage.vue |
+| F5Poder.dc.html | Propietario · Dar un poder | `/app/asambleas/poder` | modules/app-residente/pages/PoderPage.vue |
+| F5MisAsambleas.dc.html | Propietario · Mis asambleas | `/app/asambleas` | modules/app-residente/pages/MisAsambleasPage.vue |
+| F4Paquetes.dc.html | Guardia · Paquetes | `/guardia/paquetes` | modules/app-guardia/pages/PaquetesPage.vue |
+
+**Valores supuestos que falta confirmar:** el enlace de recuperación vence en 60 min; contraseña de al menos 10 caracteres con una mayúscula y un número; recargo del 1 % mensual con 5 días de gracia; restricción de áreas comunes desde 3 meses de deuda (decisión abierta en Fase 3); el contador activa el 2FA (de su cuenta) antes de aceptar el acuerdo (de cada condominio). El menú lateral de los mockups nuevos suma Inicio, Bloques, Morosidad, Aprobaciones, Cierre de mes y Registros de errores; el menú real lo define el super admin.
+
 ## Menú y layouts
 
 Los mockups repiten el menú lateral en cada pantalla; en el código el menú es uno solo:

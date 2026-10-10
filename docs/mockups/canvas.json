@@ -38,6 +38,24 @@
       "x": 3980,
       "y": 1300
     },
+    "F1CobroCuotas.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "f1",
+      "title": "Admin · Configuración › Cobro de cuotas",
+      "w": 1440,
+      "x": 10640,
+      "y": 0
+    },
+    "F1NuevaUnidad.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "f1",
+      "title": "Admin · Nueva unidad (página)",
+      "w": 1440,
+      "x": 9120,
+      "y": 0
+    },
     "F1PlataformaMenu.dc.html": {
       "h": 900,
       "is_interactive": true,
@@ -325,6 +343,281 @@
       "w": 1440,
       "x": 1520,
       "y": 0
+    },
+    "AuthRecuperar.dc.html": {
+      "x": 0,
+      "y": 2600,
+      "w": 1440,
+      "h": 900,
+      "page": "f1",
+      "title": "Acceso · Recuperar contraseña",
+      "is_interactive": true
+    },
+    "AuthInvitacion.dc.html": {
+      "x": 1520,
+      "y": 2600,
+      "w": 1440,
+      "h": 900,
+      "page": "f1",
+      "title": "Acceso · Aceptar invitación"
+    },
+    "AuthSelector.dc.html": {
+      "x": 3040,
+      "y": 2600,
+      "w": 1440,
+      "h": 900,
+      "page": "f1",
+      "title": "Acceso · Elegir condominio"
+    },
+    "F1ContadorAcceso.dc.html": {
+      "x": 4560,
+      "y": 2600,
+      "w": 1440,
+      "h": 900,
+      "page": "f1",
+      "title": "Contador · 2FA y acuerdo de confidencialidad",
+      "is_interactive": true
+    },
+    "F1Inicio.dc.html": {
+      "x": 12160,
+      "y": 0,
+      "w": 1440,
+      "h": 900,
+      "page": "f1",
+      "title": "Admin · Inicio"
+    },
+    "F1Bloques.dc.html": {
+      "x": 13680,
+      "y": 0,
+      "w": 1440,
+      "h": 900,
+      "page": "f1",
+      "title": "Admin · Bloques"
+    },
+    "F1Importar.dc.html": {
+      "x": 15200,
+      "y": 0,
+      "w": 1440,
+      "h": 900,
+      "page": "f1",
+      "title": "Admin · Importar Excel (vista previa)"
+    },
+    "F1Persona.dc.html": {
+      "x": 16720,
+      "y": 0,
+      "w": 1440,
+      "h": 900,
+      "page": "f1",
+      "title": "Admin · Ficha de persona"
+    },
+    "F1Registros.dc.html": {
+      "x": 18240,
+      "y": 0,
+      "w": 1440,
+      "h": 900,
+      "page": "f1",
+      "title": "Admin · Registros de errores"
+    },
+    "F1MisDispositivos.dc.html": {
+      "x": 6080,
+      "y": 2600,
+      "w": 1440,
+      "h": 900,
+      "page": "f1",
+      "title": "Todos · Mi cuenta y dispositivos"
+    },
+    "F1SinPermiso.dc.html": {
+      "x": 7600,
+      "y": 2600,
+      "w": 1440,
+      "h": 900,
+      "page": "f1",
+      "title": "Todos · Sin permiso / módulo no incluido",
+      "is_interactive": true
+    },
+    "F1PlataformaRegistros.dc.html": {
+      "x": 8540,
+      "y": 1300,
+      "w": 1440,
+      "h": 900,
+      "page": "f1",
+      "title": "Super admin · Registros del sistema"
+    },
+    "F1PlataformaSolicitudes.dc.html": {
+      "x": 10060,
+      "y": 1300,
+      "w": 1440,
+      "h": 900,
+      "page": "f1",
+      "title": "Super admin · Solicitudes de rol"
+    },
+    "F2Cuotas.dc.html": {
+      "x": 7600,
+      "y": 0,
+      "w": 1440,
+      "h": 900,
+      "page": "f2",
+      "title": "Admin · Cuotas del mes"
+    },
+    "F2EstadoCuenta.dc.html": {
+      "x": 9120,
+      "y": 0,
+      "w": 1440,
+      "h": 900,
+      "page": "f2",
+      "title": "Admin · Detalle de unidad › Estado de cuenta"
+    },
+    "F2Aprobaciones.dc.html": {
+      "x": 10640,
+      "y": 0,
+      "w": 1440,
+      "h": 900,
+      "page": "f2",
+      "title": "Presidente · Aprobaciones pendientes (nivel 2)"
+    },
+    "F2Proveedores.dc.html": {
+      "x": 12160,
+      "y": 0,
+      "w": 1440,
+      "h": 900,
+      "page": "f2",
+      "title": "Admin · Proveedores"
+    },
+    "F2Recurrentes.dc.html": {
+      "x": 13680,
+      "y": 0,
+      "w": 1440,
+      "h": 900,
+      "page": "f2",
+      "title": "Admin · Gastos recurrentes"
+    },
+    "F2CajaChica.dc.html": {
+      "x": 15200,
+      "y": 0,
+      "w": 1440,
+      "h": 900,
+      "page": "f2",
+      "title": "Admin · Caja chica"
+    },
+    "F2Morosidad.dc.html": {
+      "x": 16720,
+      "y": 0,
+      "w": 1440,
+      "h": 900,
+      "page": "f2",
+      "title": "Admin · Morosidad"
+    },
+    "F2CierreMes.dc.html": {
+      "x": 18240,
+      "y": 0,
+      "w": 1440,
+      "h": 900,
+      "page": "f2",
+      "title": "Admin · Cierre de mes"
+    },
+    "F2Reportes.dc.html": {
+      "x": 19760,
+      "y": 0,
+      "w": 1440,
+      "h": 900,
+      "page": "f2",
+      "title": "Admin y contador · Reportes y exportaciones"
+    },
+    "F3Areas.dc.html": {
+      "x": 940,
+      "y": 1300,
+      "w": 390,
+      "h": 844,
+      "page": "f3",
+      "title": "Residente · Áreas comunes"
+    },
+    "F3MisReservas.dc.html": {
+      "x": 1410,
+      "y": 1300,
+      "w": 390,
+      "h": 844,
+      "page": "f3",
+      "title": "Residente · Mis reservas"
+    },
+    "F4Paquetes.dc.html": {
+      "x": 940,
+      "y": 1300,
+      "w": 390,
+      "h": 844,
+      "page": "f4",
+      "title": "Guardia · Paquetes"
+    },
+    "F4MisVisitas.dc.html": {
+      "x": 1410,
+      "y": 1300,
+      "w": 390,
+      "h": 844,
+      "page": "f4",
+      "title": "Residente · Mis visitas"
+    },
+    "F4Avisos.dc.html": {
+      "x": 1880,
+      "y": 1300,
+      "w": 390,
+      "h": 844,
+      "page": "f4",
+      "title": "Residente · Avisos (visita no anunciada)"
+    },
+    "F4MisIncidencias.dc.html": {
+      "x": 2350,
+      "y": 1300,
+      "w": 390,
+      "h": 844,
+      "page": "f4",
+      "title": "Residente · Incidencias"
+    },
+    "F4Bitacora.dc.html": {
+      "x": 3040,
+      "y": 0,
+      "w": 1440,
+      "h": 900,
+      "page": "f4",
+      "title": "Admin · Bitácora de garita"
+    },
+    "F5Constancia.dc.html": {
+      "x": 3040,
+      "y": 0,
+      "w": 1440,
+      "h": 900,
+      "page": "f5",
+      "title": "Admin · Constancia de convocatoria y poderes"
+    },
+    "F5RegistroMesa.dc.html": {
+      "x": 4560,
+      "y": 0,
+      "w": 1440,
+      "h": 900,
+      "page": "f5",
+      "title": "Secretario · Registro en mesa"
+    },
+    "F5Poder.dc.html": {
+      "x": 470,
+      "y": 1300,
+      "w": 390,
+      "h": 844,
+      "page": "f5",
+      "title": "Propietario · Dar un poder"
+    },
+    "F5MisAsambleas.dc.html": {
+      "x": 940,
+      "y": 1300,
+      "w": 390,
+      "h": 844,
+      "page": "f5",
+      "title": "Propietario · Mis asambleas"
+    },
+    "F6Reportes.dc.html": {
+      "x": 4560,
+      "y": 0,
+      "w": 1440,
+      "h": 900,
+      "page": "f6",
+      "title": "Super admin y contador de plataforma · Reportes contables"
     }
   },
   "createdOnFiles": {
@@ -452,11 +745,22 @@
       "w": 240,
       "x": 0,
       "y": 1000
+    },
+    "f1t3": {
+      "kind": "title1",
+      "page": "f1",
+      "text": "Acceso y cuenta (todos los perfiles)",
+      "x": 0,
+      "y": 2300,
+      "w": 240,
+      "maxW": 9040
     }
   },
   "order": [
     "Login.dc.html",
     "Main.dc.html",
+    "F1NuevaUnidad.dc.html",
+    "F1CobroCuotas.dc.html",
     "UnidadDetalle.dc.html",
     "Platform.dc.html",
     "Residente.dc.html",
@@ -491,7 +795,41 @@
     "F1RolesCondominio.dc.html",
     "F1PlataformaRoles.dc.html",
     "F1PlataformaMenu.dc.html",
-    "F1Apariencia.dc.html"
+    "F1Apariencia.dc.html",
+    "AuthRecuperar.dc.html",
+    "AuthInvitacion.dc.html",
+    "AuthSelector.dc.html",
+    "F1ContadorAcceso.dc.html",
+    "F1Inicio.dc.html",
+    "F1Bloques.dc.html",
+    "F1Importar.dc.html",
+    "F1Persona.dc.html",
+    "F1Registros.dc.html",
+    "F1MisDispositivos.dc.html",
+    "F1SinPermiso.dc.html",
+    "F1PlataformaRegistros.dc.html",
+    "F1PlataformaSolicitudes.dc.html",
+    "F2Cuotas.dc.html",
+    "F2EstadoCuenta.dc.html",
+    "F2Aprobaciones.dc.html",
+    "F2Proveedores.dc.html",
+    "F2Recurrentes.dc.html",
+    "F2CajaChica.dc.html",
+    "F2Morosidad.dc.html",
+    "F2CierreMes.dc.html",
+    "F2Reportes.dc.html",
+    "F3Areas.dc.html",
+    "F3MisReservas.dc.html",
+    "F4Paquetes.dc.html",
+    "F4MisVisitas.dc.html",
+    "F4Avisos.dc.html",
+    "F4MisIncidencias.dc.html",
+    "F4Bitacora.dc.html",
+    "F5Constancia.dc.html",
+    "F5RegistroMesa.dc.html",
+    "F5Poder.dc.html",
+    "F5MisAsambleas.dc.html",
+    "F6Reportes.dc.html"
   ],
   "pages": [
     {
