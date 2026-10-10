@@ -55,7 +55,7 @@
 </template>
 
 <script setup lang="ts">
-import { useDialogPluginComponent } from 'quasar';
+import { useDialogPluginComponent, useQuasar } from 'quasar';
 import { computed, ref } from 'vue';
 
 import { aApiError } from '@/core/api/errors';
@@ -65,6 +65,7 @@ import { useReabrirMes } from '../composables/useCierreMes';
 import { validarMotivoReapertura } from '../cierre-mes.logica';
 import type { CierreMes } from '../services/cierre-mes.service';
 
+const $q = useQuasar();
 const props = defineProps<{ periodo: string }>();
 defineEmits([...useDialogPluginComponent.emits]);
 
@@ -89,7 +90,12 @@ async function enviar(): Promise<void> {
   } catch (error) {
     const apiError = aApiError(error);
     errorMotivo.value = apiError.campo('motivo');
-    // Decide el código: hay un mes posterior cerrado, o ya estaba abierto
+    // Decide el código: ya estaba abierto (se cierra y la lista se refresca) o hay un mes posterior cerrado
+    if (apiError.codigo === 'PERIODO_NO_CERRADO') {
+      $q.notify({ type: 'warning', message: apiError.mensaje });
+      onDialogCancel();
+      return;
+    }
     if (!errorMotivo.value) errorGeneral.value = apiError.mensaje;
   }
 }

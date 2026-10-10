@@ -114,6 +114,7 @@
           class="safic-btn safic-btn--secundario"
           icon="sym_r_lock_open"
           label="Reabrir mes"
+          :disable="!listo || cerrar.isPending.value"
           @click="reabrir"
         />
         <q-btn
@@ -124,7 +125,7 @@
           class="safic-btn"
           icon="sym_r_lock"
           :label="`Cerrar ${nombreMes(periodo).toLowerCase()}`"
-          :disable="!cierre.puede_cerrar"
+          :disable="!listo || !cierre.puede_cerrar"
           :loading="cerrar.isPending.value"
           @click="confirmarCierre"
         />
@@ -190,6 +191,8 @@ const consulta = useCierreMes(periodo);
 const cierre = computed(() => consulta.data.value ?? null);
 const cerrado = computed(() => cierre.value?.estado === 'cerrado');
 const cerrar = useCerrarMes();
+// Mientras llega el cierre del mes elegido no se ofrece ninguna acción: la lista podría ser de otro mes
+const listo = computed(() => cierre.value?.periodo === periodo.value && !consulta.isFetching.value);
 
 const opciones = computed(() => opcionesDeMes(periodos.data.value ?? [], periodo.value));
 const titulo = computed(() =>
@@ -200,6 +203,16 @@ watch(periodo, () => {
   resultado.value = null;
   errorAccion.value = null;
 });
+
+// Al cambiar de condominio se vuelve a elegir el mes que toca cerrar, sin avisos del anterior
+watch(
+  () => session.condominioId,
+  () => {
+    periodo.value = periodos.data.value ? mesPorCerrar(periodos.data.value, hoy) : '';
+    resultado.value = null;
+    errorAccion.value = null;
+  },
+);
 
 function confirmarCierre(): void {
   errorAccion.value = null;
@@ -213,20 +226,30 @@ function confirmarCierre(): void {
   }).onOk(() => {
     // Un segundo clic mientras responde no cierra dos veces
     if (cerrar.isPending.value) return;
-    cerrar.mutate(periodo.value, {
-      onSuccess: () => (resultado.value = `${nombreMes(periodo.value)} quedó cerrado.`),
-      onError: (error) => (errorAccion.value = aApiError(error).mensaje),
+    // El mes que se envió, no el que esté elegido cuando responda
+    const enviado = periodo.value;
+    cerrar.mutate(enviado, {
+      onSuccess: () => (resultado.value = `${nombreMes(enviado)} quedó cerrado.`),
+      onError: (error) => alFallar(error),
     });
   });
 }
 
 function reabrir(): void {
   errorAccion.value = null;
-  $q.dialog({ component: ReabrirMesDialog, componentProps: { periodo: periodo.value } }).onOk(
-    () => {
-      resultado.value = `${nombreMes(periodo.value)} se reabrió.`;
-    },
-  );
+  const enviado = periodo.value;
+  $q.dialog({ component: ReabrirMesDialog, componentProps: { periodo: enviado } }).onOk(() => {
+    resultado.value = `${nombreMes(enviado)} se reabrió.`;
+  });
+}
+
+/** Decide el código: si el estado cambió mientras tanto se refresca; el resto se explica tal cual. */
+function alFallar(error: unknown): void {
+  const apiError = aApiError(error);
+  errorAccion.value = apiError.mensaje;
+  if (apiError.codigo === 'PERIODO_YA_CERRADO' || apiError.codigo === 'PERIODO_NO_CERRADO') {
+    void consulta.refetch();
+  }
 }
 </script>
 
