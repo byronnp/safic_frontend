@@ -104,4 +104,34 @@ describe('cliente HTTP', () => {
     expect(error.estado).toBe(422);
     expect(error.campo('nombre')).toBe('Ya existe un bloque con ese nombre.');
   });
+
+  it('conserva el código y el mensaje cuando el error de una descarga llega como Blob', async () => {
+    const adapter: AxiosAdapter = (config) =>
+      respuesta(
+        config,
+        409,
+        new Blob([
+          JSON.stringify({
+            error: { code: 'PAGO_SIN_RECIBO', message: 'Solo los pagos aprobados tienen recibo.' },
+          }),
+        ]),
+      );
+    const cliente = axios.create({ adapter });
+    configurarCliente(cliente, {
+      obtenerToken: () => 'viejo',
+      obtenerCondominioId: () => 7,
+      refrescar: vi.fn(() => Promise.resolve('nuevo')),
+      alExpirar: vi.fn(),
+    });
+
+    const error = await cliente
+      .get('/pagos/1/recibo', { responseType: 'blob' })
+      .catch((e: unknown) => e);
+
+    expect(error).toBeInstanceOf(ApiError);
+    expect(error).toMatchObject({
+      codigo: 'PAGO_SIN_RECIBO',
+      mensaje: 'Solo los pagos aprobados tienen recibo.',
+    });
+  });
 });

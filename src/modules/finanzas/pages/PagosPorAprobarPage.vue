@@ -3,22 +3,48 @@
     <PaginaEncabezado miga="Finanzas / Pagos por aprobar" titulo="Pagos por aprobar">
       <template #acciones>
         <div class="pagos__tolerancia">
-          Tolerancia bancaria: <strong>{{ formatoMoneda(PAGOS_TOLERANCIA_BANCARIA) }}</strong>
+          Tolerancia bancaria: <strong>{{ formatoMoneda(tolerancia) }}</strong>
         </div>
         <q-btn
+          v-if="estado === 'pendiente'"
           unelevated
           no-caps
           color="primary"
           class="safic-btn"
-          :label="`Aprobar seleccionados (${seleccionados.length})`"
-          :disable="seleccionados.length === 0"
+          :label="`Aprobar seleccionados (${marcados.length})`"
+          :disable="marcados.length === 0 || ocupado"
+          :loading="lote.isPending.value"
           @click="aprobarSeleccionados"
         />
       </template>
     </PaginaEncabezado>
 
+    <div class="pagos__pestanas" role="tablist" aria-label="Estado de los pagos">
+      <button
+        v-for="p in PESTANAS_PAGOS"
+        :key="p.valor"
+        type="button"
+        role="tab"
+        class="safic-pildora"
+        :class="{ 'safic-pildora--activa': p.valor === estado }"
+        :aria-selected="p.valor === estado"
+        @click="cambiarEstado(p.valor)"
+      >
+        {{ p.etiqueta }} ({{ conteos[p.valor] }})
+      </button>
+    </div>
+
+    <div v-if="textoResultado" class="pagos__resultado" role="status">
+      {{ textoResultado }}
+      <ul v-if="omitidos.length" class="pagos__omitidos">
+        <li v-for="o in omitidos" :key="o.id">
+          <strong>{{ o.unidad }}</strong> · {{ o.mensaje }}
+        </li>
+      </ul>
+    </div>
+
     <div class="pagos__cuerpo">
-      <section class="safic-card pagos__lista" aria-label="Pagos por aprobar">
+      <section class="safic-card pagos__lista" aria-label="Pagos">
         <div class="pagos__desplazable">
           <div class="pagos__fila pagos__fila--cabecera" role="row">
             <div />
@@ -26,121 +52,210 @@
             <div>PAGADOR · BANCO</div>
             <div class="text-right">MONTO</div>
             <div class="text-right">CUOTAS</div>
-            <div class="pagos__col-validacion">VALIDACIÓN</div>
-          </div>
-          <div
-            v-for="pago in pagos"
-            :key="pago.id"
-            class="pagos__fila"
-            :class="{ 'pagos__fila--activa': pago.id === seleccionadoId }"
-          >
-            <label class="pagos__check">
-              <input
-                v-model="marcados"
-                type="checkbox"
-                :value="pago.id"
-                :aria-label="`Seleccionar pago de ${pago.unidad}`"
-              />
-            </label>
-            <button type="button" class="pagos__boton pagos__unidad" @click="seleccionar(pago.id)">
-              {{ pago.unidad }}
-            </button>
-            <button type="button" class="pagos__boton" @click="seleccionar(pago.id)">
-              <div class="text-weight-bold">{{ pago.pagador }}</div>
-              <div class="pagos__sub">{{ pago.banco }} · {{ pago.fecha }}</div>
-            </button>
-            <div class="text-right pagos__monto">{{ formatoMoneda(pago.monto) }}</div>
-            <div class="text-right pagos__cuotas">{{ pago.cuotas }}</div>
             <div class="pagos__col-validacion">
-              <EstadoBadge :tono="ESTADOS[pago.estado].tono">
-                {{ ESTADOS[pago.estado].texto }}
-              </EstadoBadge>
+              {{ estado === 'pendiente' ? 'VALIDACIÓN' : 'ESTADO' }}
             </div>
           </div>
-          <div v-if="pagos.length === 0" class="pagos__vacio">
-            <q-icon name="sym_r_task_alt" size="40px" class="text-suave" />
-            <div class="text-weight-bold">No hay pagos por aprobar.</div>
-            <div class="text-suave">Los comprobantes que suban los residentes aparecerán aquí.</div>
+
+          <div v-if="consulta.isPending.value" aria-busy="true" class="q-pa-md">
+            <q-skeleton v-for="i in 4" :key="i" type="rect" height="44px" class="q-mb-sm" />
           </div>
+          <div v-else-if="consulta.isError.value" class="safic-alerta q-ma-md" role="alert">
+            {{ consulta.error.value?.mensaje }}
+            <q-btn flat no-caps dense label="Reintentar" @click="consulta.refetch()" />
+          </div>
+          <template v-else>
+            <div
+              v-for="pago in pagos"
+              :key="pago.id"
+              class="pagos__fila"
+              :class="{ 'pagos__fila--activa': pago.id === seleccionadoId }"
+            >
+              <label class="pagos__check">
+                <input
+                  v-if="estado === 'pendiente'"
+                  v-model="marcados"
+                  type="checkbox"
+                  :value="pago.id"
+                  :disabled="ocupado"
+                  :aria-label="`Seleccionar pago de ${pago.unidad}`"
+                />
+              </label>
+              <button
+                type="button"
+                class="pagos__boton pagos__unidad"
+                @click="seleccionar(pago.id)"
+              >
+                {{ pago.unidad }}
+              </button>
+              <button type="button" class="pagos__boton" @click="seleccionar(pago.id)">
+                <div class="text-weight-bold">{{ pago.pagador ?? '—' }}</div>
+                <div class="pagos__sub">{{ detalleBanco(pago) }}</div>
+              </button>
+              <div class="text-right pagos__monto">{{ formatoMoneda(pago.monto) }}</div>
+              <div class="text-right pagos__cuotas">{{ textoCuotas(pago) }}</div>
+              <div class="pagos__col-validacion">
+                <EstadoBadge
+                  v-if="pago.validacion"
+                  :tono="pago.validacion.nivel === 'ok' ? 'exito' : 'error'"
+                >
+                  {{ pago.validacion.texto }}
+                </EstadoBadge>
+                <EstadoBadge v-else-if="pago.recibo" tono="exito"
+                  >Recibo {{ pago.recibo }}</EstadoBadge
+                >
+                <EstadoBadge v-else tono="error">Rechazado</EstadoBadge>
+              </div>
+            </div>
+            <div v-if="pagos.length === 0" class="pagos__vacio">
+              <q-icon name="sym_r_task_alt" size="40px" class="text-suave" />
+              <div class="text-weight-bold">{{ vacio.titulo }}</div>
+              <div class="text-suave">{{ vacio.detalle }}</div>
+            </div>
+          </template>
         </div>
       </section>
 
       <aside
-        v-if="detalle"
+        v-if="seleccionadoId !== null"
         class="safic-card pagos__detalle"
         aria-labelledby="pagos-detalle-titulo"
       >
-        <div class="pagos__detalle-titulo">
-          <h2 id="pagos-detalle-titulo">{{ detalle.unidad }} · {{ detalle.pagador }}</h2>
-          <div class="pagos__detalle-monto">{{ formatoMoneda(detalle.monto) }}</div>
+        <template v-if="detalleConsulta.isPending.value">
+          <q-skeleton type="rect" height="120px" />
+        </template>
+        <div v-else-if="detalleConsulta.isError.value" class="safic-alerta" role="alert">
+          {{ detalleConsulta.error.value?.mensaje }}
+          <q-btn flat no-caps dense label="Reintentar" @click="detalleConsulta.refetch()" />
         </div>
+        <template v-else-if="detalle">
+          <div class="pagos__detalle-titulo">
+            <h2 id="pagos-detalle-titulo">{{ detalle.unidad }} · {{ detalle.pagador ?? '—' }}</h2>
+            <div class="pagos__detalle-monto">{{ formatoMoneda(detalle.monto) }}</div>
+          </div>
 
-        <div class="pagos__comprobante">
-          <div class="pagos__comprobante-titulo">
-            <q-icon name="sym_r_description" size="18px" />
-            Comprobante subido por el residente
+          <div class="pagos__comprobante">
+            <div class="pagos__comprobante-titulo">
+              <q-icon name="sym_r_description" size="18px" />
+              Comprobante subido por el residente
+            </div>
+            <div class="pagos__dato">
+              <span>Cuenta de destino</span><strong>{{ detalle.cuenta_destino ?? '—' }}</strong>
+            </div>
+            <div class="pagos__dato">
+              <span>N.º de comprobante</span
+              ><strong>{{ detalle.numero_comprobante ?? '—' }}</strong>
+            </div>
+            <div class="pagos__dato">
+              <span>Fecha</span><strong>{{ formatoFechaCorta(detalle.fecha) }}</strong>
+            </div>
+            <div class="pagos__dato">
+              <span>Cuotas</span
+              ><strong>{{
+                detalle.cuotas.map((c) => nombreMes(c.periodo)).join(', ') || '—'
+              }}</strong>
+            </div>
+            <button
+              v-if="comprobanteUrl"
+              type="button"
+              class="pagos__enlace"
+              @click="verImagen = true"
+            >
+              Ver comprobante completo
+            </button>
           </div>
-          <div class="pagos__dato">
-            <span>Banco de origen</span><strong>{{ detalle.banco }}</strong>
-          </div>
-          <div class="pagos__dato">
-            <span>N.º de comprobante</span><strong>{{ detalle.comprobante }}</strong>
-          </div>
-          <div class="pagos__dato">
-            <span>Fecha</span><strong>{{ detalle.fecha }}</strong>
-          </div>
-          <div class="pagos__dato">
-            <span>Concepto</span><strong>{{ detalle.concepto }}</strong>
-          </div>
-          <button type="button" class="pagos__enlace" @click="verImagen = true">
-            Ver imagen completa
-          </button>
-        </div>
 
-        <div class="pagos__seccion">VALIDACIONES</div>
-        <div v-for="(v, i) in detalle.validaciones" :key="i" class="pagos__validacion">
-          <span class="pagos__punto" :style="{ background: COLOR_NIVEL[v.nivel] }" />
-          <span>{{ v.texto }}</span>
-        </div>
+          <template v-if="detalle.estado === 'pendiente'">
+            <div class="pagos__seccion">VALIDACIONES</div>
+            <div v-for="v in detalle.validaciones" :key="v.clave" class="pagos__validacion">
+              <span
+                class="pagos__punto"
+                :style="{ background: v.ok ? COLOR_VALIDACION.ok : COLOR_VALIDACION.error }"
+              />
+              <span>{{ v.texto }}</span>
+            </div>
+            <div v-if="detalle.aplicacion" class="pagos__validacion">
+              <span class="pagos__punto" :style="{ background: COLOR_VALIDACION.ok }" />
+              <span>{{ textoAplicacion(detalle.aplicacion) }}</span>
+            </div>
 
-        <div class="col-grow" />
+            <label class="pagos__monto-recibido">
+              Monto recibido en el banco
+              <input
+                v-model="montoRecibido"
+                inputmode="decimal"
+                :disabled="ocupado"
+                :aria-invalid="!!errorMonto"
+                aria-describedby="pagos-monto-ayuda"
+              />
+              <span id="pagos-monto-ayuda" class="pagos__ayuda">
+                Si el banco acreditó otro valor que el declarado, escríbelo. Si falta menos que la
+                tolerancia, la cuota se da por pagada.
+              </span>
+              <span v-if="errorMonto" class="pagos__error" role="alert">{{ errorMonto }}</span>
+            </label>
+          </template>
 
-        <q-btn
-          v-if="detalle.estado === 'monto_no_cubre'"
-          outline
-          no-caps
-          color="primary"
-          class="pagos__ajustar"
-          label="Aplicar a 1 cuota completa y $ 20,00 a saldo a favor"
-          @click="resolver(detalle, 'Pago aplicado a 1 cuota; $ 20,00 quedan como saldo a favor.')"
-        />
-        <div class="pagos__acciones">
-          <q-btn
-            unelevated
-            no-caps
-            class="pagos__rechazar"
-            label="Rechazar"
-            @click="resolver(detalle, `Pago de ${detalle.unidad} rechazado.`)"
-          />
-          <q-btn
-            unelevated
-            no-caps
-            class="pagos__aprobar"
-            :class="{ 'pagos__aprobar--bloqueado': bloqueado }"
-            label="Aprobar"
-            :disable="bloqueado"
-            @click="resolver(detalle, `Pago de ${detalle.unidad} aprobado.`)"
-          />
-        </div>
+          <template v-else-if="detalle.estado === 'aprobado'">
+            <div class="pagos__validacion">
+              <span class="pagos__punto" :style="{ background: COLOR_VALIDACION.ok }" />
+              <span>Aprobado · recibo N.º {{ detalle.recibo }}</span>
+            </div>
+            <q-btn
+              outline
+              no-caps
+              color="primary"
+              icon="sym_r_download"
+              label="Descargar recibo (PDF)"
+              :loading="descargando"
+              @click="descargarRecibo(detalle)"
+            />
+          </template>
+          <div v-else-if="detalle.estado === 'rechazado'" class="pagos__validacion">
+            <span class="pagos__punto" :style="{ background: COLOR_VALIDACION.error }" />
+            <span>Rechazado: {{ detalle.motivo_rechazo }}</span>
+          </div>
+
+          <div v-if="errorGeneral" class="safic-alerta" role="alert">{{ errorGeneral }}</div>
+          <div class="col-grow" />
+
+          <div v-if="detalle.estado === 'pendiente'" class="pagos__acciones">
+            <q-btn
+              unelevated
+              no-caps
+              class="pagos__rechazar"
+              label="Rechazar"
+              :disable="ocupado"
+              @click="pedirMotivo(detalle)"
+            />
+            <q-btn
+              unelevated
+              no-caps
+              class="pagos__aprobar"
+              label="Aprobar"
+              :disable="ocupado"
+              :loading="aprobar.isPending.value"
+              @click="aprobarUno(detalle)"
+            />
+          </div>
+        </template>
       </aside>
     </div>
 
     <q-dialog v-model="verImagen">
       <q-card class="safic-dialogo q-pa-lg">
-        <div class="safic-dialogo__titulo">Comprobante {{ detalle?.comprobante }}</div>
-        <div class="pagos__imagen">
-          <q-icon name="sym_r_image" size="40px" />
-          <div>La imagen del comprobante se mostrará cuando exista la API.</div>
+        <div class="safic-dialogo__titulo">Comprobante {{ detalle?.numero_comprobante }}</div>
+        <img
+          v-if="comprobanteUrl && detalle?.comprobante_tipo !== 'pdf'"
+          :src="comprobanteUrl"
+          alt="Comprobante de la transferencia"
+          class="pagos__img"
+        />
+        <div v-else-if="comprobanteUrl" class="q-mb-md">
+          El comprobante es un PDF.
+          <a :href="comprobanteUrl" target="_blank" rel="noopener noreferrer"
+            >Abrirlo en otra pestaña</a
+          >
         </div>
         <div class="row justify-end">
           <q-btn
@@ -157,82 +272,228 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
 import { useQuasar } from 'quasar';
-import PaginaEncabezado from '@/components/PaginaEncabezado.vue';
+import { computed, ref, watch } from 'vue';
+
 import EstadoBadge from '@/components/EstadoBadge.vue';
-import type { TonoEstado } from '@/components/EstadoBadge.vue';
-import { formatoMoneda } from '@/utils/formato';
+import PaginaEncabezado from '@/components/PaginaEncabezado.vue';
+import { aApiError } from '@/core/api/errors';
+import { guardarArchivo } from '@/core/api/descarga';
+import { formatoFechaCorta, formatoMoneda } from '@/utils/formato';
+import { nombreMes } from '@/utils/periodo';
+import { urlSegura } from '@/utils/url';
+
 import {
-  PAGOS_POR_APROBAR,
-  PAGOS_SELECCIONADOS_INICIALES,
-  PAGOS_TOLERANCIA_BANCARIA,
-} from '../demo/pagos-por-aprobar';
-import type {
-  EstadoValidacionPago,
-  NivelValidacion,
-  PagoPorAprobar,
-} from '../demo/pagos-por-aprobar';
-
-const ESTADOS: Record<EstadoValidacionPago, { texto: string; tono: TonoEstado }> = {
-  coincide: { texto: 'Todo coincide', tono: 'exito' },
-  tolerancia: { texto: 'Tolerancia', tono: 'alerta' },
-  duplicado: { texto: 'Duplicado', tono: 'error' },
-  monto_no_cubre: { texto: 'Monto no cubre', tono: 'error' },
-};
-
-const COLOR_NIVEL: Record<NivelValidacion, string> = {
-  ok: '#0E5E5B',
-  alerta: '#C98A2B',
-  error: '#9B1C12',
-};
+  useAprobarLote,
+  useAprobarPago,
+  usePago,
+  usePagos,
+  useRechazarPago,
+} from '../composables/usePagos';
+import {
+  COLOR_VALIDACION,
+  detalleBanco,
+  errorMotivo,
+  montoParaAprobar,
+  PESTANAS_PAGOS,
+  textoAplicacion,
+  textoCuotas,
+} from '../pagos.logica';
+import type { EstadoRevision, PagoDetalle } from '../services/pagos.service';
+import { pagosService } from '../services/pagos.service';
 
 const $q = useQuasar();
 
-const pagos = ref<PagoPorAprobar[]>([...PAGOS_POR_APROBAR]);
-const marcados = ref<number[]>([...PAGOS_SELECCIONADOS_INICIALES]);
-const seleccionadoId = ref<number | null>(PAGOS_POR_APROBAR[0]?.id ?? null);
+const estado = ref<EstadoRevision>('pendiente');
+const consulta = usePagos(estado);
+const aprobar = useAprobarPago();
+const rechazar = useRechazarPago();
+const lote = useAprobarLote();
+
+const pagos = computed(() => consulta.data.value?.pagos ?? []);
+const conteos = computed(
+  () => consulta.data.value?.conteos ?? { pendiente: 0, aprobado: 0, rechazado: 0 },
+);
+const tolerancia = computed(() => consulta.data.value?.tolerancia ?? '0.50');
+
+const marcados = ref<number[]>([]);
+const seleccionadoId = ref<number | null>(null);
 const verImagen = ref(false);
+const errorGeneral = ref<string | null>(null);
+const errorMonto = ref<string | null>(null);
+const textoResultado = ref<string | null>(null);
+const descargando = ref(false);
+const montoRecibido = ref('');
 
-const detalle = computed(() => pagos.value.find((p) => p.id === seleccionadoId.value) ?? null);
-const seleccionados = computed(() => pagos.value.filter((p) => marcados.value.includes(p.id)));
+const detalleConsulta = usePago(seleccionadoId);
+const detalle = computed(() => detalleConsulta.data.value ?? null);
+const ocupado = computed(
+  () =>
+    aprobar.isPending.value ||
+    rechazar.isPending.value ||
+    lote.isPending.value ||
+    // El detalle puede estar desactualizado mientras se refresca: no se actúa sobre él
+    detalleConsulta.isFetching.value,
+);
+const comprobanteUrl = computed(() => urlSegura(detalle.value?.comprobante_url));
+const omitidos = ref<{ id: number; unidad: string; mensaje: string }[]>([]);
 
-function esBloqueado(pago: PagoPorAprobar): boolean {
-  return pago.estado === 'duplicado' || pago.estado === 'monto_no_cubre';
+const vacio = computed(() =>
+  estado.value === 'pendiente'
+    ? {
+        titulo: 'No hay pagos por aprobar.',
+        detalle: 'Los comprobantes que suban los residentes aparecerán aquí.',
+      }
+    : estado.value === 'aprobado'
+      ? {
+          titulo: 'Todavía no hay pagos aprobados.',
+          detalle: 'Aquí quedan con su número de recibo.',
+        }
+      : { titulo: 'No hay pagos rechazados.', detalle: 'Aquí quedan con el motivo del rechazo.' },
+);
+
+// El pago elegido siempre existe en la lista visible; si desaparece (se aprobó) pasa al primero
+watch(pagos, (lista) => {
+  if (!lista.some((p) => p.id === seleccionadoId.value)) {
+    seleccionadoId.value = lista[0]?.id ?? null;
+  }
+  marcados.value = marcados.value.filter((id) => lista.some((p) => p.id === id));
+});
+
+// Al abrir otro pago el monto empieza en lo declarado y se limpian los mensajes
+watch(
+  () => [detalle.value?.id, detalle.value?.monto],
+  () => {
+    montoRecibido.value = detalle.value?.monto ?? '';
+    errorMonto.value = null;
+    errorGeneral.value = null;
+    verImagen.value = false;
+  },
+);
+
+function cambiarEstado(valor: EstadoRevision): void {
+  if (valor === estado.value || ocupado.value) return;
+  estado.value = valor;
+  marcados.value = [];
+  seleccionadoId.value = null;
+  textoResultado.value = null;
+  omitidos.value = [];
+  verImagen.value = false;
 }
 
-const bloqueado = computed(() => (detalle.value ? esBloqueado(detalle.value) : true));
-
 function seleccionar(id: number): void {
+  verImagen.value = false;
   seleccionadoId.value = id;
 }
 
-function quitar(ids: number[]): void {
-  const indiceActual = pagos.value.findIndex((p) => p.id === seleccionadoId.value);
-  pagos.value = pagos.value.filter((p) => !ids.includes(p.id));
-  marcados.value = marcados.value.filter((id) => !ids.includes(id));
-  if (!pagos.value.some((p) => p.id === seleccionadoId.value)) {
-    const siguiente = pagos.value[Math.min(Math.max(indiceActual, 0), pagos.value.length - 1)];
-    seleccionadoId.value = siguiente?.id ?? null;
+function aprobarUno(pago: PagoDetalle): void {
+  if (ocupado.value) return;
+  errorGeneral.value = null;
+  const monto = montoParaAprobar(pago.monto, montoRecibido.value);
+  if (monto === null) {
+    errorMonto.value = 'Escribe un monto válido (hasta dos decimales).';
+    return;
+  }
+  errorMonto.value = null;
+  aprobar.mutate(
+    { id: pago.id, ...(monto === undefined ? {} : { montoRecibido: monto }) },
+    {
+      onSuccess: (r) =>
+        $q.notify({
+          type: 'positive',
+          message: `Pago de ${r.unidad} aprobado · recibo N.º ${r.recibo}.`,
+        }),
+      onError: (e) => mostrarError(e),
+    },
+  );
+}
+
+/** Errores de aprobar o rechazar: el campo si es del monto; «ya resuelto» si otra persona lo revisó antes. */
+function mostrarError(e: unknown): void {
+  const apiError = aApiError(e);
+  const monto = apiError.campo('monto_recibido');
+  if (monto) {
+    errorMonto.value = monto;
+  } else if (apiError.codigo === 'PAGO_NO_PENDIENTE') {
+    errorGeneral.value = 'Este pago ya fue resuelto por otra persona. Se actualizó la lista.';
+  } else {
+    errorGeneral.value = apiError.mensaje;
   }
 }
 
-function resolver(pago: PagoPorAprobar, mensaje: string): void {
-  quitar([pago.id]);
-  $q.notify({ type: 'positive', message: mensaje });
+function pedirMotivo(pago: PagoDetalle): void {
+  if (ocupado.value) return;
+  $q.dialog({
+    title: `Rechazar el pago de ${pago.unidad}`,
+    message: 'Escribe el motivo: se le envía al residente para que pueda corregirlo.',
+    prompt: { model: '', type: 'text', isValid: (v: string) => errorMotivo(v) === null },
+    cancel: { label: 'Cancelar', flat: true, noCaps: true },
+    ok: { label: 'Rechazar', color: 'negative', unelevated: true, noCaps: true },
+    persistent: true,
+  }).onOk((motivo: string) => {
+    if (ocupado.value) return;
+    errorGeneral.value = null;
+    rechazar.mutate(
+      { id: pago.id, motivo: motivo.trim() },
+      {
+        onSuccess: (r) =>
+          $q.notify({ type: 'positive', message: `Pago de ${r.unidad} rechazado.` }),
+        onError: (e) => mostrarError(e),
+      },
+    );
+  });
 }
 
 function aprobarSeleccionados(): void {
-  const aprobables = seleccionados.value.filter((p) => !esBloqueado(p));
-  const omitidos = seleccionados.value.length - aprobables.length;
-  quitar(aprobables.map((p) => p.id));
-  $q.notify({
-    type: 'positive',
-    message: aprobables.length === 1 ? '1 pago aprobado.' : `${aprobables.length} pagos aprobados.`,
-    ...(omitidos > 0
-      ? { caption: `${omitidos} no se pueden aprobar: revísalos uno por uno.` }
-      : {}),
+  if (ocupado.value || marcados.value.length === 0) return;
+  const ids = [...marcados.value];
+  $q.dialog({
+    title: 'Aprobar seleccionados',
+    message: `Se aprueban ${ids.length} ${ids.length === 1 ? 'pago' : 'pagos'} con lo declarado. Los que no pasen todas las validaciones quedan pendientes para revisarlos uno por uno.`,
+    cancel: { label: 'Cancelar', flat: true, noCaps: true },
+    ok: { label: 'Aprobar', color: 'primary', unelevated: true, noCaps: true },
+    persistent: true,
+  }).onOk(() => {
+    if (ocupado.value) return;
+    textoResultado.value = null;
+    omitidos.value = [];
+    lote.mutate(ids, {
+      onSuccess: (r) => {
+        marcados.value = [];
+        omitidos.value = r.resultados
+          .filter((x) => !x.ok)
+          .map((x) => ({
+            id: x.id,
+            unidad: pagos.value.find((p) => p.id === x.id)?.unidad ?? `Pago ${x.id}`,
+            mensaje: x.mensaje ?? 'No se pudo aprobar.',
+          }));
+        const mensaje = r.aprobados === 1 ? '1 pago aprobado.' : `${r.aprobados} pagos aprobados.`;
+        textoResultado.value =
+          r.omitidos > 0
+            ? `${mensaje} ${r.omitidos} no se pudieron aprobar: revísalos uno por uno.`
+            : mensaje;
+        $q.notify({
+          type: r.aprobados > 0 ? 'positive' : 'warning',
+          message: textoResultado.value,
+        });
+      },
+      onError: (e) => {
+        textoResultado.value = aApiError(e).mensaje;
+      },
+    });
   });
+}
+
+async function descargarRecibo(pago: PagoDetalle): Promise<void> {
+  if (descargando.value || pago.recibo === null) return;
+  descargando.value = true;
+  try {
+    guardarArchivo(await pagosService.recibo(pago.id), `recibo-${pago.recibo}.pdf`);
+  } catch (e) {
+    errorGeneral.value = aApiError(e).mensaje;
+  } finally {
+    descargando.value = false;
+  }
 }
 </script>
 
@@ -249,6 +510,66 @@ function aprobarSeleccionados(): void {
 
 .pagos__tolerancia strong {
   color: var(--safic-texto);
+}
+
+.pagos__pestanas {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pagos__monto-recibido {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--safic-texto-2);
+}
+
+.pagos__monto-recibido input {
+  height: 38px;
+  border: 1px solid var(--safic-borde-campo);
+  border-radius: 9px;
+  padding: 0 10px;
+  font-size: 15px;
+  font-family: inherit;
+  background: #ffffff;
+}
+
+.pagos__ayuda {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--safic-texto-suave);
+}
+
+.pagos__error {
+  font-size: 12px;
+  font-weight: 600;
+  color: #9b1c12;
+}
+
+.pagos__resultado {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--safic-texto-2);
+  background: #f1efe8;
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.pagos__omitidos {
+  margin: 6px 0 0;
+  padding-left: 18px;
+  font-weight: 400;
+}
+
+.pagos__img {
+  max-width: 100%;
+  max-height: 70vh;
+  display: block;
+  margin: 0 auto 12px;
+  border-radius: 10px;
 }
 
 .pagos__cuerpo {

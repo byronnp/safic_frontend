@@ -71,6 +71,16 @@ export function configurarCliente(cliente: AxiosInstance, opciones: OpcionesClie
   });
 
   const respuesta = cliente.interceptors.response.use(undefined, async (error: unknown) => {
+    // Con responseType blob el cuerpo del error también llega como Blob: se lee para conservar
+    // el código y el mensaje de la API (descargas de PDF y Excel).
+    if (axios.isAxiosError(error) && error.response?.data instanceof Blob) {
+      try {
+        error.response.data = JSON.parse(await error.response.data.text());
+      } catch {
+        // No era JSON: queda el error genérico
+      }
+    }
+
     const config = axios.isAxiosError(error) ? error.config : undefined;
     const estado = axios.isAxiosError(error) ? error.response?.status : undefined;
 

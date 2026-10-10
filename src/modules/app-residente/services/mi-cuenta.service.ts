@@ -1,4 +1,5 @@
 import { api } from '@/core/api/client';
+import { pedirArchivo } from '@/core/api/descarga';
 import type { ApiRespuesta } from '@/core/api/types';
 
 /** Tipos del contrato (safic_backend/docs/openapi.yaml · Finanzas · /mi-cuenta). Los montos son texto decimal. */
@@ -24,6 +25,8 @@ export interface PagoCuenta {
   fecha: string;
   numero_comprobante: string | null;
   motivo_rechazo: string | null;
+  /** Número del recibo (`000358`) cuando está aprobado: con él se descarga el PDF. */
+  recibo: string | null;
   /** Periodos `YYYY-MM` que el residente dijo pagar. */
   cuotas: string[];
 }
@@ -77,6 +80,11 @@ export const miCuentaService = {
   async ver(): Promise<MiCuenta> {
     const { data } = await api.get<ApiRespuesta<MiCuenta>>('/mi-cuenta');
     return data.data;
+  },
+
+  /** Recibo en PDF de un pago aprobado de mis unidades. */
+  recibo(pagoId: number): Promise<Blob> {
+    return pedirArchivo(`/mi-cuenta/pagos/${pagoId}/recibo`);
   },
 
   async pagar(datos: EnviarPago): Promise<PagoEnviado> {

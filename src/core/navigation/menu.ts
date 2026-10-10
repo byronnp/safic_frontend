@@ -71,8 +71,6 @@ export const MENU_BASE: ItemMenu[] = [
         icono: ICONOS.pagosPorAprobar,
         ruta: 'finanzas-pagos-por-aprobar',
         permiso: 'pagos.aprobar',
-        vistaPrevia: true,
-        insignia: 7,
       },
       {
         id: 'finanzas.conciliacion',
