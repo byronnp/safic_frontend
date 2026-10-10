@@ -104,6 +104,16 @@
                 {{ pago.motivo_rechazo }}
               </div>
             </div>
+            <button
+              v-if="pago.recibo"
+              type="button"
+              class="mi-cuenta-enlace"
+              :aria-label="`Descargar recibo N.º ${pago.recibo} en PDF`"
+              :disabled="descargando === pago.id"
+              @click="descargarRecibo(pago.id, pago.recibo)"
+            >
+              PDF
+            </button>
             <EstadoBadge :tono="TONO_ESTADO_PAGO[pago.estado]">
               {{ TEXTO_ESTADO_PAGO[pago.estado] }}
             </EstadoBadge>
@@ -118,14 +128,18 @@
 </template>
 
 <script setup lang="ts">
+import { useQuasar } from 'quasar';
 import { computed, ref } from 'vue';
 
 import AppEncabezado from '@/components/app/AppEncabezado.vue';
+import { guardarArchivo } from '@/core/api/descarga';
+import { aApiError } from '@/core/api/errors';
 import EstadoBadge from '@/components/EstadoBadge.vue';
 import { aCentavos } from '@/utils/dinero';
 import { formatoFechaCorta, formatoMoneda } from '@/utils/formato';
 
 import { useMiCuenta } from '../composables/useMiCuenta';
+import { miCuentaService } from '../services/mi-cuenta.service';
 import {
   cuotasLibres,
   mesCuota,
@@ -136,12 +150,26 @@ import {
   unidadInicial,
 } from '../mi-cuenta.logica';
 
+const $q = useQuasar();
 const consulta = useMiCuenta();
+const descargando = ref<number | null>(null);
 const datos = computed(() => consulta.data.value);
 
 /** Unidad que eligió la persona; mientras no elija, la primera que puede pagar. */
 const unidadElegida = ref<number | null>(null);
 const unidad = computed(() => unidadInicial(datos.value?.unidades ?? [], unidadElegida.value));
+
+async function descargarRecibo(pagoId: number, numero: string): Promise<void> {
+  if (descargando.value !== null) return;
+  descargando.value = pagoId;
+  try {
+    guardarArchivo(await miCuentaService.recibo(pagoId), `recibo-${numero}.pdf`);
+  } catch (e) {
+    $q.notify({ type: 'negative', message: aApiError(e).mensaje });
+  } finally {
+    descargando.value = null;
+  }
+}
 
 const aFavor = computed(() => (unidad.value ? aCentavos(unidad.value.saldo_favor) : 0));
 const puedePagar = computed(
