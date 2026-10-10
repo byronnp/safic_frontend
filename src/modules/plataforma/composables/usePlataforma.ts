@@ -8,6 +8,8 @@ import {
   type AdministradorCondominio,
   type AmenidadCatalogo,
   type CondominioCreado,
+  type CondominioPlataforma,
+  type EdicionCondominio,
   type NuevoCondominio,
   type PaginaCondominios,
   type Plan,
@@ -86,4 +88,34 @@ export function useReenviarInvitacion() {
     // La tarjeta muestra el correo del administrador
     onSuccess: () => queryClient.invalidateQueries({ queryKey: clavesPlataforma.condominios }),
   });
+}
+
+/** Editar o cambiar el estado cambia las tarjetas: se vuelve a pedir la lista, también en error. */
+function useMutacionCondominio<TVariables>(
+  ejecutar: (variables: TVariables) => Promise<CondominioPlataforma>,
+) {
+  const queryClient = useQueryClient();
+
+  return useMutation<CondominioPlataforma, ApiError, TVariables>({
+    mutationFn: ejecutar,
+    onSettled: () => queryClient.invalidateQueries({ queryKey: clavesPlataforma.condominios }),
+  });
+}
+
+export function useEditarCondominio() {
+  return useMutacionCondominio<{ id: number; cambios: EdicionCondominio }>(({ id, cambios }) =>
+    plataformaService.editar(id, cambios),
+  );
+}
+
+export function useInactivarCondominio() {
+  return useMutacionCondominio<{ id: number; motivo: string }>(({ id, motivo }) =>
+    plataformaService.inactivar(id, motivo),
+  );
+}
+
+export function useReactivarCondominio() {
+  return useMutacionCondominio<{ id: number; motivo: string }>(({ id, motivo }) =>
+    plataformaService.reactivar(id, motivo),
+  );
 }
