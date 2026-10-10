@@ -127,6 +127,12 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/modules/finanzas/pages/PagosPorAprobarPage.vue'),
         meta: { permiso: 'pagos.aprobar', titulo: 'Pagos por aprobar' },
       },
+      {
+        path: 'finanzas/cuotas',
+        name: 'finanzas-cuotas',
+        component: () => import('@/modules/finanzas/pages/CuotasPage.vue'),
+        meta: { permiso: 'finanzas.ver', titulo: 'Cuotas del mes' },
+      },
       previa(
         'finanzas/conciliacion',
         'finanzas-conciliacion',

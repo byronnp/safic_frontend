@@ -39,7 +39,7 @@
 
       <div class="unidad-detalle-pestanas" role="tablist">
         <button
-          v-for="p in PESTANAS"
+          v-for="p in pestanasVisibles"
           :key="p.clave"
           type="button"
           role="tab"
@@ -82,6 +82,13 @@
               </button>
             </div>
           </template>
+
+          <EstadoCuentaUnidad
+            v-else-if="pestana === 'cuenta' && puedeVerCuenta"
+            :unidad-id="unidad.id"
+            :codigo="unidad.codigo"
+            :activo="pestana === 'cuenta'"
+          />
 
           <template v-else-if="pestana === 'historial'">
             <div class="unidad-detalle-seccion">HISTORIAL DE OCUPANTES</div>
@@ -259,6 +266,8 @@ import { ICONOS } from '@/core/navigation/icons';
 import { useSessionStore } from '@/stores/session';
 import { formatoFecha } from '@/utils/formato';
 
+import EstadoCuentaUnidad from '@/modules/finanzas/components/EstadoCuentaUnidad.vue';
+
 import AsignarOcupanteDialog from '../components/AsignarOcupanteDialog.vue';
 import FinalizarOcupanteDialog from '../components/FinalizarOcupanteDialog.vue';
 import MascotaDialog from '../components/MascotaDialog.vue';
@@ -272,12 +281,13 @@ import type { Mascota, Ocupante, Vehiculo } from '../services/unidades.service';
 import { ESTADOS_UNIDAD, TIPO_LARGO } from '../unidad.textos';
 import { descripcionVehiculo, textoEspecie } from '../vehiculo.formulario';
 
-type Pestana = 'ocupantes' | 'vehiculos' | 'documentos' | 'historial';
+type Pestana = 'ocupantes' | 'vehiculos' | 'documentos' | 'cuenta' | 'historial';
 
 const PESTANAS: { clave: Pestana; texto: string }[] = [
   { clave: 'ocupantes', texto: 'Ocupantes' },
   { clave: 'vehiculos', texto: 'Vehículos y mascotas' },
   { clave: 'documentos', texto: 'Documentos' },
+  { clave: 'cuenta', texto: 'Estado de cuenta' },
   { clave: 'historial', texto: 'Historial' },
 ];
 
@@ -289,6 +299,12 @@ const session = useSessionStore();
 const puedeEditar = computed(() => session.tienePermiso('unidades.editar'));
 // Dar acceso a la app lo exige usuarios.gestionar en la API
 const puedeDarAcceso = computed(() => session.tienePermiso('usuarios.gestionar'));
+
+// Ver la cuenta de una unidad exige finanzas.ver en la API; sin él la pestaña no se ofrece.
+const puedeVerCuenta = computed(() => session.tienePermiso('finanzas.ver'));
+const pestanasVisibles = computed(() =>
+  PESTANAS.filter((p) => p.clave !== 'cuenta' || puedeVerCuenta.value),
+);
 
 const id = computed(() => Number(route.params.id) || 0);
 const pestana = ref<Pestana>('ocupantes');
