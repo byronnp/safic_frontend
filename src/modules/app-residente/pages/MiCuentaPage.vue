@@ -2,93 +2,151 @@
   <div class="app-pagina mi-cuenta">
     <AppEncabezado
       class="mi-cuenta-encabezado"
-      :antetitulo="encabezado"
+      :antetitulo="unidad?.encabezado ?? 'Mi cuenta'"
       titulo="Mi cuenta"
       solapado
-    />
+    >
+      <select
+        v-if="datos && datos.unidades.length > 1"
+        :model-value="unidad?.unidad_id"
+        class="mi-cuenta-unidad"
+        aria-label="Unidad"
+        @update:model-value="unidadElegida = $event as number"
+      >
+        <option v-for="u in datos.unidades" :key="u.unidad_id" :value="u.unidad_id">
+          {{ u.codigo }}
+        </option>
+      </select>
+    </AppEncabezado>
 
     <section class="app-tarjeta app-tarjeta-solapada mi-cuenta-total" aria-label="Total pendiente">
-      <div class="mi-cuenta-total__etiqueta">Total pendiente</div>
-      <div class="mi-cuenta-total__fila">
-        <div class="mi-cuenta-total__valor">{{ formatoMoneda(totalPendiente) }}</div>
-        <EstadoBadge v-if="vencidas > 0" tono="error">
-          {{ vencidas }} {{ vencidas === 1 ? 'vencida' : 'vencidas' }}
-        </EstadoBadge>
-      </div>
-      <router-link :to="{ name: 'app-pagar' }" class="mi-cuenta-pagar">Pagar</router-link>
+      <template v-if="consulta.isPending.value">
+        <q-skeleton type="text" width="40%" />
+        <q-skeleton type="rect" height="40px" />
+      </template>
+      <template v-else-if="unidad">
+        <div class="mi-cuenta-total__etiqueta">Total pendiente</div>
+        <div class="mi-cuenta-total__fila">
+          <div class="mi-cuenta-total__valor">{{ formatoMoneda(unidad.total_pendiente) }}</div>
+          <EstadoBadge v-if="unidad.vencidas > 0" tono="error">
+            {{ unidad.vencidas }} {{ unidad.vencidas === 1 ? 'vencida' : 'vencidas' }}
+          </EstadoBadge>
+        </div>
+        <div v-if="aFavor > 0" class="mi-cuenta-total__etiqueta">
+          Saldo a favor: {{ formatoMoneda(unidad.saldo_favor) }}
+        </div>
+        <router-link
+          v-if="puedePagar"
+          :to="{ name: 'app-pagar', query: { unidad: unidad.unidad_id } }"
+          class="mi-cuenta-pagar"
+        >
+          Pagar
+        </router-link>
+        <span
+          v-else
+          class="mi-cuenta-pagar mi-cuenta-pagar--apagado"
+          role="link"
+          aria-disabled="true"
+        >
+          Pagar
+        </span>
+        <div v-if="!unidad.puede_pagar" class="mi-cuenta-total__etiqueta">
+          Los pagos de esta unidad los hace su responsable de pago.
+        </div>
+      </template>
     </section>
 
     <div class="app-cuerpo mi-cuenta-cuerpo">
-      <h2 class="mi-cuenta-titulo">Cuotas</h2>
-      <div class="app-tarjeta">
-        <div v-for="cuota in cuotas" :key="cuota.id" class="mi-cuenta-fila">
-          <div class="col-grow">
-            <div class="mi-cuenta-fila__titulo">{{ cuota.mes }}</div>
-            <div
-              class="mi-cuenta-fila__nota"
-              :class="{ 'mi-cuenta-fila__nota--vencida': cuota.vencida }"
-            >
-              {{ cuota.nota }}
-            </div>
-          </div>
-          <div class="mi-cuenta-fila__monto">{{ formatoMoneda(cuota.monto) }}</div>
-        </div>
+      <div v-if="consulta.isError.value" class="safic-alerta" role="alert">
+        {{ consulta.error.value?.mensaje }}
+        <q-btn flat no-caps dense label="Reintentar" @click="consulta.refetch()" />
       </div>
 
-      <h2 class="mi-cuenta-titulo mi-cuenta-titulo--separado">Pagos y recibos</h2>
-      <div class="app-tarjeta">
-        <div v-for="recibo in recibos" :key="recibo.id" class="mi-cuenta-fila">
-          <div class="col-grow">
-            <div class="mi-cuenta-fila__titulo">
-              {{ recibo.mes }} · {{ formatoMoneda(recibo.monto) }}
-            </div>
-            <div class="mi-cuenta-fila__nota">
-              Recibo N.º {{ recibo.numero }} · {{ recibo.fecha }}
-            </div>
-          </div>
-          <button
-            type="button"
-            class="mi-cuenta-enlace"
-            :aria-label="`Descargar recibo N.º ${recibo.numero} en PDF`"
-            @click="descargar(recibo.numero)"
-          >
-            PDF
-          </button>
-        </div>
+      <div v-else-if="datos && !unidad" class="app-tarjeta mi-cuenta-estado">
+        Tu cuenta aún no está ligada a una unidad. Pídele a la administración que revise tu ficha.
       </div>
+
+      <template v-else-if="unidad">
+        <h2 class="mi-cuenta-titulo">Cuotas</h2>
+        <div class="app-tarjeta">
+          <div v-for="cuota in unidad.cuotas" :key="cuota.id" class="mi-cuenta-fila">
+            <div class="col-grow">
+              <div class="mi-cuenta-fila__titulo">{{ mesCuota(cuota) }}</div>
+              <div
+                class="mi-cuenta-fila__nota"
+                :class="{ 'mi-cuenta-fila__nota--vencida': cuota.estado === 'vencida' }"
+              >
+                {{ notaCuota(cuota) }}
+              </div>
+            </div>
+            <div class="mi-cuenta-fila__monto">{{ formatoMoneda(cuota.saldo) }}</div>
+          </div>
+          <div v-if="unidad.cuotas.length === 0" class="mi-cuenta-estado">
+            No tienes cuotas pendientes. ¡Estás al día!
+          </div>
+        </div>
+
+        <h2 class="mi-cuenta-titulo mi-cuenta-titulo--separado">Pagos y recibos</h2>
+        <div class="app-tarjeta">
+          <div v-for="pago in unidad.pagos" :key="pago.id" class="mi-cuenta-fila">
+            <div class="col-grow">
+              <div class="mi-cuenta-fila__titulo">
+                {{ mesesDelPago(pago) }} · {{ formatoMoneda(pago.monto) }}
+              </div>
+              <div class="mi-cuenta-fila__nota">
+                Comprobante {{ pago.numero_comprobante ?? '—' }} ·
+                {{ formatoFechaCorta(pago.fecha) }}
+              </div>
+              <div
+                v-if="pago.motivo_rechazo"
+                class="mi-cuenta-fila__nota mi-cuenta-fila__nota--vencida"
+              >
+                {{ pago.motivo_rechazo }}
+              </div>
+            </div>
+            <EstadoBadge :tono="TONO_ESTADO_PAGO[pago.estado]">
+              {{ TEXTO_ESTADO_PAGO[pago.estado] }}
+            </EstadoBadge>
+          </div>
+          <div v-if="unidad.pagos.length === 0" class="mi-cuenta-estado">
+            Todavía no has enviado pagos.
+          </div>
+        </div>
+      </template>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { useQuasar } from 'quasar';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 
 import AppEncabezado from '@/components/app/AppEncabezado.vue';
 import EstadoBadge from '@/components/EstadoBadge.vue';
-import { formatoMoneda } from '@/utils/formato';
+import { aCentavos } from '@/utils/dinero';
+import { formatoFechaCorta, formatoMoneda } from '@/utils/formato';
 
-import { MI_CUENTA_CUOTAS, MI_CUENTA_ENCABEZADO, MI_CUENTA_RECIBOS } from '../demo/miCuenta';
+import { useMiCuenta } from '../composables/useMiCuenta';
+import {
+  cuotasLibres,
+  mesCuota,
+  mesesDelPago,
+  notaCuota,
+  TEXTO_ESTADO_PAGO,
+  TONO_ESTADO_PAGO,
+  unidadInicial,
+} from '../mi-cuenta.logica';
 
-const $q = useQuasar();
+const consulta = useMiCuenta();
+const datos = computed(() => consulta.data.value);
 
-const encabezado = MI_CUENTA_ENCABEZADO;
-const cuotas = MI_CUENTA_CUOTAS;
-const recibos = MI_CUENTA_RECIBOS;
+/** Unidad que eligió la persona; mientras no elija, la primera que puede pagar. */
+const unidadElegida = ref<number | null>(null);
+const unidad = computed(() => unidadInicial(datos.value?.unidades ?? [], unidadElegida.value));
 
-// Suma en centavos para no acumular errores de punto flotante.
-const totalPendiente = computed(
-  () => cuotas.reduce((suma, cuota) => suma + Math.round(Number(cuota.monto) * 100), 0) / 100,
+const aFavor = computed(() => (unidad.value ? aCentavos(unidad.value.saldo_favor) : 0));
+const puedePagar = computed(
+  () => !!unidad.value && unidad.value.puede_pagar && cuotasLibres(unidad.value).length > 0,
 );
-
-const vencidas = computed(() => cuotas.filter((cuota) => cuota.vencida).length);
-
-function descargar(numero: string): void {
-  $q.notify({
-    type: 'info',
-    message: `El recibo N.º ${numero} se descargará cuando exista la API.`,
-  });
-}
 </script>
 
 <style scoped>
@@ -191,6 +249,29 @@ function descargar(numero: string): void {
 .mi-cuenta-fila__nota--vencida {
   color: #9b1c12;
   font-weight: 600;
+}
+
+.mi-cuenta-estado {
+  padding: 18px 14px;
+  font-size: 14px;
+  color: var(--safic-texto-suave);
+}
+
+.mi-cuenta-unidad {
+  margin-top: 8px;
+  height: 36px;
+  border-radius: 10px;
+  border: none;
+  padding: 0 10px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.mi-cuenta-pagar--apagado {
+  background: var(--safic-borde);
+  color: var(--safic-texto-tenue);
+  pointer-events: none;
 }
 
 .mi-cuenta-fila__monto {

@@ -337,19 +337,23 @@ const routes: RouteRecordRaw[] = [
         'Mi hogar',
         () => import('@/modules/app-residente/pages/MiHogarPage.vue'),
       ),
-      previa(
-        'mi-cuenta',
-        'app-mi-cuenta',
-        'Mi cuenta',
-        () => import('@/modules/app-residente/pages/MiCuentaPage.vue'),
-      ),
-      previa(
-        'pagar',
-        'app-pagar',
-        'Pagar por transferencia',
-        () => import('@/modules/app-residente/pages/PagarPage.vue'),
-        { sinPestanas: true, menuActivo: 'app-mi-cuenta' },
-      ),
+      {
+        path: 'mi-cuenta',
+        name: 'app-mi-cuenta',
+        component: () => import('@/modules/app-residente/pages/MiCuentaPage.vue'),
+        meta: { permiso: 'cuenta.propia', titulo: 'Mi cuenta' },
+      },
+      {
+        path: 'pagar',
+        name: 'app-pagar',
+        component: () => import('@/modules/app-residente/pages/PagarPage.vue'),
+        meta: {
+          permiso: 'cuenta.propia',
+          titulo: 'Pagar por transferencia',
+          sinPestanas: true,
+          menuActivo: 'app-mi-cuenta',
+        },
+      },
       previa(
         'reservar',
         'app-reservar',

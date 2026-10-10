@@ -1,3 +1,5 @@
+import { aCentavos } from '@/utils/dinero';
+import { mesEnFrase, nombreMes } from '@/utils/periodo';
 import type { MetodoCobro } from '@/modules/unidades/services/unidades.service';
 
 import type {
@@ -6,12 +8,7 @@ import type {
   TramoCartera,
 } from './services/periodos.service';
 
-/** "12320.50" → 1232050. El dinero se compara en centavos enteros, nunca con decimales de float. */
-export function aCentavos(monto: string): number {
-  const [enteros = '0', decimales = ''] = monto.replace('-', '').split('.');
-  const centavos = Number(enteros) * 100 + Number(decimales.padEnd(2, '0').slice(0, 2));
-  return monto.startsWith('-') ? -centavos : centavos;
-}
+export { aCentavos };
 
 /** Porcentaje entero (0–100) de `parte` sobre `total`; 0 si no hay total. */
 export function porcentaje(parte: string, total: string): number {
@@ -20,31 +17,7 @@ export function porcentaje(parte: string, total: string): number {
   return t > 0 ? Math.min(100, Math.floor((aCentavos(parte) * 100) / t)) : 0;
 }
 
-const MESES = [
-  'Enero',
-  'Febrero',
-  'Marzo',
-  'Abril',
-  'Mayo',
-  'Junio',
-  'Julio',
-  'Agosto',
-  'Septiembre',
-  'Octubre',
-  'Noviembre',
-  'Diciembre',
-];
-
-/** "2026-09" → "Septiembre 2026" */
-export function nombreMes(periodo: string): string {
-  const [anio = '', mes = ''] = periodo.split('-');
-  return `${MESES[Number(mes) - 1] ?? mes} ${anio}`;
-}
-
-/** "2026-09" → "septiembre" (en minúscula, para frases) */
-export function mesEnFrase(periodo: string): string {
-  return nombreMes(periodo).split(' ')[0]!.toLowerCase();
-}
+export { mesEnFrase, nombreMes };
 
 export const NOMBRE_METODO: Record<MetodoCobro, string> = {
   general: 'valor único',

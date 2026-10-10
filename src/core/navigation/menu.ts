@@ -292,7 +292,7 @@ export const MENU_APP_RESIDENTE: ItemMenu[] = [
     etiqueta: 'Pagos',
     icono: ICONOS.pagosApp,
     ruta: 'app-mi-cuenta',
-    vistaPrevia: true,
+    permiso: 'cuenta.propia',
   },
   {
     id: 'app.reservas',
