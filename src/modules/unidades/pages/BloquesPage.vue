@@ -58,6 +58,30 @@
           <q-td :props="props" class="text-weight-bold">{{ props.value }}</q-td>
         </template>
 
+        <template #body-cell-acciones="props">
+          <q-td :props="props" class="text-right">
+            <q-btn
+              flat
+              round
+              dense
+              icon="sym_r_edit"
+              :aria-label="`Editar ${props.row.nombre}`"
+              @click="abrirEdicion(props.row)"
+            />
+            <q-btn
+              flat
+              round
+              dense
+              icon="sym_r_delete"
+              color="negative"
+              :aria-label="`Eliminar ${props.row.nombre}`"
+              :loading="eliminando === props.row.id"
+              :disable="eliminando !== null"
+              @click="confirmarEliminar(props.row)"
+            />
+          </q-td>
+        </template>
+
         <template #no-data>
           <div class="full-width column items-center q-py-xl" style="gap: 12px">
             <q-icon :name="ICONOS.bloques" size="40px" class="text-suave" />
@@ -88,11 +112,12 @@
 import { useQuasar, type QTableColumn, type QTableProps } from 'quasar';
 import { computed, ref } from 'vue';
 
+import { aApiError } from '@/core/api/errors';
 import { ICONOS } from '@/core/navigation/icons';
 import { useSessionStore } from '@/stores/session';
 
 import BloqueDialog from '../components/BloqueDialog.vue';
-import { useBloques } from '../composables/useBloques';
+import { useBloques, useEliminarBloque } from '../composables/useBloques';
 import type { Bloque } from '../services/bloques.service';
 
 const $q = useQuasar();
@@ -110,10 +135,13 @@ const paginacion = ref<NonNullable<QTableProps['pagination']>>({
 // Mostrar el botón es comodidad; la API exige unidades.editar de todas formas.
 const puedeEditar = computed(() => session.tienePermiso('unidades.editar'));
 
-const columnas: QTableColumn<Bloque>[] = [
+const columnas = computed<QTableColumn<Bloque>[]>(() => [
   { name: 'nombre', label: 'Nombre', field: 'nombre', align: 'left', sortable: true },
   { name: 'orden', label: 'Orden', field: 'orden', align: 'right', sortable: true },
-];
+  ...(puedeEditar.value
+    ? [{ name: 'acciones', label: '', field: 'id', align: 'right' } satisfies QTableColumn<Bloque>]
+    : []),
+]);
 
 /** "Mostrando 1–10 de 24", como en el mockup. */
 const conteo = computed(() => {
@@ -130,6 +158,40 @@ const conteo = computed(() => {
   const hasta = Math.min(desde + porPagina - 1, total);
   return `Mostrando ${desde}–${hasta} de ${total}`;
 });
+
+function abrirEdicion(bloque: Bloque): void {
+  $q.dialog({ component: BloqueDialog, componentProps: { bloque } }).onOk((b: Bloque) => {
+    $q.notify({ type: 'positive', message: `Bloque «${b.nombre}» actualizado.` });
+  });
+}
+
+const eliminar = useEliminarBloque();
+const eliminando = ref<number | null>(null);
+
+function confirmarEliminar(bloque: Bloque): void {
+  $q.dialog({
+    title: 'Eliminar bloque',
+    message: `¿Eliminar «${bloque.nombre}»? Esta acción no se puede deshacer.`,
+    cancel: { label: 'Cancelar', flat: true, noCaps: true },
+    ok: { label: 'Eliminar', color: 'negative', unelevated: true, noCaps: true },
+    persistent: true,
+  }).onOk(() => {
+    eliminando.value = bloque.id;
+    eliminar.mutate(bloque.id, {
+      onSuccess: () =>
+        $q.notify({ type: 'positive', message: `Bloque «${bloque.nombre}» eliminado.` }),
+      // Decide el código: con unidades no se elimina y el mensaje dice cuántas son
+      onError: (error) => {
+        const e = aApiError(error);
+        $q.notify({
+          type: e.codigo === 'BLOQUE_CON_UNIDADES' ? 'warning' : 'negative',
+          message: e.mensaje,
+        });
+      },
+      onSettled: () => (eliminando.value = null),
+    });
+  });
+}
 
 function abrirNuevo(): void {
   $q.dialog({ component: BloqueDialog }).onOk((bloque: Bloque) => {

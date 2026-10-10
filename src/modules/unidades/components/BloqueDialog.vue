@@ -4,7 +4,7 @@
       <q-form novalidate @submit="guardar">
         <div class="q-pa-lg column" style="gap: 20px">
           <div>
-            <div class="safic-dialogo__titulo">Nuevo bloque</div>
+            <div class="safic-dialogo__titulo">{{ bloque ? 'Editar bloque' : 'Nuevo bloque' }}</div>
             <div class="text-suave q-mt-xs" style="font-size: 14px">
               Torre, bloque o etapa. Ej.: Torre A, Bloque 3, Etapa norte.
             </div>
@@ -52,7 +52,7 @@
               no-caps
               class="safic-btn safic-btn--secundario"
               label="Cancelar"
-              :disable="crear.isPending.value"
+              :disable="ocupado"
               @click="onDialogCancel"
             />
             <q-btn
@@ -62,7 +62,7 @@
               no-caps
               class="safic-btn"
               label="Guardar bloque"
-              :loading="crear.isPending.value"
+              :loading="ocupado"
             />
           </div>
         </div>
@@ -73,15 +73,17 @@
 
 <script setup lang="ts">
 import { useDialogPluginComponent } from 'quasar';
-import { reactive, ref } from 'vue';
+import { computed, reactive, ref } from 'vue';
 import { z } from 'zod';
 
 import { aApiError } from '@/core/api/errors';
 
-import { useCrearBloque } from '../composables/useBloques';
+import { useCrearBloque, useEditarBloque } from '../composables/useBloques';
 import type { Bloque } from '../services/bloques.service';
 
 defineEmits([...useDialogPluginComponent.emits]);
+
+const props = defineProps<{ bloque?: Bloque }>();
 
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent<Bloque>();
 
@@ -96,8 +98,8 @@ const esquema = z.object({
 });
 
 const formulario = reactive<{ nombre: string; orden: number | '' | undefined }>({
-  nombre: '',
-  orden: undefined,
+  nombre: props.bloque?.nombre ?? '',
+  orden: props.bloque?.orden,
 });
 const errores = reactive<{ nombre: string | undefined; orden: string | undefined }>({
   nombre: undefined,
@@ -106,8 +108,12 @@ const errores = reactive<{ nombre: string | undefined; orden: string | undefined
 const errorGeneral = ref<string | null>(null);
 
 const crear = useCrearBloque();
+const editar = useEditarBloque();
+const ocupado = computed(() => crear.isPending.value || editar.isPending.value);
 
 async function guardar(): Promise<void> {
+  // Enter dentro del campo también envía el formulario: no se guarda dos veces
+  if (ocupado.value) return;
   errores.nombre = undefined;
   errores.orden = undefined;
   errorGeneral.value = null;
@@ -128,7 +134,11 @@ async function guardar(): Promise<void> {
   }
 
   try {
-    onDialogOK(await crear.mutateAsync(validacion.data));
+    onDialogOK(
+      props.bloque
+        ? await editar.mutateAsync({ id: props.bloque.id, cambios: validacion.data })
+        : await crear.mutateAsync(validacion.data),
+    );
   } catch (error) {
     const apiError = aApiError(error);
     errores.nombre = apiError.campo('nombre');
