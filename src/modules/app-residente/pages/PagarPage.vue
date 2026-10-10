@@ -8,107 +8,174 @@
       <h1 class="pagar-barra__titulo">Pagar por transferencia</h1>
     </header>
 
-    <template v-if="!enviado">
+    <div v-if="consulta.isPending.value" class="pagar-cuerpo" aria-busy="true">
+      <q-skeleton v-for="i in 3" :key="i" type="rect" height="70px" />
+    </div>
+    <div v-else-if="consulta.isError.value" class="pagar-cuerpo">
+      <div class="safic-alerta" role="alert">
+        {{ consulta.error.value?.mensaje }}
+        <q-btn flat no-caps dense label="Reintentar" @click="consulta.refetch()" />
+      </div>
+    </div>
+
+    <div v-else-if="!unidad || !unidad.puede_pagar" class="pagar-cuerpo">
+      <div class="app-tarjeta pagar-aviso">
+        {{
+          unidad
+            ? 'Los pagos de esta unidad los hace su responsable de pago.'
+            : 'Tu cuenta aún no está ligada a una unidad. Pídele a la administración que revise tu ficha.'
+        }}
+      </div>
+    </div>
+
+    <template v-else-if="!enviado">
       <div class="pagar-cuerpo">
-        <h2 class="pagar-paso">1. Elige qué cuotas pagas</h2>
-        <div class="app-tarjeta">
-          <label v-for="(cuota, i) in cuotas" :key="cuota.mes" class="pagar-cuota">
-            <input
-              type="checkbox"
-              class="pagar-check"
-              :checked="i < seleccionadas"
-              @change="alternar(i)"
-            />
-            <span class="col-grow">
-              <span class="pagar-cuota__mes">{{ cuota.mes }}</span>
-              <span
-                class="pagar-cuota__nota"
-                :class="{ 'pagar-cuota__nota--vencida': cuota.vencida }"
-              >
-                {{ cuota.nota }}
+        <div v-if="errorGeneral" class="safic-alerta" role="alert">{{ errorGeneral }}</div>
+        <div v-if="!cuenta" class="safic-alerta" role="alert">
+          La administración aún no configuró la cuenta para transferir. Avísale para poder pagar.
+        </div>
+        <div v-if="libres.length === 0" class="app-tarjeta pagar-aviso">
+          No tienes cuotas pendientes por pagar
+          <template v-if="unidad.cuotas.length > 0">
+            (las demás van en un pago en revisión)</template
+          >.
+        </div>
+
+        <template v-else>
+          <h2 class="pagar-paso">1. Elige qué cuotas pagas</h2>
+          <div class="app-tarjeta">
+            <label v-for="(cuota, i) in libres" :key="cuota.id" class="pagar-cuota">
+              <input
+                type="checkbox"
+                class="pagar-check"
+                :checked="i < cantidad"
+                :disabled="enviando"
+                @change="alternar(i)"
+              />
+              <span class="col-grow">
+                <span class="pagar-cuota__mes">{{ mesCuota(cuota) }}</span>
+                <span
+                  class="pagar-cuota__nota"
+                  :class="{ 'pagar-cuota__nota--vencida': cuota.estado === 'vencida' }"
+                >
+                  {{ notaCuota(cuota) }}
+                </span>
               </span>
-            </span>
-            <span class="pagar-cuota__monto">{{ formatoMoneda(cuota.monto) }}</span>
-          </label>
-        </div>
-        <div class="pagar-ayuda">Se paga desde la cuota más antigua y cada cuota completa.</div>
+              <span class="pagar-cuota__monto">{{ formatoMoneda(cuota.saldo) }}</span>
+            </label>
+          </div>
+          <div class="pagar-ayuda">
+            Se paga desde la cuota más antigua y cada cuota completa.
+            <template v-if="aFavor > 0">
+              Tu saldo a favor de {{ formatoMoneda(unidad.saldo_favor) }} se descuenta del monto.
+            </template>
+          </div>
 
-        <h2 class="pagar-paso">2. Transfiere exactamente</h2>
-        <div class="app-tarjeta pagar-datos">
-          <div class="pagar-dato">
-            <span class="pagar-dato__etiqueta">Monto</span>
-            <strong class="pagar-dato__monto">{{ totalTexto }}</strong>
-            <button
-              type="button"
-              class="pagar-copiar"
-              aria-label="Copiar monto"
-              @click="copiar(totalCopia, 'Monto copiado')"
-            >
-              <q-icon name="sym_r_content_copy" size="18px" />
-            </button>
+          <h2 class="pagar-paso">2. Transfiere exactamente</h2>
+          <div v-if="cuenta" class="app-tarjeta pagar-datos">
+            <div class="pagar-dato">
+              <span class="pagar-dato__etiqueta">Monto</span>
+              <strong class="pagar-dato__monto">{{ totalTexto }}</strong>
+              <button
+                type="button"
+                class="pagar-copiar"
+                aria-label="Copiar monto"
+                @click="copiar(totalCopia, 'Monto copiado')"
+              >
+                <q-icon name="sym_r_content_copy" size="18px" />
+              </button>
+            </div>
+            <div class="pagar-dato">
+              <span class="pagar-dato__etiqueta">{{ cuenta.banco }} · Cta. {{ cuenta.tipo }}</span>
+              <strong>{{ cuenta.numero }}</strong>
+              <button
+                type="button"
+                class="pagar-copiar"
+                aria-label="Copiar número de cuenta"
+                @click="copiar(cuenta.numero, 'Número de cuenta copiado')"
+              >
+                <q-icon name="sym_r_content_copy" size="18px" />
+              </button>
+            </div>
+            <div class="pagar-dato">
+              <span class="pagar-dato__etiqueta">Titular</span>
+              <strong>{{ cuenta.titular }}</strong>
+            </div>
+            <div class="pagar-dato pagar-concepto">
+              <span class="pagar-concepto__etiqueta">Escribe en el concepto</span>
+              <strong class="pagar-concepto__codigo">{{ unidad.concepto_transferencia }}</strong>
+              <button
+                type="button"
+                class="pagar-copiar pagar-copiar--alerta"
+                aria-label="Copiar código"
+                @click="copiar(unidad.concepto_transferencia, 'Código copiado')"
+              >
+                <q-icon name="sym_r_content_copy" size="18px" />
+              </button>
+            </div>
           </div>
-          <div class="pagar-dato">
-            <span class="pagar-dato__etiqueta">{{ cuenta.banco }}</span>
-            <strong>{{ cuenta.numero }}</strong>
-            <button
-              type="button"
-              class="pagar-copiar"
-              aria-label="Copiar número de cuenta"
-              @click="copiar(cuenta.numero, 'Número de cuenta copiado')"
-            >
-              <q-icon name="sym_r_content_copy" size="18px" />
-            </button>
-          </div>
-          <div class="pagar-dato">
-            <span class="pagar-dato__etiqueta">Titular</span>
-            <strong>{{ cuenta.titular }}</strong>
-          </div>
-          <div class="pagar-dato pagar-concepto">
-            <span class="pagar-concepto__etiqueta">Escribe en el concepto</span>
-            <strong class="pagar-concepto__codigo">{{ cuenta.concepto }}</strong>
-            <button
-              type="button"
-              class="pagar-copiar pagar-copiar--alerta"
-              aria-label="Copiar código"
-              @click="copiar(cuenta.concepto, 'Código copiado')"
-            >
-              <q-icon name="sym_r_content_copy" size="18px" />
-            </button>
-          </div>
-        </div>
 
-        <h2 class="pagar-paso">3. Sube tu comprobante</h2>
-        <div class="pagar-comprobante">
-          <!-- Se elige el archivo, pero todavía no se sube: falta el endpoint de pagos. -->
-          <input
-            ref="archivoInput"
-            type="file"
-            accept="image/*,application/pdf"
-            class="pagar-archivo"
-            tabindex="-1"
-            aria-hidden="true"
-            @change="elegirArchivo"
-          />
-          <button type="button" class="pagar-adjuntar" @click="archivoInput?.click()">
-            <q-icon :name="archivo ? 'sym_r_check_circle' : 'sym_r_photo_camera'" size="18px" />
-            <span class="pagar-adjuntar__texto">{{ archivo?.name ?? 'Foto o PDF' }}</span>
-          </button>
-          <label class="pagar-numero">
-            N.º comprobante
-            <input v-model="comprobante" inputmode="numeric" class="pagar-numero__input" />
-          </label>
-        </div>
+          <h2 class="pagar-paso">3. Sube tu comprobante</h2>
+          <div class="pagar-comprobante">
+            <input
+              ref="archivoInput"
+              type="file"
+              accept="image/jpeg,image/png,application/pdf"
+              class="pagar-archivo"
+              tabindex="-1"
+              aria-hidden="true"
+              @change="elegirArchivo"
+            />
+            <button
+              type="button"
+              class="pagar-adjuntar"
+              :disabled="enviando"
+              @click="archivoInput?.click()"
+            >
+              <q-icon :name="archivo ? 'sym_r_check_circle' : 'sym_r_photo_camera'" size="18px" />
+              <span class="pagar-adjuntar__texto">{{ archivo?.name ?? 'Foto o PDF' }}</span>
+            </button>
+            <label class="pagar-numero">
+              N.º comprobante
+              <input
+                v-model="comprobante"
+                inputmode="text"
+                class="pagar-numero__input"
+                maxlength="40"
+                :disabled="enviando"
+                :aria-invalid="!!errorNumero"
+                aria-describedby="pagar-error-numero"
+              />
+            </label>
+          </div>
+          <div v-if="errorArchivo" id="pagar-error-archivo" class="pagar-error" role="alert">
+            {{ errorArchivo }}
+          </div>
+          <div v-if="errorNumero" id="pagar-error-numero" class="pagar-error" role="alert">
+            {{ errorNumero }}
+          </div>
+          <div
+            v-if="!enviando && montoCentavos === 0 && cantidad > 0"
+            class="pagar-ayuda"
+            role="status"
+          >
+            Tu saldo a favor cubre estas cuotas: no necesitas transferir.
+          </div>
+          <div class="visually-hidden" aria-live="polite">
+            {{ archivo ? `Archivo elegido: ${archivo.name}` : '' }}
+          </div>
+        </template>
       </div>
 
       <div class="pagar-pie">
         <button
           type="button"
           class="pagar-enviar"
-          :class="{ 'pagar-enviar--listo': seleccionadas > 0 }"
-          :aria-disabled="seleccionadas === 0"
+          :class="{ 'pagar-enviar--listo': puedeEnviar }"
+          :aria-disabled="!puedeEnviar"
           @click="enviar"
         >
-          Enviar comprobante · {{ totalTexto }}
+          {{ enviando ? 'Enviando…' : `Enviar comprobante · ${totalTexto}` }}
         </button>
       </div>
     </template>
@@ -119,79 +186,101 @@
       </div>
       <h2 class="pagar-resultado__titulo">Pago en revisión</h2>
       <p class="pagar-resultado__texto">
-        La administración verificará tu transferencia de <strong>{{ totalTexto }}</strong
+        La administración verificará tu transferencia de <strong>{{ enviado.monto }}</strong
         >. Te avisaremos cuando se apruebe y recibirás tu recibo.
       </p>
       <div class="app-tarjeta pagar-resumen">
         <div class="pagar-resumen__fila">
-          <span class="pagar-dato__etiqueta">Cuotas</span><strong>{{ mesesTexto }}</strong>
+          <span class="pagar-dato__etiqueta">Cuotas</span><strong>{{ enviado.meses }}</strong>
         </div>
         <div class="pagar-resumen__fila">
-          <span class="pagar-dato__etiqueta">Comprobante</span><strong>{{ comprobante }}</strong>
+          <span class="pagar-dato__etiqueta">Comprobante</span
+          ><strong>{{ enviado.comprobante }}</strong>
         </div>
       </div>
       <router-link :to="{ name: 'app-mi-cuenta' }" class="pagar-principal">
         Volver a Mi cuenta
       </router-link>
-      <button type="button" class="pagar-secundario" @click="enviado = false">
-        Ver otra vez el formulario
-      </button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { useQuasar } from 'quasar';
-import { computed, ref, useTemplateRef } from 'vue';
+import { computed, ref, useTemplateRef, watch } from 'vue';
+import { useRoute } from 'vue-router';
 
+import { aApiError } from '@/core/api/errors';
+import { aCentavos, deCentavos } from '@/utils/dinero';
 import { formatoMoneda } from '@/utils/formato';
+import { nombreMes } from '@/utils/periodo';
 
+import { useMiCuenta, usePagarMiCuenta } from '../composables/useMiCuenta';
 import {
-  PAGAR_COMPROBANTE_INICIAL,
-  PAGAR_CUENTA,
-  PAGAR_CUOTAS,
-  PAGAR_SELECCION_INICIAL,
-} from '../demo/pagar';
+  cuotasLibres,
+  errorArchivoComprobante,
+  errorNumeroComprobante,
+  mesCuota,
+  montoATransferir,
+  notaCuota,
+  unidadInicial,
+} from '../mi-cuenta.logica';
 
 const $q = useQuasar();
+const route = useRoute();
 
-const cuotas = PAGAR_CUOTAS;
-const cuenta = PAGAR_CUENTA;
+const consulta = useMiCuenta();
+const pagar = usePagarMiCuenta();
+
+const preferida = Number(route.query.unidad) || null;
+const unidad = computed(() => unidadInicial(consulta.data.value?.unidades ?? [], preferida));
+const cuenta = computed(() => consulta.data.value?.cuenta_bancaria ?? null);
+const libres = computed(() => (unidad.value ? cuotasLibres(unidad.value) : []));
+const aFavor = computed(() => (unidad.value ? aCentavos(unidad.value.saldo_favor) : 0));
 
 /**
- * Se paga desde la cuota más antigua: la selección siempre es un prefijo de
- * la lista. Guardamos cuántas cuotas van marcadas (igual que el mockup).
+ * Se paga desde la cuota más antigua: la selección siempre es un prefijo de la lista.
+ * Guardamos cuántas cuotas van marcadas (igual que el mockup).
  */
-const seleccionadas = ref(PAGAR_SELECCION_INICIAL);
-const comprobante = ref(PAGAR_COMPROBANTE_INICIAL);
+const seleccionadas = ref<number | null>(null);
+const cantidad = computed(() => seleccionadas.value ?? Math.min(libres.value.length, 1));
+
+const comprobante = ref('');
 const archivo = ref<File | null>(null);
-const enviado = ref(false);
 const archivoInput = useTemplateRef<HTMLInputElement>('archivoInput');
+const errorNumero = ref<string | null>(null);
+const errorArchivo = ref<string | null>(null);
+const errorGeneral = ref<string | null>(null);
+/** Candado síncrono: `isPending` se actualiza después y dos toques seguidos enviarían dos veces. */
+const enviandoLocal = ref(false);
+const enviando = computed(() => pagar.isPending.value || enviandoLocal.value);
+const enviado = ref<{ monto: string; meses: string; comprobante: string } | null>(null);
+
+// Si la lista de cuotas libres cambia (otra pasó a revisión), la selección vuelve al inicio
+watch(
+  () => libres.value.map((c) => c.id).join(','),
+  () => {
+    seleccionadas.value = null;
+  },
+);
 
 function alternar(indice: number): void {
-  seleccionadas.value = indice < seleccionadas.value ? indice : indice + 1;
+  seleccionadas.value = indice < cantidad.value ? indice : indice + 1;
 }
 
-// Suma en centavos para no acumular errores de punto flotante.
-const totalCentavos = computed(() =>
-  cuotas
-    .slice(0, seleccionadas.value)
-    .reduce((suma, cuota) => suma + Math.round(Number(cuota.monto) * 100), 0),
+const montoCentavos = computed(() =>
+  montoATransferir(libres.value, cantidad.value, unidad.value?.saldo_favor ?? '0.00'),
 );
-const totalTexto = computed(() => formatoMoneda(totalCentavos.value / 100));
-const totalCopia = computed(() => (totalCentavos.value / 100).toFixed(2));
-
-const mesesTexto = computed(
-  () =>
-    cuotas
-      .slice(0, seleccionadas.value)
-      .map((cuota) => cuota.mes.split(' ')[0])
-      .join(', ') || '—',
+const totalTexto = computed(() => formatoMoneda(deCentavos(montoCentavos.value)));
+const totalCopia = computed(() => deCentavos(montoCentavos.value));
+const puedeEnviar = computed(
+  () => !!cuenta.value && cantidad.value > 0 && montoCentavos.value > 0 && !enviando.value,
 );
 
 function elegirArchivo(evento: Event): void {
   const input = evento.target as HTMLInputElement;
   archivo.value = input.files?.[0] ?? null;
+  errorArchivo.value = archivo.value ? errorArchivoComprobante(archivo.value) : null;
 }
 
 async function copiar(texto: string, mensaje: string): Promise<void> {
@@ -204,9 +293,62 @@ async function copiar(texto: string, mensaje: string): Promise<void> {
 }
 
 function enviar(): void {
-  if (seleccionadas.value > 0) {
-    enviado.value = true;
+  const u = unidad.value;
+  if (!u || enviando.value || !puedeEnviar.value) return;
+  enviandoLocal.value = true;
+
+  errorGeneral.value = null;
+  errorNumero.value = errorNumeroComprobante(comprobante.value);
+  errorArchivo.value = errorArchivoComprobante(archivo.value);
+  if (errorNumero.value || errorArchivo.value || !archivo.value) {
+    enviandoLocal.value = false;
+    return;
   }
+
+  const elegidas = libres.value.slice(0, cantidad.value);
+  const numero = comprobante.value.trim();
+  const montoPedido = montoCentavos.value;
+  pagar.mutate(
+    {
+      unidadId: u.unidad_id,
+      cuotas: elegidas.map((c) => c.id),
+      numeroComprobante: numero,
+      comprobante: archivo.value,
+    },
+    {
+      onSuccess: (r) => {
+        // El monto lo calcula el servidor: si no coincide con lo que se pidió transferir, se avisa
+        if (aCentavos(r.monto) !== montoPedido) {
+          $q.notify({
+            type: 'warning',
+            message: `El monto registrado (${formatoMoneda(r.monto)}) no coincide con el que viste. Revisa tu transferencia con la administración.`,
+            timeout: 10000,
+          });
+        }
+        enviado.value = {
+          monto: formatoMoneda(r.monto),
+          meses: elegidas.map((c) => nombreMes(c.periodo).split(' ')[0]).join(', '),
+          comprobante: numero,
+        };
+        archivo.value = null;
+        comprobante.value = '';
+        seleccionadas.value = null;
+      },
+      onError: (error) => {
+        const e = aApiError(error);
+        errorNumero.value =
+          e.campo('numero_comprobante') ??
+          (e.codigo === 'COMPROBANTE_DUPLICADO' ? e.mensaje : null);
+        errorArchivo.value = e.campo('comprobante') ?? null;
+        if (!errorNumero.value && !errorArchivo.value) errorGeneral.value = e.mensaje;
+        // Las cuotas pudieron cambiar (otro pago en revisión): se vuelve a elegir
+        seleccionadas.value = null;
+      },
+      onSettled: () => {
+        enviandoLocal.value = false;
+      },
+    },
+  );
 }
 </script>
 
@@ -502,6 +644,29 @@ function enviar(): void {
 
 .pagar-resultado__texto strong {
   white-space: nowrap;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.pagar-error {
+  font-size: 12px;
+  font-weight: 600;
+  color: #9b1c12;
+  margin-top: -6px;
+}
+
+.pagar-aviso {
+  padding: 14px;
+  font-size: 14px;
+  color: var(--safic-texto-2);
+  line-height: 1.45;
 }
 
 .pagar-resumen {
