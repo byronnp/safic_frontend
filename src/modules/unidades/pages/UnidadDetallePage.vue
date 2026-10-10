@@ -62,7 +62,9 @@
               :ocupante="o"
               :indice="i"
               :puede-editar="puedeEditar"
+              :puede-dar-acceso="puedeDarAcceso"
               @finalizar="darDeBaja"
+              @dar-acceso="darAcceso"
             />
             <div
               v-if="unidad.ocupantes.length === 0"
@@ -252,6 +254,7 @@ import { computed, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 import EstadoBadge from '@/components/EstadoBadge.vue';
+import { aApiError } from '@/core/api/errors';
 import { ICONOS } from '@/core/navigation/icons';
 import { useSessionStore } from '@/stores/session';
 import { formatoFecha } from '@/utils/formato';
@@ -262,6 +265,7 @@ import MascotaDialog from '../components/MascotaDialog.vue';
 import UnidadDetallePlaca from '../components/UnidadDetallePlaca.vue';
 import VehiculoDialog from '../components/VehiculoDialog.vue';
 import UnidadDetalleOcupante from '../components/UnidadDetalleOcupante.vue';
+import { useDarAccesoPersona } from '../composables/usePersonas';
 import { useEliminarRegistro, useHistorialOcupantes, useUnidad } from '../composables/useUnidades';
 import { textoRelacion } from '../persona.formulario';
 import type { Mascota, Ocupante, Vehiculo } from '../services/unidades.service';
@@ -283,6 +287,8 @@ const session = useSessionStore();
 
 // Mostrar el botón es comodidad; la API exige unidades.editar de todas formas.
 const puedeEditar = computed(() => session.tienePermiso('unidades.editar'));
+// Dar acceso a la app lo exige usuarios.gestionar en la API
+const puedeDarAcceso = computed(() => session.tienePermiso('usuarios.gestionar'));
 
 const id = computed(() => Number(route.params.id) || 0);
 const pestana = ref<Pestana>('ocupantes');
@@ -322,6 +328,7 @@ function asignar(): void {
 }
 
 const eliminar = useEliminarRegistro();
+const darAccesoPersona = useDarAccesoPersona();
 
 function editarVehiculo(vehiculo?: Vehiculo): void {
   if (!unidad.value) return;
@@ -358,6 +365,29 @@ function quitar(tipo: 'vehiculo' | 'mascota', id: number, nombre: string): void 
         onError: (error) => $q.notify({ type: 'negative', message: error.mensaje }),
       },
     );
+  });
+}
+
+function darAcceso(o: Ocupante): void {
+  if (darAccesoPersona.isPending.value) return;
+  $q.dialog({
+    title: `Dar acceso a ${o.persona.nombre_completo}`,
+    message:
+      'Se crea su cuenta con el correo de su ficha y recibe un enlace para crear su contraseña. Podrá ver y pagar las cuotas de su unidad desde la app.',
+    cancel: { label: 'Cancelar', flat: true, noCaps: true },
+    ok: { label: 'Dar acceso', color: 'primary', noCaps: true },
+    persistent: true,
+  }).onOk(() => {
+    darAccesoPersona.mutate(o.persona.id, {
+      onSuccess: (r) =>
+        $q.notify({
+          type: 'positive',
+          message: r.invitacion_enviada
+            ? 'Acceso creado. Le enviamos el enlace para crear su contraseña.'
+            : 'Acceso creado. Ya tenía cuenta: puede entrar con su contraseña.',
+        }),
+      onError: (error) => $q.notify({ type: 'negative', message: aApiError(error).mensaje }),
+    });
   });
 }
 
