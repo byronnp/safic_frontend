@@ -48,6 +48,9 @@ export interface CondominioPlataforma {
   mensualidad: string | null;
   plan: { codigo: string; nombre: string } | null;
   ubicacion: {
+    provincia_codigo: string | null;
+    canton_codigo: string | null;
+    parroquia_codigo: string | null;
     provincia: string | null;
     canton: string | null;
     parroquia: string | null;
@@ -65,12 +68,17 @@ export interface EdicionCondominio {
   tipo?: TipoCondominio;
   ruc?: string;
   razon_social?: string;
+  provincia_codigo?: string;
+  canton_codigo?: string;
+  parroquia_codigo?: string;
   direccion?: string;
   telefono?: string | null;
   email_contacto?: string | null;
   total_unidades?: number;
   plan_codigo?: CodigoPlan;
   valor_unidad?: string;
+  latitud?: number;
+  longitud?: number;
 }
 
 export interface UsuarioEncontrado {
@@ -180,6 +188,13 @@ export const plataformaService = {
     const { data } = await api.get<ApiRespuesta<UsuarioEncontrado | null>>(
       '/plataforma/usuarios/buscar',
       { params: { email } },
+    );
+    return data.data;
+  },
+
+  async condominio(id: number): Promise<CondominioPlataforma> {
+    const { data } = await api.get<ApiRespuesta<CondominioPlataforma>>(
+      `/plataforma/condominios/${id}`,
     );
     return data.data;
   },
