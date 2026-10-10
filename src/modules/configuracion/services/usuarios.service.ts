@@ -19,6 +19,8 @@ export interface UsuarioCondominio {
   /** AAAA-MM-DD */
   acceso_hasta: string | null;
   es_yo: boolean;
+  /** Tiene la verificación en dos pasos activa. */
+  doble_factor: boolean;
 }
 
 export interface CupoUsuarios {
@@ -72,6 +74,18 @@ export const usuariosService = {
 
   async actualizar(id: number, datos: ActualizarUsuario): Promise<UsuarioCondominio> {
     const { data } = await api.patch<ApiRespuesta<UsuarioCondominio>>(`/usuarios/${id}`, datos);
+    return data.data;
+  },
+
+  /**
+   * Para quien perdió su teléfono y sus códigos de respaldo. Queda sin verificación (si es
+   * contador deberá configurarla de nuevo). El motivo queda en el registro de seguridad.
+   */
+  async restablecerDobleFactor(id: number, motivo: string): Promise<UsuarioCondominio> {
+    const { data } = await api.post<ApiRespuesta<UsuarioCondominio>>(
+      `/usuarios/${id}/doble-factor/restablecer`,
+      { motivo },
+    );
     return data.data;
   },
 

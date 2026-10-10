@@ -49,6 +49,10 @@
         </template>
 
         <q-separator class="q-my-xs" />
+        <q-item v-close-popup clickable :to="{ name: 'doble-factor' }">
+          <q-item-section avatar><q-icon name="sym_r_verified_user" /></q-item-section>
+          <q-item-section>Verificación en dos pasos</q-item-section>
+        </q-item>
         <q-item v-close-popup clickable @click="salir">
           <q-item-section avatar><q-icon :name="ICONOS.salir" /></q-item-section>
           <q-item-section>{{ t('auth.cerrarSesion') }}</q-item-section>

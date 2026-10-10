@@ -1,5 +1,11 @@
 import { api } from '@/core/api/client';
-import type { ApiRespuesta, ContextoCondominio, RespuestaToken, Usuario } from '@/core/api/types';
+import type {
+  ApiRespuesta,
+  ContextoCondominio,
+  DesafioDobleFactor,
+  RespuestaToken,
+  Usuario,
+} from '@/core/api/types';
 
 /** Contrato: components/schemas/Invitacion. */
 export interface Invitacion {
@@ -16,10 +22,21 @@ export interface Invitacion {
  * `safic_refresh` (el navegador la maneja; JavaScript nunca la ve).
  */
 export const authService = {
-  async login(email: string, password: string): Promise<RespuestaToken> {
-    const { data } = await api.post<ApiRespuesta<RespuestaToken>>(
+  /** Con verificación en dos pasos activa no entrega sesión: devuelve el desafío del segundo paso. */
+  async login(email: string, password: string): Promise<RespuestaToken | DesafioDobleFactor> {
+    const { data } = await api.post<ApiRespuesta<RespuestaToken | DesafioDobleFactor>>(
       '/auth/login',
       { email, password },
+      { saltarRefresco: true },
+    );
+    return data.data;
+  },
+
+  /** Segundo paso del login: el código de la app autenticadora o uno de respaldo. */
+  async verificarDobleFactor(desafio: string, codigo: string): Promise<RespuestaToken> {
+    const { data } = await api.post<ApiRespuesta<RespuestaToken>>(
+      '/auth/2fa/verificar',
+      { desafio, codigo },
       { saltarRefresco: true },
     );
     return data.data;

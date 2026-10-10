@@ -38,6 +38,7 @@ function usuario(cambios: Partial<UsuarioCondominio> = {}): UsuarioCondominio {
     estado: 'activo',
     acceso_hasta: null,
     es_yo: false,
+    doble_factor: false,
     ...cambios,
   };
 }

@@ -208,7 +208,15 @@ async function crear(): Promise<void> {
       formulario.aceptaPrivacidad,
       invitacion.data.value?.aviso_privacidad_version ?? '',
     );
-    await session.iniciarSesion(email, formulario.password);
+    if ((await session.iniciarSesion(email, formulario.password)) !== null) {
+      // La cuenta ya tenía verificación en dos pasos: termina el ingreso en el login
+      $q.notify({
+        type: 'info',
+        message: 'Contraseña creada. Inicia sesión y escribe el código de tu app.',
+      });
+      await router.replace({ name: 'login' });
+      return;
+    }
     await router.replace(
       session.condominioId === null ? destinoSinCondominio(session) : { name: 'inicio' },
     );

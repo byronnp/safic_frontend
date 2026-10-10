@@ -229,6 +229,7 @@ describe('sesión', () => {
       nombre: 'Ana',
       email: 'ana@example.com',
       condominios: [condominio(1, 'Uno'), condominio(2, 'Dos')],
+      doble_factor: { activo: false, obligatorio: false },
       plataforma: null,
     } satisfies Usuario;
 

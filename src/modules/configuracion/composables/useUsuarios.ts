@@ -66,6 +66,12 @@ export function useActualizarUsuario() {
   );
 }
 
+export function useRestablecerDobleFactor() {
+  return useMutacionUsuarios<UsuarioCondominio, { id: number; motivo: string }>(({ id, motivo }) =>
+    usuariosService.restablecerDobleFactor(id, motivo),
+  );
+}
+
 export function useReenviarInvitacion() {
   return useMutacionUsuarios<UsuarioCondominio, number>((id) =>
     usuariosService.reenviarInvitacion(id),

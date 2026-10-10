@@ -26,6 +26,7 @@ function token(
         estado: 'activo',
         marca: null,
       })),
+      doble_factor: { activo: false, obligatorio: false },
       plataforma,
     },
   };
@@ -36,7 +37,12 @@ describe('sesión', () => {
     setActivePinia(createPinia());
     localStorage.clear();
     vi.spyOn(authService, 'contexto').mockImplementation((id) =>
-      Promise.resolve({ condominio_id: id, roles: ['administrador'], permisos: ['unidades.ver'] }),
+      Promise.resolve({
+        condominio_id: id,
+        roles: ['administrador'],
+        permisos: ['unidades.ver'],
+        doble_factor_pendiente: false,
+      }),
     );
   });
 
@@ -150,5 +156,48 @@ describe('sesión', () => {
     expect(session.autenticado).toBe(false);
     expect(session.permisos).toEqual([]);
     expect(localStorage.getItem('safic.condominio')).toBeNull();
+  });
+
+  it('con verificación en dos pasos el login no abre sesión hasta dar el código', async () => {
+    vi.spyOn(authService, 'login').mockResolvedValue({
+      requiere_2fa: true,
+      desafio: 'd'.repeat(64),
+      expira_en: 300,
+    });
+    const verificar = vi.spyOn(authService, 'verificarDobleFactor').mockResolvedValue(token([5]));
+    const session = useSessionStore();
+
+    const desafio = await session.iniciarSesion('maria@jardinesdelvalle.ec', 'secreto');
+
+    expect(desafio?.desafio).toBe('d'.repeat(64));
+    expect(session.autenticado).toBe(false);
+    expect(session.accessToken).toBeNull();
+
+    await session.completarDobleFactor('d'.repeat(64), '123456');
+
+    expect(verificar).toHaveBeenCalledWith('d'.repeat(64), '123456');
+    expect(session.autenticado).toBe(true);
+    expect(session.condominioId).toBe(5);
+  });
+
+  it('un contador sin la verificación queda pendiente hasta activarla', async () => {
+    vi.spyOn(authService, 'login').mockResolvedValue(token([5]));
+    vi.spyOn(authService, 'contexto').mockResolvedValue({
+      condominio_id: 5,
+      roles: ['contador'],
+      permisos: [],
+      doble_factor_pendiente: true,
+    });
+    const session = useSessionStore();
+
+    await session.iniciarSesion('maria@jardinesdelvalle.ec', 'secreto');
+    expect(session.dobleFactorPendiente).toBe(true);
+
+    session.aplicarDobleFactor(true);
+    expect(session.dobleFactorPendiente).toBe(false);
+    expect(session.usuario?.doble_factor.activo).toBe(true);
+
+    session.limpiar();
+    expect(session.dobleFactorPendiente).toBe(false);
   });
 });
