@@ -66,6 +66,13 @@ export const MENU_BASE: ItemMenu[] = [
         permiso: 'finanzas.ver',
       },
       {
+        id: 'finanzas.cuotas',
+        etiqueta: 'Cuotas del mes',
+        icono: ICONOS.cuotas,
+        ruta: 'finanzas-cuotas',
+        permiso: 'finanzas.ver',
+      },
+      {
         id: 'finanzas.pagos',
         etiqueta: 'Pagos por aprobar',
         icono: ICONOS.pagosPorAprobar,
