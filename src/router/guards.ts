@@ -17,6 +17,8 @@ export interface SesionParaGuarda {
   condominios: readonly unknown[];
   /** Tiene un rol de plataforma (super admin, soporte, cobranza…). */
   esPlataforma: boolean;
+  /** Es contador en el condominio activo y aún no activó la verificación en dos pasos. */
+  dobleFactorPendiente: boolean;
   /** Roles en el condominio activo y en la plataforma (para las vistas previas). */
   roles: readonly string[];
   rolesPlataforma: readonly string[];
@@ -50,7 +52,8 @@ export interface OpcionesGuarda {
  * 4. Panel de plataforma: exige un rol de plataforma y sus permisos (no los del condominio).
  * 5. Sin condominio elegido → selector de condominio (o el panel de plataforma
  *    si el usuario es solo de la plataforma).
- * 6. Sin el permiso de la ruta → página "sin permiso".
+ * 6. Contador sin verificación en dos pasos: solo puede configurarla.
+ * 7. Sin el permiso de la ruta → página "sin permiso".
  *    Las pantallas en vista previa solo se abren en desarrollo y para el perfil
  *    que las vería (el permiso de su ítem de menú o acceso total), igual que el menú.
  */
@@ -107,6 +110,16 @@ export async function guardaDeSesion(
     return soloPlataforma
       ? { name: 'plataforma' }
       : { name: 'seleccionar-condominio', query: { redirect: destino.fullPath } };
+  }
+
+  // La API no deja trabajar al contador sin verificación: se lleva a configurarla
+  // (el selector también se permite: puede tener otro condominio donde no esté pendiente)
+  if (
+    sesion.dobleFactorPendiente &&
+    destino.name !== 'doble-factor' &&
+    destino.name !== 'seleccionar-condominio'
+  ) {
+    return { name: 'doble-factor', query: { redirect: destino.fullPath } };
   }
 
   if (destino.meta.vistaPrevia) {

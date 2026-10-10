@@ -13,6 +13,7 @@ function sesion(parcial: Partial<SesionParaGuarda> = {}): SesionParaGuarda {
     condominioId: 1,
     condominios: [{ id: 1 }],
     esPlataforma: false,
+    dobleFactorPendiente: false,
     roles: ['administrador'],
     rolesPlataforma: [],
     restaurar: () => Promise.resolve(),
@@ -52,6 +53,32 @@ describe('guarda de sesión', () => {
   it('el login con sesión activa lleva al inicio', async () => {
     const destino = await guardaDeSesion(ruta('/login', { publica: true }, 'login'), sesion());
     expect(destino).toEqual({ name: 'inicio' });
+  });
+
+  it('un contador sin verificación en dos pasos solo llega a configurarla', async () => {
+    const pendiente = sesion({ dobleFactorPendiente: true });
+
+    expect(await guardaDeSesion(ruta('/finanzas', {}, 'finanzas-resumen'), pendiente)).toEqual({
+      name: 'doble-factor',
+      query: { redirect: '/finanzas' },
+    });
+    expect(
+      await guardaDeSesion(
+        ruta('/seguridad/doble-factor', { sinCondominio: true }, 'doble-factor'),
+        pendiente,
+      ),
+    ).toBe(true);
+    // Puede elegir otro condominio donde no esté pendiente
+    expect(
+      await guardaDeSesion(
+        ruta('/condominios', { sinCondominio: true }, 'seleccionar-condominio'),
+        pendiente,
+      ),
+    ).toBe(true);
+  });
+
+  it('con la verificación activa (o sin exigirla) las rutas abren normal', async () => {
+    expect(await guardaDeSesion(ruta('/finanzas', {}, 'finanzas-resumen'), sesion())).toBe(true);
   });
 });
 

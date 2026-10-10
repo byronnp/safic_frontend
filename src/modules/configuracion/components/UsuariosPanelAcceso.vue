@@ -85,7 +85,20 @@
           @click="guardar"
         />
 
+        <div v-if="usuario.doble_factor" class="panel__ayuda">
+          Tiene la verificación en dos pasos activa.
+        </div>
+
         <div class="panel__acciones">
+          <button
+            v-if="puedeRestablecer"
+            type="button"
+            class="panel__secundario"
+            :disabled="restablecer.isPending.value"
+            @click="pedirMotivoYRestablecer"
+          >
+            Restablecer verificación en dos pasos
+          </button>
           <button
             v-if="usuario.estado === 'pendiente'"
             type="button"
@@ -127,7 +140,11 @@ import EstadoBadge from '@/components/EstadoBadge.vue';
 import { aApiError, type ApiError } from '@/core/api/errors';
 import { colorAvatar, iniciales } from '@/core/theme/avatar';
 
-import { useActualizarUsuario, useReenviarInvitacion } from '../composables/useUsuarios';
+import {
+  useActualizarUsuario,
+  useReenviarInvitacion,
+  useRestablecerDobleFactor,
+} from '../composables/useUsuarios';
 import type { UsuarioCondominio } from '../services/usuarios.service';
 import {
   cambiosUsuario,
@@ -146,6 +163,7 @@ const props = defineProps<{ usuario: UsuarioCondominio }>();
 const $q = useQuasar();
 const actualizar = useActualizarUsuario();
 const reenviar = useReenviarInvitacion();
+const restablecer = useRestablecerDobleFactor();
 
 const hoy = hoyEcuador();
 const formulario = reactive<FormularioUsuario>(formularioUsuarioDesde(props.usuario));
@@ -211,6 +229,32 @@ async function guardar(): Promise<void> {
       }),
     'Cambios guardados.',
   );
+}
+
+/** El administrador no restablece la suya ni la de otro administrador (lo hace la plataforma). */
+const puedeRestablecer = computed(
+  () =>
+    props.usuario.doble_factor &&
+    !props.usuario.es_yo &&
+    !props.usuario.roles.includes('administrador'),
+);
+
+function pedirMotivoYRestablecer(): void {
+  // Se toma la persona al abrir el diálogo, no al confirmar: si la lista cambia no se restablece otra
+  const { id, nombre } = props.usuario;
+  $q.dialog({
+    title: 'Restablecer verificación en dos pasos',
+    message: `${nombre} quedará sin verificación en dos pasos y deberá configurarla de nuevo. Escribe el motivo (queda registrado).`,
+    prompt: { model: '', type: 'text', isValid: (valor: string) => valor.trim().length >= 3 },
+    cancel: { label: 'Cancelar', flat: true, noCaps: true },
+    ok: { label: 'Restablecer', color: 'negative', unelevated: true, noCaps: true },
+    persistent: true,
+  }).onOk((motivo: string) => {
+    void ejecutar(
+      () => restablecer.mutateAsync({ id, motivo: motivo.trim() }),
+      'Verificación restablecida. Deberá configurarla de nuevo.',
+    );
+  });
 }
 
 function cambiarActivo(activo: boolean): void {

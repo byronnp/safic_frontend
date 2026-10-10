@@ -53,6 +53,8 @@ export interface Usuario {
   nombre: string;
   email: string;
   condominios: CondominioResumen[];
+  /** Verificación en dos pasos: si está activa y si no se puede apagar (es contador en algún condominio). */
+  doble_factor: { activo: boolean; obligatorio: boolean };
   /** Perfil de plataforma (super admin, soporte, cobranza…); null si no tiene. */
   plataforma: ContextoPlataforma | null;
 }
@@ -69,8 +71,24 @@ export interface RespuestaToken {
   usuario: Usuario;
 }
 
+/** La contraseña fue correcta pero la cuenta tiene verificación en dos pasos: falta el código. */
+export interface DesafioDobleFactor {
+  requiere_2fa: true;
+  /** Token de un solo propósito (no es una sesión); vale `expira_en` segundos. */
+  desafio: string;
+  expira_en: number;
+}
+
+export function esDesafioDobleFactor(
+  respuesta: RespuestaToken | DesafioDobleFactor,
+): respuesta is DesafioDobleFactor {
+  return 'requiere_2fa' in respuesta;
+}
+
 export interface ContextoCondominio {
   condominio_id: number;
   roles: string[];
   permisos: string[];
+  /** Es contador aquí y aún no activó la verificación en dos pasos: solo puede configurarla. */
+  doble_factor_pendiente: boolean;
 }

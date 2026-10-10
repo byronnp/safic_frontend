@@ -1,5 +1,12 @@
 <template>
-  <div class="column" style="gap: 20px">
+  <LoginCodigoDobleFactor
+    v-if="desafio"
+    :enviando="enviando"
+    :error="errorGeneral"
+    @verificar="verificarCodigo"
+    @volver="volverACredenciales"
+  />
+  <div v-else class="column" style="gap: 20px">
     <div>
       <h2 class="login__titulo">Iniciar sesión</h2>
       <p class="login__subtitulo">Ingresa con el correo que registró tu administración.</p>
@@ -94,8 +101,11 @@ import { useRoute, useRouter } from 'vue-router';
 import { z } from 'zod';
 
 import { aApiError } from '@/core/api/errors';
+import type { DesafioDobleFactor } from '@/core/api/types';
 import { redireccionSegura } from '@/router/guards';
 import { useSessionStore } from '@/stores/session';
+
+import LoginCodigoDobleFactor from '../components/LoginCodigoDobleFactor.vue';
 
 const $q = useQuasar();
 const { t } = useI18n();
@@ -116,6 +126,8 @@ const errores = reactive<{ email: string | undefined; password: string | undefin
 const errorGeneral = ref<string | null>(null);
 const enviando = ref(false);
 const verContrasena = ref(false);
+/** Contraseña correcta y cuenta con verificación en dos pasos: falta el código. */
+const desafio = ref<DesafioDobleFactor | null>(null);
 
 /** Recuperar contraseña e invitaciones llegan en el Sprint 1. */
 function proximamente(): void {
@@ -123,6 +135,46 @@ function proximamente(): void {
     type: 'info',
     message: 'Disponible pronto. Por ahora pide ayuda a tu administración.',
   });
+}
+
+/** Sesión iniciada: a su pantalla de entrada según el perfil. */
+async function entrar(): Promise<void> {
+  if (session.condominioId === null) {
+    // Equipo de la plataforma sin condominios → su panel; el resto elige condominio.
+    const soloPlataforma = session.esPlataforma && session.condominios.length === 0;
+    await router.replace(
+      soloPlataforma
+        ? { name: 'plataforma' }
+        : { name: 'seleccionar-condominio', query: route.query },
+    );
+    return;
+  }
+  await router.replace(redireccionSegura(route.query.redirect) ?? { name: 'inicio' });
+}
+
+function volverACredenciales(): void {
+  desafio.value = null;
+  errorGeneral.value = null;
+  formulario.password = '';
+}
+
+async function verificarCodigo(codigo: string): Promise<void> {
+  if (!desafio.value || enviando.value) return;
+  errorGeneral.value = null;
+  enviando.value = true;
+  try {
+    await session.completarDobleFactor(desafio.value.desafio, codigo);
+    await entrar();
+  } catch (error) {
+    const apiError = aApiError(error);
+    if (apiError.codigo === 'DESAFIO_INVALIDO') {
+      // Venció o se agotaron los intentos: hay que empezar otra vez
+      volverACredenciales();
+    }
+    errorGeneral.value = apiError.mensaje;
+  } finally {
+    enviando.value = false;
+  }
 }
 
 async function ingresar(): Promise<void> {
@@ -143,19 +195,10 @@ async function ingresar(): Promise<void> {
 
   enviando.value = true;
   try {
-    await session.iniciarSesion(validacion.data.email, validacion.data.password);
-
-    if (session.condominioId === null) {
-      // Equipo de la plataforma sin condominios → su panel; el resto elige condominio.
-      const soloPlataforma = session.esPlataforma && session.condominios.length === 0;
-      await router.replace(
-        soloPlataforma
-          ? { name: 'plataforma' }
-          : { name: 'seleccionar-condominio', query: route.query },
-      );
-      return;
+    desafio.value = await session.iniciarSesion(validacion.data.email, validacion.data.password);
+    if (desafio.value === null) {
+      await entrar();
     }
-    await router.replace(redireccionSegura(route.query.redirect) ?? { name: 'inicio' });
   } catch (error) {
     const apiError = aApiError(error);
     errores.email = apiError.campo('email');

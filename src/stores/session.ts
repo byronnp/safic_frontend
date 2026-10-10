@@ -2,7 +2,14 @@ import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 
 import { authService } from '@/core/auth/auth.service';
-import type { CondominioResumen, MarcaCondominio, RespuestaToken, Usuario } from '@/core/api/types';
+import {
+  esDesafioDobleFactor,
+  type CondominioResumen,
+  type DesafioDobleFactor,
+  type MarcaCondominio,
+  type RespuestaToken,
+  type Usuario,
+} from '@/core/api/types';
 
 const CLAVE_CONDOMINIO = 'safic.condominio';
 
@@ -40,6 +47,8 @@ export const useSessionStore = defineStore('session', () => {
   const condominioId = ref<number | null>(null);
   const roles = ref<string[]>([]);
   const permisos = ref<string[]>([]);
+  /** Es contador en el condominio activo y aún no activó la verificación en dos pasos. */
+  const dobleFactorPendiente = ref(false);
   /** Ya se intentó recuperar la sesión en esta carga de la página. */
   const restaurada = ref(false);
 
@@ -78,6 +87,7 @@ export const useSessionStore = defineStore('session', () => {
     condominioId.value = id;
     roles.value = contexto.roles;
     permisos.value = contexto.permisos;
+    dobleFactorPendiente.value = contexto.doble_factor_pendiente;
     recordarCondominio(id);
   }
 
@@ -102,13 +112,45 @@ export const useSessionStore = defineStore('session', () => {
       condominioId.value = null;
       roles.value = [];
       permisos.value = [];
+      dobleFactorPendiente.value = false;
     }
   }
 
-  async function iniciarSesion(email: string, password: string): Promise<void> {
-    aplicarToken(await authService.login(email, password));
+  /**
+   * Devuelve el desafío del segundo paso si la cuenta tiene verificación en dos pasos (todavía
+   * no hay sesión); `null` si la sesión quedó iniciada.
+   */
+  async function iniciarSesion(
+    email: string,
+    password: string,
+  ): Promise<DesafioDobleFactor | null> {
+    const respuesta = await authService.login(email, password);
+    if (esDesafioDobleFactor(respuesta)) {
+      return respuesta;
+    }
+    await abrirSesion(respuesta);
+    return null;
+  }
+
+  /** Segundo paso del login con el código de la app o uno de respaldo. */
+  async function completarDobleFactor(desafio: string, codigo: string): Promise<void> {
+    await abrirSesion(await authService.verificarDobleFactor(desafio, codigo));
+  }
+
+  async function abrirSesion(respuesta: RespuestaToken): Promise<void> {
+    aplicarToken(respuesta);
     restaurada.value = true;
     await resolverCondominioInicial('login');
+  }
+
+  /** Refleja que la verificación en dos pasos se activó o se desactivó (sin volver a iniciar sesión). */
+  function aplicarDobleFactor(activo: boolean): void {
+    if (usuario.value) {
+      usuario.value.doble_factor.activo = activo;
+    }
+    if (activo) {
+      dobleFactorPendiente.value = false;
+    }
   }
 
   /** Renueva el access token. Lo usa el cliente HTTP ante un 401. */
@@ -168,6 +210,7 @@ export const useSessionStore = defineStore('session', () => {
     condominioId.value = null;
     roles.value = [];
     permisos.value = [];
+    dobleFactorPendiente.value = false;
   }
 
   return {
@@ -176,6 +219,7 @@ export const useSessionStore = defineStore('session', () => {
     condominioId,
     roles,
     permisos,
+    dobleFactorPendiente,
     restaurada,
     autenticado,
     condominios,
@@ -187,6 +231,8 @@ export const useSessionStore = defineStore('session', () => {
     tienePermisoPlataforma,
     seleccionarCondominio,
     iniciarSesion,
+    completarDobleFactor,
+    aplicarDobleFactor,
     refrescar,
     restaurar,
     cerrarSesion,

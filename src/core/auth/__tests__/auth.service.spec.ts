@@ -31,3 +31,15 @@ it('al aceptar la invitación envía la aceptación del aviso de privacidad', as
     { saltarRefresco: true },
   );
 });
+
+it('el segundo paso del login envía el desafío y el código sin intentar refrescar la sesión', async () => {
+  const post = vi.spyOn(api, 'post').mockResolvedValue({ data: { data: { access_token: 'jwt' } } });
+
+  await authService.verificarDobleFactor('d'.repeat(64), '123456');
+
+  expect(post).toHaveBeenCalledWith(
+    '/auth/2fa/verificar',
+    { desafio: 'd'.repeat(64), codigo: '123456' },
+    { saltarRefresco: true },
+  );
+});

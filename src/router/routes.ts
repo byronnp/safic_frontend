@@ -66,6 +66,13 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/modules/auth/pages/SeleccionarCondominioPage.vue'),
         meta: { sinCondominio: true, titulo: 'Elegir condominio' },
       },
+      {
+        // Verificación en dos pasos de la propia cuenta. El contador sin ella solo llega aquí.
+        path: 'seguridad/doble-factor',
+        name: 'doble-factor',
+        component: () => import('@/modules/auth/pages/DobleFactorPage.vue'),
+        meta: { sinCondominio: true, titulo: 'Verificación en dos pasos' },
+      },
     ],
   },
 
