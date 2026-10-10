@@ -12,8 +12,45 @@
     <div v-for="dato in datos" :key="dato.k" class="datos__fila">
       <span class="datos__clave">{{ dato.k }}</span
       ><strong>{{ dato.v }}</strong>
+      <button
+        v-if="dato.k === 'Ubicación' && !editandoUbicacion"
+        type="button"
+        class="datos__editar"
+        :disabled="ocupado"
+        :aria-label="`Editar la ubicación de ${amenidad.nombre}`"
+        @click="editarUbicacion"
+      >
+        Editar
+      </button>
     </div>
   </div>
+
+  <form
+    v-if="editandoUbicacion"
+    class="mantenimiento"
+    novalidate
+    @submit.prevent="guardarUbicacion"
+  >
+    <label>
+      Ubicación
+      <input
+        v-model="ubicacion"
+        list="amenidad-ubicaciones-detalle"
+        maxlength="90"
+        placeholder="Área social, Torre A…"
+      />
+    </label>
+    <datalist id="amenidad-ubicaciones-detalle">
+      <option v-for="u in sugeridas" :key="u" :value="u" />
+    </datalist>
+    <div v-if="errorUbicacionTexto" class="mantenimiento__error">{{ errorUbicacionTexto }}</div>
+    <div class="mantenimiento__botones">
+      <button type="button" class="acciones__btn" @click="editandoUbicacion = false">
+        Cancelar
+      </button>
+      <button type="submit" class="acciones__btn" :disabled="ocupado">Guardar</button>
+    </div>
+  </form>
   <router-link v-if="amenidad.reservable" :to="{ name: 'areas-reglas' }" class="configurar">
     Configurar reservas y cobro
   </router-link>
@@ -71,7 +108,16 @@ import { computed, ref, watch } from 'vue';
 
 import { aApiError } from '@/core/api/errors';
 
-import { detalleAmenidad, estadoAmenidad, usoAmenidad } from '../amenidades.logica';
+import { useBloques } from '@/modules/unidades/composables/useBloques';
+
+import {
+  detalleAmenidad,
+  errorUbicacion,
+  estadoAmenidad,
+  ubicacionesSugeridas,
+  ubicacionParaGuardar,
+  usoAmenidad,
+} from '../amenidades.logica';
 import { useActualizarAmenidad } from '../composables/useAmenidades';
 import type { ActualizarAmenidad, AmenidadCondominio } from '../services/amenidades.service';
 import { hoyEcuador } from '../usuarios.logica';
@@ -80,12 +126,19 @@ const props = defineProps<{ amenidad: AmenidadCondominio }>();
 
 const $q = useQuasar();
 const actualizar = useActualizarAmenidad();
+const bloques = useBloques();
 
 const hoy = hoyEcuador();
 const pidiendoFecha = ref(false);
 const hasta = ref('');
 const error = ref<string | null>(null);
 const errorFecha = ref<string | null>(null);
+const editandoUbicacion = ref(false);
+const ubicacion = ref('');
+const errorUbicacionTexto = ref<string | null>(null);
+const sugeridas = computed(() =>
+  ubicacionesSugeridas((bloques.data.value ?? []).map((b) => b.nombre)),
+);
 const ocupado = computed(() => actualizar.isPending.value);
 
 // Al elegir otra amenidad no queda un formulario ni un error de la anterior
@@ -96,6 +149,8 @@ watch(
     hasta.value = '';
     error.value = null;
     errorFecha.value = null;
+    editandoUbicacion.value = false;
+    errorUbicacionTexto.value = null;
   },
 );
 
@@ -130,6 +185,7 @@ async function guardar(
 ): Promise<boolean> {
   error.value = null;
   errorFecha.value = null;
+  errorUbicacionTexto.value = null;
   try {
     await actualizar.mutateAsync({ id, datos: cambios });
     $q.notify({ type: 'positive', message: mensaje });
@@ -137,12 +193,38 @@ async function guardar(
   } catch (e) {
     const apiError = aApiError(e);
     const fecha = apiError.campo('mantenimiento_hasta');
+    const lugar = apiError.campo('ubicacion');
     if (fecha) {
       errorFecha.value = fecha;
+    } else if (lugar) {
+      errorUbicacionTexto.value = lugar;
     } else {
       error.value = apiError.mensaje;
     }
     return false;
+  }
+}
+
+function editarUbicacion(): void {
+  ubicacion.value = props.amenidad.ubicacion ?? '';
+  errorUbicacionTexto.value = null;
+  editandoUbicacion.value = true;
+}
+
+async function guardarUbicacion(): Promise<void> {
+  const invalido = errorUbicacion(ubicacion.value);
+  if (invalido) {
+    errorUbicacionTexto.value = invalido;
+    return;
+  }
+  // Sin cambios no se llama a la API
+  const nueva = ubicacionParaGuardar(ubicacion.value);
+  if (nueva === props.amenidad.ubicacion) {
+    editandoUbicacion.value = false;
+    return;
+  }
+  if (await guardar({ ubicacion: nueva }, 'Ubicación actualizada.')) {
+    editandoUbicacion.value = false;
   }
 }
 
@@ -229,6 +311,23 @@ function confirmarDesactivar(): void {
 
 .datos__fila strong {
   text-align: right;
+}
+
+.datos__editar {
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--q-primary);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.datos__editar:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .datos__clave {
