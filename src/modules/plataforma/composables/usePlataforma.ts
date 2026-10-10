@@ -26,6 +26,7 @@ export const clavesPlataforma = {
   condominios: ['plataforma', 'condominios'] as const,
   listaCondominios: (buscar: string, pagina: number) =>
     ['plataforma', 'condominios', { buscar, pagina }] as const,
+  detalleCondominio: (id: number) => ['plataforma', 'condominios', 'detalle', id] as const,
   usuario: (email: string) => ['plataforma', 'usuario', email] as const,
 };
 
@@ -51,6 +52,17 @@ export function useCondominiosPlataforma(buscar: Ref<string>, pagina: Ref<number
     queryFn: () =>
       plataformaService.condominios({ buscar: buscar.value.trim(), pagina: pagina.value }),
     placeholderData: (anterior) => anterior,
+  });
+}
+
+/** Un condominio para precargar la edición; no se guarda al salir (trae contacto y RUC). */
+export function useCondominioDetalle(id: Ref<number>) {
+  return useQuery<CondominioPlataforma, ApiError>({
+    queryKey: computed(() => clavesPlataforma.detalleCondominio(id.value)),
+    queryFn: () => plataformaService.condominio(id.value),
+    enabled: computed(() => id.value > 0),
+    refetchOnWindowFocus: false,
+    gcTime: 0,
   });
 }
 

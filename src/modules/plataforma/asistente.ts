@@ -4,6 +4,8 @@ import { cedulaValida, rucValido } from '@/utils/identificacion';
 
 import type {
   CodigoPlan,
+  CondominioPlataforma,
+  EdicionCondominio,
   MetodoCobro,
   NuevoCondominio,
   TipoCondominio,
@@ -24,6 +26,12 @@ export const PASOS = [
 ] as const;
 
 export const TOTAL_PASOS = PASOS.length;
+
+/**
+ * Al editar solo se ven los datos del condominio y su ubicación. El cobro, las amenidades y el
+ * administrador los gestiona el propio condominio (o su invitación), no se rehacen desde aquí.
+ */
+export const PASOS_EDICION = PASOS.slice(0, 2);
 
 export const TIPOS_CONDOMINIO: { valor: TipoCondominio; etiqueta: string }[] = [
   { valor: 'conjunto', etiqueta: 'Conjunto' },
@@ -374,4 +382,72 @@ export function multiplicarMonto(unidades: number, valor: string | null): string
   const centavos = BigInt(entero!) * 100n + BigInt(dec.padEnd(2, '0').slice(0, 2));
   const total = centavos * BigInt(unidades);
   return `${total / 100n}.${String(total % 100n).padStart(2, '0')}`;
+}
+
+// ---------- Edición (la misma pantalla del asistente, con los pasos 1 y 2) ----------
+
+/** El formulario del asistente con los datos de un condominio existente. */
+export function formularioDeCondominio(c: CondominioPlataforma): FormularioCondominio {
+  return {
+    ...formularioInicial(),
+    nombre: c.nombre,
+    tipo: c.tipo,
+    ruc: c.ruc ?? '',
+    razonSocial: c.razon_social ?? '',
+    provincia: c.ubicacion.provincia_codigo ?? '',
+    canton: c.ubicacion.canton_codigo ?? '',
+    parroquia: c.ubicacion.parroquia_codigo ?? '',
+    direccion: c.ubicacion.direccion ?? '',
+    telefono: c.contacto.telefono ?? '',
+    emailContacto: c.contacto.email ?? '',
+    unidades: String(c.total_unidades),
+    plan: (c.plan?.codigo as CodigoPlan | undefined) ?? 'profesional',
+    valorUnidad: c.valor_unidad ?? '',
+    latitud: c.ubicacion.latitud ?? '',
+    longitud: c.ubicacion.longitud ?? '',
+  };
+}
+
+/** Solo lo que cambió respecto al condominio original: es lo único que recibe la API. */
+export function aCambios(
+  original: CondominioPlataforma,
+  f: FormularioCondominio,
+): EdicionCondominio {
+  const antes = formularioDeCondominio(original);
+  const c: EdicionCondominio = {};
+  if (f.nombre.trim() !== antes.nombre) c.nombre = f.nombre.trim();
+  if (f.tipo !== antes.tipo) c.tipo = f.tipo;
+  if (f.ruc.trim() !== antes.ruc) c.ruc = f.ruc.trim();
+  if (f.razonSocial.trim() !== antes.razonSocial) c.razon_social = f.razonSocial.trim();
+  // Provincia, cantón y parroquia van juntos: la API valida que sean coherentes entre sí
+  if (
+    f.provincia !== antes.provincia ||
+    f.canton !== antes.canton ||
+    f.parroquia !== antes.parroquia
+  ) {
+    c.provincia_codigo = f.provincia;
+    c.canton_codigo = f.canton;
+    c.parroquia_codigo = f.parroquia;
+  }
+  if (f.direccion.trim() !== antes.direccion) c.direccion = f.direccion.trim();
+  const telefono = f.telefono.replace(/\s/g, '');
+  if (telefono !== antes.telefono) c.telefono = vacioANull(telefono);
+  if (f.emailContacto.trim() !== antes.emailContacto)
+    c.email_contacto = vacioANull(f.emailContacto);
+  if (Number(f.unidades) !== original.total_unidades) c.total_unidades = Number(f.unidades);
+  if (f.plan !== antes.plan) c.plan_codigo = f.plan;
+  const valor = normalizarMonto(f.valorUnidad);
+  if (valor !== null && valor !== (normalizarMonto(antes.valorUnidad) ?? ''))
+    c.valor_unidad = valor;
+  // Latitud y longitud también van juntas (el pin se mueve como un solo dato)
+  const lat = Number(Number(f.latitud).toFixed(6));
+  const lng = Number(Number(f.longitud).toFixed(6));
+  if (
+    lat !== Number(Number(antes.latitud).toFixed(6)) ||
+    lng !== Number(Number(antes.longitud).toFixed(6))
+  ) {
+    c.latitud = lat;
+    c.longitud = lng;
+  }
+  return c;
 }

@@ -305,6 +305,17 @@ const routes: RouteRecordRaw[] = [
           menuActivo: 'plataforma-condominios',
         },
       },
+      {
+        // La misma pantalla del asistente, con los datos del condominio (solo super admin)
+        path: 'condominios/:id(\\d+)/editar',
+        name: 'plataforma-editar-condominio',
+        component: () => import('@/modules/plataforma/pages/NuevoCondominioPage.vue'),
+        meta: {
+          permiso: 'plataforma.condominios-editar',
+          titulo: 'Editar condominio',
+          menuActivo: 'plataforma-condominios',
+        },
+      },
       previa(
         'condominios/:id/cuenta',
         'plataforma-cuenta-condominio',

@@ -41,7 +41,12 @@
     </div>
 
     <div v-if="puedeEditar" class="tarjeta__acciones">
-      <button type="button" class="tarjeta__reenviar" @click="editar">Editar datos</button>
+      <router-link
+        class="tarjeta__reenviar"
+        :to="{ name: 'plataforma-editar-condominio', params: { id: condominio.id } }"
+      >
+        Editar datos
+      </router-link>
       <button
         type="button"
         class="tarjeta__reenviar"
@@ -82,7 +87,6 @@ import type {
 import { useSessionStore } from '@/stores/session';
 import { formatoMoneda } from '@/utils/formato';
 
-import EditarCondominioDialog from './EditarCondominioDialog.vue';
 import MotivoCondominioDialog from './MotivoCondominioDialog.vue';
 import ReenviarInvitacionDialog from './ReenviarInvitacionDialog.vue';
 
@@ -95,15 +99,6 @@ const puedeReenviar = computed(() => session.tienePermisoPlataforma('plataforma.
 
 // Solo el super admin edita e inactiva; la API exige plataforma.condominios-editar de todas formas.
 const puedeEditar = computed(() => session.tienePermisoPlataforma('plataforma.condominios-editar'));
-
-function editar(): void {
-  $q.dialog({
-    component: EditarCondominioDialog,
-    componentProps: { condominio: props.condominio },
-  }).onOk((c: CondominioPlataforma) => {
-    $q.notify({ type: 'positive', message: `Datos de ${c.nombre} actualizados.` });
-  });
-}
 
 function cambiarEstado(): void {
   const inactivar = props.condominio.estado !== 'suspendido';
@@ -185,6 +180,7 @@ const adminTxt = computed(() => {
 }
 
 .tarjeta__reenviar {
+  text-decoration: none;
   border: none;
   background: none;
   padding: 4px 0;

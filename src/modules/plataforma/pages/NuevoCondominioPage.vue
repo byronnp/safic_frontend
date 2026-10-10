@@ -1,8 +1,12 @@
 <template>
   <q-page class="safic-main asistente">
-    <PaginaEncabezado miga="Condominios / Nuevo" titulo="Nuevo condominio" />
+    <PaginaEncabezado
+      :miga="editando ? 'Condominios / Editar' : 'Condominios / Nuevo'"
+      :titulo="editando ? 'Editar condominio' : 'Nuevo condominio'"
+      :subtitulo="editando ? (detalle.data.value?.nombre ?? '') : ''"
+    />
 
-    <NuevoCondominioPasos :pasos="PASOS" :actual="paso" @ir="irA" />
+    <NuevoCondominioPasos :pasos="pasos" :actual="paso" @ir="irA" />
 
     <div v-if="cargaFallida" class="safic-alerta row items-center" role="alert" style="gap: 12px">
       <span class="col-grow">{{ cargaFallida }}</span>
@@ -17,7 +21,7 @@
       <q-skeleton v-for="n in 6" :key="n" type="rect" height="44px" />
     </section>
 
-    <section v-else class="asistente__panel" :aria-label="PASOS[paso - 1]?.titulo">
+    <section v-else class="asistente__panel" :aria-label="pasos[paso - 1]?.titulo">
       <!-- Paso 1 · Datos generales -->
       <div v-if="paso === 1" class="asistente__grilla asistente__grilla--tres">
         <NuevoCondominioCampo
@@ -429,6 +433,10 @@
         aria-live="polite"
       >
         <template v-if="hayErrores">Revisa los campos marcados en rojo para continuar.</template>
+        <template v-else-if="editando">
+          Los cambios quedan en la bitácora de plataforma. El cobro, las amenidades y el
+          administrador los gestiona el propio condominio.
+        </template>
         <template v-else>
           Nada se guarda hasta el último paso; si algo falla, no queda un condominio a medias.
         </template>
@@ -438,9 +446,9 @@
         no-caps
         color="primary"
         class="asistente__boton"
-        :loading="crear.isPending.value"
+        :loading="crear.isPending.value || editar.isPending.value"
         :disable="cargando || !!cargaFallida"
-        :label="paso === TOTAL_PASOS ? 'Crear condominio y enviar acceso' : 'Siguiente'"
+        :label="etiquetaBoton"
         @click="siguiente"
       />
     </div>
@@ -449,8 +457,8 @@
 
 <script setup lang="ts">
 import { useQuasar } from 'quasar';
-import { computed, reactive, ref, toRef } from 'vue';
-import { useRouter } from 'vue-router';
+import { computed, reactive, ref, toRef, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
 import MapaUbicacion from '@/components/MapaUbicacion.vue';
 import PaginaEncabezado from '@/components/PaginaEncabezado.vue';
@@ -462,15 +470,18 @@ import { refDebounced } from '@/utils/debounce';
 import { formatoMoneda } from '@/utils/formato';
 
 import {
+  aCambios,
   aPayload,
   campoDeApi,
   DIAS_VENCIMIENTO,
+  formularioDeCondominio,
   formularioInicial,
   mesesPrimeraCuota,
   METODOS_COBRO,
   multiplicarMonto,
   normalizarMonto,
   PASOS,
+  PASOS_EDICION,
   TIPOS_CONDOMINIO,
   TIPOS_UNIDAD,
   TOTAL_PASOS,
@@ -480,15 +491,31 @@ import {
 import {
   useBuscarUsuario,
   useCatalogoAmenidades,
+  useCondominioDetalle,
   useCrearCondominio,
+  useEditarCondominio,
   usePlanes,
 } from '../composables/usePlataforma';
 import type { AmenidadCatalogo } from '../services/plataforma.service';
 
 const $q = useQuasar();
 const router = useRouter();
+const route = useRoute();
 
+// La misma pantalla crea (5 pasos) y edita (solo datos generales y ubicación)
+const idEdicion = Number(route.params.id) || 0;
+const editando = idEdicion > 0;
 const paso = ref(1);
+const pasos = editando ? PASOS_EDICION : PASOS;
+const totalPasos = pasos.length;
+const etiquetaBoton = computed(() =>
+  paso.value < totalPasos
+    ? 'Siguiente'
+    : editando
+      ? 'Guardar cambios'
+      : 'Crear condominio y enviar acceso',
+);
+
 const f = reactive(formularioInicial());
 const meses = mesesPrimeraCuota();
 /** amenidad_id → cantidad */
@@ -498,26 +525,48 @@ const intentados = ref(new Set<number>());
 /** Errores que devolvió la API (422) hasta que el campo cambie. */
 const erroresApi = ref<Partial<Record<CampoFormulario, string>>>({});
 const errorGeneral = ref<string | null>(null);
+const precargado = ref(false);
 
 // ---------- Catálogos ----------
 const ubicaciones = useUbicaciones();
+const detalle = useCondominioDetalle(ref(idEdicion));
 const planesQuery = usePlanes();
 const amenidadesQuery = useCatalogoAmenidades();
 
 const cargando = computed(
   () =>
-    ubicaciones.isLoading.value || planesQuery.isLoading.value || amenidadesQuery.isLoading.value,
+    ubicaciones.isLoading.value ||
+    planesQuery.isLoading.value ||
+    amenidadesQuery.isLoading.value ||
+    (editando && detalle.isLoading.value),
 );
 const cargaFallida = computed(
   () =>
-    (ubicaciones.error.value ?? planesQuery.error.value ?? amenidadesQuery.error.value)?.mensaje ??
-    null,
+    (
+      ubicaciones.error.value ??
+      planesQuery.error.value ??
+      amenidadesQuery.error.value ??
+      (editando ? detalle.error.value : null)
+    )?.mensaje ?? null,
+);
+
+// Al editar, el formulario arranca con los datos del condominio
+watch(
+  () => detalle.data.value,
+  (c) => {
+    if (editando && c && !precargado.value) {
+      Object.assign(f, formularioDeCondominio(c));
+      precargado.value = true;
+    }
+  },
+  { immediate: true },
 );
 
 function reintentarCatalogos(): void {
   void ubicaciones.refetch();
   void planesQuery.refetch();
   void amenidadesQuery.refetch();
+  void detalle.refetch();
 }
 
 const planes = computed(() => planesQuery.data.value ?? []);
@@ -660,13 +709,60 @@ function anterior(): void {
 }
 
 const crear = useCrearCondominio();
+const editar = useEditarCondominio();
+
+function mostrarErroresApi(error: unknown): void {
+  const apiError = aApiError(error);
+  const porCampo: Partial<Record<CampoFormulario, string>> = {};
+  let primerPaso: number | null = null;
+  for (const [campoApi, mensajes] of Object.entries(apiError.campos)) {
+    const destino = campoDeApi(campoApi);
+    if (destino && mensajes[0] && destino.paso <= totalPasos) {
+      porCampo[destino.campo] ??= mensajes[0];
+      primerPaso = Math.min(primerPaso ?? destino.paso, destino.paso);
+    }
+  }
+  if (apiError.codigo === 'CEDULA_EN_USO') {
+    porCampo.cedula = apiError.mensaje;
+    primerPaso = TOTAL_PASOS;
+  }
+  // El total de unidades no baja de las ya registradas: el aviso va bajo ese campo
+  if (apiError.codigo === 'UNIDADES_REGISTRADAS') {
+    porCampo.unidades = apiError.mensaje;
+    primerPaso = 1;
+  }
+  erroresApi.value = porCampo;
+  if (primerPaso !== null) {
+    paso.value = primerPaso;
+  } else {
+    errorGeneral.value = apiError.mensaje;
+  }
+}
+
+async function guardarEdicion(): Promise<void> {
+  const original = detalle.data.value;
+  if (!original || editar.isPending.value) return;
+  const cambios = aCambios(original, f);
+  if (Object.keys(cambios).length === 0) {
+    $q.notify({ type: 'info', message: 'No hay cambios que guardar.' });
+    await router.push({ name: 'plataforma-condominios' });
+    return;
+  }
+  try {
+    const actualizado = await editar.mutateAsync({ id: original.id, cambios });
+    $q.notify({ type: 'positive', message: `Datos de ${actualizado.nombre} actualizados.` });
+    await router.push({ name: 'plataforma-condominios' });
+  } catch (error) {
+    mostrarErroresApi(error);
+  }
+}
 
 async function siguiente(): Promise<void> {
-  if (paso.value < TOTAL_PASOS) {
+  if (paso.value < totalPasos) {
     irA(paso.value + 1);
     return;
   }
-  const invalido = PASOS.map((_, i) => i + 1).find((n) => !pasoValido(n));
+  const invalido = pasos.map((_, i) => i + 1).find((n) => !pasoValido(n));
   if (invalido) {
     marcarIntentado(invalido);
     paso.value = invalido;
@@ -675,31 +771,16 @@ async function siguiente(): Promise<void> {
 
   errorGeneral.value = null;
   erroresApi.value = {};
+  if (editando) {
+    await guardarEdicion();
+    return;
+  }
   try {
     const creado = await crear.mutateAsync(aPayload(f, amenidades.value));
     $q.notify({ type: 'positive', message: `${creado.condominio.nombre}: ${creado.mensaje}` });
     await router.push({ name: 'plataforma-condominios' });
   } catch (error) {
-    const apiError = aApiError(error);
-    const porCampo: Partial<Record<CampoFormulario, string>> = {};
-    let primerPaso: number | null = null;
-    for (const [campoApi, mensajes] of Object.entries(apiError.campos)) {
-      const destino = campoDeApi(campoApi);
-      if (destino && mensajes[0]) {
-        porCampo[destino.campo] ??= mensajes[0];
-        primerPaso = Math.min(primerPaso ?? destino.paso, destino.paso);
-      }
-    }
-    if (apiError.codigo === 'CEDULA_EN_USO') {
-      porCampo.cedula = apiError.mensaje;
-      primerPaso = TOTAL_PASOS;
-    }
-    erroresApi.value = porCampo;
-    if (primerPaso !== null) {
-      paso.value = primerPaso;
-    } else {
-      errorGeneral.value = apiError.mensaje;
-    }
+    mostrarErroresApi(error);
   }
 }
 </script>
