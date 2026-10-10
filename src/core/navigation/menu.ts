@@ -64,7 +64,6 @@ export const MENU_BASE: ItemMenu[] = [
         icono: ICONOS.resumen,
         ruta: 'finanzas-resumen',
         permiso: 'finanzas.ver',
-        vistaPrevia: true,
       },
       {
         id: 'finanzas.pagos',

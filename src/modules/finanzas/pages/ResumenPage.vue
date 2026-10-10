@@ -1,172 +1,218 @@
 <template>
   <q-page class="safic-main resumen">
-    <PaginaEncabezado miga="Finanzas / Resumen" :titulo="indicadores.periodo">
+    <PaginaEncabezado miga="Finanzas / Resumen" :titulo="titulo">
       <template #acciones>
-        <EstadoBadge v-if="indicadores.periodoAbierto" tono="exito" class="resumen__periodo">
-          Periodo abierto
+        <select
+          v-model="seleccion"
+          class="resumen__selector"
+          aria-label="Mes"
+          :disabled="emitir.isPending.value"
+        >
+          <option v-for="o in opciones" :key="o.valor" :value="o.valor">{{ o.etiqueta }}</option>
+        </select>
+        <EstadoBadge v-if="resumen" :tono="estado.tono" class="resumen__periodo">
+          {{ estado.texto }}
         </EstadoBadge>
         <q-btn
+          v-if="puedeEmitir"
           unelevated
           no-caps
-          class="safic-btn safic-btn--secundario resumen__accion"
-          label="Cuota extraordinaria"
-          @click="pendiente('Cuota extraordinaria')"
-        />
-        <q-btn
-          unelevated
-          no-caps
-          class="safic-btn safic-btn--secundario resumen__accion"
-          label="Registrar gasto"
-          @click="pendiente('Registrar gasto')"
+          color="primary"
+          class="safic-btn resumen__accion"
+          :label="resumen?.emitido ? 'Emitir unidades nuevas' : 'Emitir cuotas'"
+          :loading="emitir.isPending.value"
+          @click="confirmarEmision"
         />
       </template>
     </PaginaEncabezado>
 
-    <div class="safic-indicadores">
-      <div class="safic-indicador">
-        <div class="safic-indicador__etiqueta">Recaudado del mes</div>
-        <div class="resumen__valor">{{ formatoMoneda(indicadores.recaudado) }}</div>
-        <div
-          class="resumen__progreso"
-          role="progressbar"
-          :aria-valuenow="porcentajeRecaudado"
-          aria-valuemin="0"
-          aria-valuemax="100"
-          aria-label="Recaudado del mes"
-        >
-          <div class="resumen__progreso-barra" :style="{ width: `${porcentajeRecaudado}%` }" />
-        </div>
-        <div class="resumen__nota resumen__nota--progreso">
-          {{ formatoPorcentaje(porcentajeRecaudado, 0) }} de
-          {{ formatoMoneda(indicadores.esperado) }} esperado
-        </div>
-      </div>
-      <div class="safic-indicador">
-        <div class="safic-indicador__etiqueta">Cartera vencida</div>
-        <div class="resumen__valor resumen__valor--error">
-          {{ formatoMoneda(indicadores.carteraVencida) }}
-        </div>
+    <div v-if="consulta.isPending.value" class="safic-indicadores" aria-busy="true">
+      <q-skeleton v-for="i in 2" :key="i" type="rect" height="110px" />
+    </div>
+    <div v-else-if="consulta.isError.value" class="safic-alerta" role="alert">
+      {{ consulta.error.value?.mensaje }}
+      <q-btn flat no-caps dense label="Reintentar" @click="consulta.refetch()" />
+    </div>
+
+    <template v-else-if="resumen">
+      <div v-if="errorEmision" class="safic-alerta" role="alert">{{ errorEmision }}</div>
+
+      <div v-if="!resumen.emitido" class="safic-card resumen__aviso">
+        <h2 class="resumen__h2">Aún no se emiten las cuotas de {{ mesFrase }}</h2>
         <div class="resumen__nota">
-          {{ indicadores.unidadesVencidas }} unidades con cuotas vencidas
+          Al emitirlas, cada unidad con cuota mensual recibe su cuota del mes con el valor del cobro
+          configurado.
+        </div>
+        <q-btn
+          v-if="puedeEmitir"
+          unelevated
+          no-caps
+          color="primary"
+          class="safic-btn"
+          label="Emitir cuotas"
+          :loading="emitir.isPending.value"
+          @click="confirmarEmision"
+        />
+      </div>
+
+      <div class="safic-indicadores">
+        <div class="safic-indicador">
+          <div class="safic-indicador__etiqueta">Recaudado del mes</div>
+          <div class="resumen__valor">{{ formatoMoneda(resumen.recaudado) }}</div>
+          <div
+            class="resumen__progreso"
+            role="progressbar"
+            :aria-valuenow="avance"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            aria-label="Recaudado del mes"
+          >
+            <div class="resumen__progreso-barra" :style="{ width: `${avance}%` }" />
+          </div>
+          <div class="resumen__nota resumen__nota--progreso">
+            {{ formatoPorcentaje(avance, 0) }} de {{ formatoMoneda(resumen.esperado) }} esperado
+          </div>
+        </div>
+        <div class="safic-indicador">
+          <div class="safic-indicador__etiqueta">Cartera vencida</div>
+          <div class="resumen__valor resumen__valor--error">
+            {{ formatoMoneda(resumen.cartera_vencida.saldo) }}
+          </div>
+          <div class="resumen__nota">
+            {{ resumen.cartera_vencida.unidades }}
+            {{ resumen.cartera_vencida.unidades === 1 ? 'unidad' : 'unidades' }} con cuotas vencidas
+          </div>
         </div>
       </div>
-      <div class="safic-indicador">
-        <div class="safic-indicador__etiqueta">Gastos del mes</div>
-        <div class="resumen__valor">{{ formatoMoneda(indicadores.gastos) }}</div>
-        <div class="resumen__nota">{{ indicadores.gastosDetalle }}</div>
+
+      <div class="resumen__cuerpo">
+        <section class="safic-card resumen__cartera" aria-labelledby="resumen-cartera-titulo">
+          <div class="resumen__fila-titulo">
+            <h2 id="resumen-cartera-titulo" class="resumen__h2">Cartera por antigüedad</h2>
+            <router-link :to="{ name: 'unidades' }" class="resumen__enlace">
+              Ver unidades
+            </router-link>
+          </div>
+          <div v-for="tramo in tramos" :key="tramo.tramo" class="resumen__tramo">
+            <div class="text-weight-bold">{{ tramo.etiqueta }}</div>
+            <div class="resumen__tramo-pista">
+              <div
+                class="resumen__tramo-barra"
+                :style="{ width: `${tramo.ancho}%`, background: tramo.color }"
+              />
+            </div>
+            <div class="resumen__tramo-monto">{{ formatoMoneda(tramo.saldo) }}</div>
+            <div class="resumen__tramo-unidades">{{ tramo.unidades }} unid.</div>
+          </div>
+          <div v-if="resumen.cobro" class="resumen__metodo">
+            Método de cobro: <strong>{{ NOMBRE_METODO[resumen.cobro.metodo] }}</strong> · Vence
+            {{ vencimiento(resumen.cobro.dia_vencimiento) }}
+          </div>
+        </section>
       </div>
-      <router-link
-        :to="{ name: 'finanzas-pagos-por-aprobar' }"
-        class="safic-indicador resumen__pendientes"
-      >
-        <div class="resumen__pendientes-etiqueta">Pagos por aprobar</div>
-        <div class="resumen__valor">{{ indicadores.pagosPorAprobar }}</div>
-        <div class="resumen__nota resumen__nota--fuerte">
-          {{ formatoMoneda(indicadores.montoPorAprobar) }} en comprobantes · Revisar
-        </div>
-      </router-link>
-    </div>
-
-    <div class="resumen__cuerpo">
-      <section class="safic-card resumen__cartera" aria-labelledby="resumen-cartera-titulo">
-        <div class="resumen__fila-titulo">
-          <h2 id="resumen-cartera-titulo" class="resumen__h2">Cartera por antigüedad</h2>
-          <router-link :to="{ name: 'unidades' }" class="resumen__enlace">Ver unidades</router-link>
-        </div>
-        <div v-for="tramo in cartera" :key="tramo.etiqueta" class="resumen__tramo">
-          <div class="text-weight-bold">{{ tramo.etiqueta }}</div>
-          <div class="resumen__tramo-pista">
-            <div
-              class="resumen__tramo-barra"
-              :style="{ width: `${tramo.porcentaje}%`, background: tramo.color }"
-            />
-          </div>
-          <div class="resumen__tramo-monto">{{ formatoMoneda(tramo.monto) }}</div>
-          <div class="resumen__tramo-unidades">{{ tramo.unidades }} unid.</div>
-        </div>
-        <div class="resumen__metodo">
-          Método de cobro: <strong>{{ metodo.metodo }}</strong>
-          <template v-for="valor in metodo.valores" :key="valor.tipo">
-            · {{ valor.tipo }} {{ formatoMoneda(valor.monto) }}
-          </template>
-          · Vence el día {{ metodo.diaVencimiento }}
-        </div>
-      </section>
-
-      <section class="resumen__lateral">
-        <div class="safic-card resumen__tarjeta">
-          <div class="resumen__fila-titulo q-mb-md">
-            <h2 class="resumen__h2">Conciliación bancaria</h2>
-            <EstadoBadge v-if="diferencia !== 0" tono="alerta">
-              Diferencia {{ formatoMoneda(Math.abs(diferencia)) }}
-            </EstadoBadge>
-            <EstadoBadge v-else tono="exito">Cuadrado</EstadoBadge>
-          </div>
-          <div class="resumen__saldos">
-            <div class="row no-wrap">
-              <span class="col-grow">{{ conciliacion.cuenta }}</span>
-              <strong>{{ formatoMoneda(conciliacion.saldoBanco) }}</strong>
-            </div>
-            <div class="row no-wrap">
-              <span class="col-grow">Saldo en la app</span>
-              <strong>{{ formatoMoneda(conciliacion.saldoApp) }}</strong>
-            </div>
-          </div>
-          <q-btn
-            unelevated
-            no-caps
-            color="primary"
-            class="safic-btn full-width resumen__conciliar"
-            :label="`Conciliar ${conciliacion.mes}`"
-            :to="{ name: 'finanzas-conciliacion' }"
-          />
-        </div>
-        <div class="safic-card resumen__tarjeta resumen__ultimos">
-          <h2 class="resumen__h2 q-mb-md">Últimos pagos aprobados</h2>
-          <div v-for="pago in ultimosPagos" :key="pago.unidad" class="resumen__pago">
-            <div class="resumen__pago-unidad">{{ pago.unidad }}</div>
-            <div class="resumen__pago-detalle">{{ pago.detalle }}</div>
-            <div class="text-weight-bold">{{ formatoMoneda(pago.monto) }}</div>
-          </div>
-        </div>
-      </section>
-    </div>
+    </template>
   </q-page>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
 import { useQuasar } from 'quasar';
-import PaginaEncabezado from '@/components/PaginaEncabezado.vue';
+import { computed, ref } from 'vue';
+
 import EstadoBadge from '@/components/EstadoBadge.vue';
+import PaginaEncabezado from '@/components/PaginaEncabezado.vue';
+import { aApiError } from '@/core/api/errors';
+import { useSessionStore } from '@/stores/session';
 import { formatoMoneda, formatoPorcentaje } from '@/utils/formato';
+
+import type { EmisionPeriodo } from '../services/periodos.service';
+import { useEmitirPeriodo, usePeriodos, useResumenFinanciero } from '../composables/usePeriodos';
 import {
-  RESUMEN_CARTERA,
-  RESUMEN_CONCILIACION,
-  RESUMEN_INDICADORES,
-  RESUMEN_METODO_COBRO,
-  RESUMEN_ULTIMOS_PAGOS,
-} from '../demo/resumen';
+  ESTADO_PERIODO,
+  estadoDelResumen,
+  mesEnFrase,
+  NOMBRE_METODO,
+  nombreMes,
+  opcionesDeMes,
+  porcentaje,
+  tramosConBarra,
+} from '../resumen.logica';
 
 const $q = useQuasar();
+const session = useSessionStore();
 
-const indicadores = RESUMEN_INDICADORES;
-const cartera = RESUMEN_CARTERA;
-const metodo = RESUMEN_METODO_COBRO;
-const conciliacion = RESUMEN_CONCILIACION;
-const ultimosPagos = RESUMEN_ULTIMOS_PAGOS;
+/** Mes elegido; null = el mes en curso del condominio (lo resuelve la API). */
+const elegido = ref<string | null>(null);
+const errorEmision = ref<string | null>(null);
 
-const porcentajeRecaudado = computed(() =>
-  indicadores.esperado > 0 ? Math.round((indicadores.recaudado / indicadores.esperado) * 100) : 0,
+const consulta = useResumenFinanciero(elegido);
+const periodos = usePeriodos();
+const emitir = useEmitirPeriodo();
+
+const resumen = computed(() => consulta.data.value);
+const puedeEmitir = computed(
+  () =>
+    resumen.value !== undefined &&
+    resumen.value.estado !== 'cerrado' &&
+    session.tienePermiso('cuotas.emitir'),
 );
 
-/** Diferencia entre la app y el banco, en centavos para no arrastrar errores de float. */
-const diferencia = computed(
-  () => (Math.round(conciliacion.saldoApp * 100) - Math.round(conciliacion.saldoBanco * 100)) / 100,
+const seleccion = computed({
+  get: () => elegido.value ?? resumen.value?.periodo ?? '',
+  set: (valor: string) => {
+    errorEmision.value = null;
+    elegido.value = valor;
+  },
+});
+const opciones = computed(() =>
+  opcionesDeMes(periodos.data.value ?? [], elegido.value ?? resumen.value?.periodo ?? ''),
 );
 
-function pendiente(accion: string): void {
-  $q.notify({ type: 'info', message: `${accion}: disponible cuando exista la API.` });
+const titulo = computed(() => (resumen.value ? nombreMes(resumen.value.periodo) : 'Resumen'));
+const mesFrase = computed(() => (resumen.value ? mesEnFrase(resumen.value.periodo) : ''));
+const estado = computed(
+  () => ESTADO_PERIODO[resumen.value ? estadoDelResumen(resumen.value) : 'sin_emitir'],
+);
+const avance = computed(() =>
+  resumen.value ? porcentaje(resumen.value.recaudado, resumen.value.esperado) : 0,
+);
+const tramos = computed(() => tramosConBarra(resumen.value?.antiguedad ?? []));
+
+/** "3 nuevas, 117 ya existían, 2 sin cuota mensual · total $ 9.856,00" */
+function textoEmision(e: EmisionPeriodo): string {
+  const partes = [`${e.creadas} ${e.creadas === 1 ? 'nueva' : 'nuevas'}`];
+  if (e.existentes > 0) partes.push(`${e.existentes} ya existían`);
+  if (e.sin_cuota > 0) partes.push(`${e.sin_cuota} sin cuota mensual`);
+  return `Cuotas emitidas: ${partes.join(', ')} · total ${formatoMoneda(e.total)}.`;
+}
+
+function vencimiento(dia: number): string {
+  return dia === 0 ? 'el último día del mes' : `el día ${dia}`;
+}
+
+function confirmarEmision(): void {
+  const r = resumen.value;
+  if (!r || emitir.isPending.value) return;
+  $q.dialog({
+    title: `Emitir las cuotas de ${mesEnFrase(r.periodo)}`,
+    message: r.emitido
+      ? 'Se agregan las cuotas de las unidades que aún no la tienen. Las ya emitidas no cambian.'
+      : 'Cada unidad con cuota mensual recibirá su cuota con el valor del cobro configurado.',
+    cancel: { label: 'Cancelar', flat: true, noCaps: true },
+    ok: { label: 'Emitir', color: 'primary', noCaps: true },
+    persistent: true,
+  }).onOk(() => {
+    errorEmision.value = null;
+    emitir.mutate(r.periodo, {
+      onSuccess: (e) =>
+        $q.notify({
+          type: 'positive',
+          message: textoEmision(e),
+        }),
+      onError: (error) => {
+        errorEmision.value = aApiError(error).mensaje;
+      },
+    });
+  });
 }
 </script>
 
@@ -224,24 +270,6 @@ function pendiente(accion: string): void {
   background: var(--q-primary);
 }
 
-.resumen__pendientes {
-  display: block;
-  background: #fff7ec;
-  border-color: #f1d6ae;
-  color: #8a3f0a;
-  text-decoration: none;
-}
-
-.resumen__pendientes:hover {
-  color: #8a3f0a;
-  border-color: #e4bd83;
-}
-
-.resumen__pendientes-etiqueta {
-  font-size: 13px;
-  font-weight: 700;
-}
-
 .resumen__cuerpo {
   display: flex;
   gap: 16px;
@@ -255,6 +283,27 @@ function pendiente(accion: string): void {
   line-height: 1.4;
   font-weight: 800;
   flex-grow: 1;
+}
+
+.resumen__aviso {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 28px 24px;
+}
+
+.resumen__selector {
+  height: 42px;
+  min-width: 170px;
+  padding: 0 10px;
+  border: 1px solid var(--safic-borde-campo);
+  border-radius: 10px;
+  background: #ffffff;
+  color: var(--safic-texto);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
 }
 
 .resumen__fila-titulo {
@@ -318,71 +367,9 @@ function pendiente(accion: string): void {
   color: var(--safic-texto);
 }
 
-.resumen__lateral {
-  width: 420px;
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.resumen__tarjeta {
-  padding: 20px 22px;
-}
-
-.resumen__ultimos {
-  flex-grow: 1;
-}
-
-.resumen__saldos {
-  font-size: 14px;
-  color: var(--safic-texto-2);
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.resumen__saldos span {
-  min-width: 0;
-}
-
-.resumen__saldos strong {
-  color: var(--safic-texto);
-  white-space: nowrap;
-  padding-left: 8px;
-}
-
-.resumen__conciliar.q-btn {
-  margin-top: 14px;
-}
-
-.resumen__pago {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 0;
-  border-bottom: 1px solid var(--safic-linea-2);
-  font-size: 14px;
-}
-
-.resumen__pago-unidad {
-  width: 52px;
-  flex-shrink: 0;
-  font-weight: 800;
-}
-
-.resumen__pago-detalle {
-  flex-grow: 1;
-  color: var(--safic-texto-2);
-}
-
 @media (max-width: 1023px) {
   .resumen__cuerpo {
     flex-direction: column;
-  }
-
-  .resumen__lateral {
-    width: auto;
   }
 }
 
