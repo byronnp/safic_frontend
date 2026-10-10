@@ -108,12 +108,12 @@ const routes: RouteRecordRaw[] = [
       },
 
       // Fase 2 · Finanzas
-      previa(
-        'finanzas',
-        'finanzas-resumen',
-        'Resumen financiero',
-        () => import('@/modules/finanzas/pages/ResumenPage.vue'),
-      ),
+      {
+        path: 'finanzas',
+        name: 'finanzas-resumen',
+        component: () => import('@/modules/finanzas/pages/ResumenPage.vue'),
+        meta: { permiso: 'finanzas.ver', titulo: 'Resumen financiero' },
+      },
       previa(
         'finanzas/pagos-por-aprobar',
         'finanzas-pagos-por-aprobar',
