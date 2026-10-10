@@ -16,7 +16,15 @@ export interface Persona {
   nombre_completo: string;
   telefono: string | null;
   email: string | null;
+  /** Ya tiene cuenta para entrar a la app del residente. */
+  tiene_acceso: boolean;
   datos_enmascarados: boolean;
+}
+
+export interface AccesoResidente {
+  persona_id: number;
+  /** false si la cuenta ya estaba activa. */
+  invitacion_enviada: boolean;
 }
 
 export interface GuardarPersona {
@@ -55,6 +63,12 @@ export const personasService = {
         last_page: 1,
       },
     };
+  },
+
+  /** Crea su cuenta de residente y le envía la invitación (POST /personas/{id}/acceso). */
+  async darAcceso(personaId: number): Promise<AccesoResidente> {
+    const { data } = await api.post<ApiRespuesta<AccesoResidente>>(`/personas/${personaId}/acceso`);
+    return data.data;
   },
 
   async crear(datos: GuardarPersona): Promise<Persona> {

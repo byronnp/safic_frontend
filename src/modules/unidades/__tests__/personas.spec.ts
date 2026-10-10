@@ -22,6 +22,18 @@ describe('servicios de personas y ocupantes', () => {
     });
   });
 
+  it('da acceso a la app a una persona con su ruta y devuelve si se envió la invitación', async () => {
+    const post = vi
+      .spyOn(api, 'post')
+      .mockResolvedValue({ data: { data: { persona_id: 9, invitacion_enviada: true } } });
+
+    await expect(personasService.darAcceso(9)).resolves.toEqual({
+      persona_id: 9,
+      invitacion_enviada: true,
+    });
+    expect(post).toHaveBeenCalledWith('/personas/9/acceso');
+  });
+
   it('ve la unidad, su historial, asigna y finaliza en sus rutas', async () => {
     const get = vi.spyOn(api, 'get').mockResolvedValue({ data: { data: [] } });
     const post = vi.spyOn(api, 'post').mockResolvedValue({ data: { data: { id: 3 } } });

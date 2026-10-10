@@ -6,10 +6,12 @@ import { useSessionStore } from '@/stores/session';
 
 import {
   personasService,
+  type AccesoResidente,
   type GuardarPersona,
   type PaginaPersonas,
   type Persona,
 } from '../services/personas.service';
+import { clavesUnidades } from './useUnidades';
 
 /** Claves de caché: siempre incluyen el condominio activo. */
 export const clavesPersonas = {
@@ -38,5 +40,25 @@ export function useCrearPersona() {
     mutationFn: (datos) => personasService.crear(datos),
     onSuccess: () =>
       queryClient.invalidateQueries({ queryKey: clavesPersonas.todas(session.condominioId) }),
+  });
+}
+
+/** Da acceso a la app a una persona; la ficha y las unidades se vuelven a pedir (llevan `tiene_acceso`). */
+export function useDarAccesoPersona() {
+  const session = useSessionStore();
+  const queryClient = useQueryClient();
+
+  return useMutation<AccesoResidente, ApiError, number, { condominioId: number | null }>({
+    mutationFn: (personaId) => personasService.darAcceso(personaId),
+    // El condominio de la petición, no el de cuando responde
+    onMutate: () => ({ condominioId: session.condominioId }),
+    onSettled: (_datos, _error, _personaId, contexto) => {
+      const condominioId = contexto?.condominioId ?? null;
+      if (condominioId === null) return;
+      return Promise.all([
+        queryClient.invalidateQueries({ queryKey: clavesUnidades.todas(condominioId) }),
+        queryClient.invalidateQueries({ queryKey: clavesPersonas.todas(condominioId) }),
+      ]);
+    },
   });
 }

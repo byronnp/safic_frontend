@@ -8,6 +8,7 @@
       <div class="ocupante__nombre-fila">
         <div class="ocupante__nombre">{{ ocupante.persona.nombre_completo }}</div>
         <span v-if="ocupante.es_principal" class="ocupante__principal">PRINCIPAL</span>
+        <span v-if="ocupante.persona.tiene_acceso" class="ocupante__acceso">CON ACCESO</span>
       </div>
       <div class="ocupante__relacion">
         {{ relacionTexto }} · Desde {{ formatoFecha(ocupante.fecha_inicio) }}
@@ -22,7 +23,7 @@
       <div class="ocupante__documento">{{ ocupante.persona.documento }}</div>
     </div>
     <button
-      v-if="puedeEditar"
+      v-if="puedeEditar || puedeDarAcceso"
       type="button"
       class="ocupante__mas"
       :aria-label="`Más acciones para ${ocupante.persona.nombre_completo}`"
@@ -30,7 +31,15 @@
       <q-icon name="sym_r_more_vert" size="20px" />
       <q-menu anchor="bottom right" self="top right">
         <q-list dense style="min-width: 200px">
-          <q-item v-close-popup clickable @click="emit('finalizar', ocupante)">
+          <q-item
+            v-if="puedeDarAcceso && !ocupante.persona.tiene_acceso"
+            v-close-popup
+            clickable
+            @click="emit('dar-acceso', ocupante)"
+          >
+            <q-item-section>Dar acceso a la app</q-item-section>
+          </q-item>
+          <q-item v-if="puedeEditar" v-close-popup clickable @click="emit('finalizar', ocupante)">
             <q-item-section>Dar de baja</q-item-section>
           </q-item>
         </q-list>
@@ -48,8 +57,14 @@ import { formatoFecha } from '@/utils/formato';
 import { textoRelacion } from '../persona.formulario';
 import type { Ocupante } from '../services/unidades.service';
 
-const props = defineProps<{ ocupante: Ocupante; indice: number; puedeEditar: boolean }>();
-const emit = defineEmits<{ finalizar: [ocupante: Ocupante] }>();
+const props = defineProps<{
+  ocupante: Ocupante;
+  indice: number;
+  puedeEditar: boolean;
+  /** Puede crear la cuenta del residente (usuarios.gestionar). */
+  puedeDarAcceso?: boolean;
+}>();
+const emit = defineEmits<{ finalizar: [ocupante: Ocupante]; 'dar-acceso': [ocupante: Ocupante] }>();
 
 const color = computed(() => colorAvatar(props.ocupante.es_principal ? 0 : props.indice + 1));
 
@@ -108,6 +123,15 @@ const relacionTexto = computed(() => {
   font-weight: 800;
   background: #fff1dc;
   color: #8a3f0a;
+}
+
+.ocupante__acceso {
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  background: #e3efec;
+  color: #0b4a47;
 }
 
 .ocupante__relacion {
