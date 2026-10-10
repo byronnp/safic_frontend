@@ -221,6 +221,8 @@
     </div>
 
     <CobroCuentasBancarias />
+
+    <ReglasFinanzasPanel />
   </q-page>
 </template>
 
@@ -230,6 +232,7 @@ import { computed, reactive, ref, watch } from 'vue';
 import PaginaEncabezado from '@/components/PaginaEncabezado.vue';
 
 import CobroCuentasBancarias from '../components/CobroCuentasBancarias.vue';
+import ReglasFinanzasPanel from '../components/ReglasFinanzasPanel.vue';
 import { aApiError } from '@/core/api/errors';
 import type { MetodoCobro } from '@/modules/unidades/services/unidades.service';
 
