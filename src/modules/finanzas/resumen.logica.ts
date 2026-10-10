@@ -16,7 +16,8 @@ export function aCentavos(monto: string): number {
 /** Porcentaje entero (0–100) de `parte` sobre `total`; 0 si no hay total. */
 export function porcentaje(parte: string, total: string): number {
   const t = aCentavos(total);
-  return t > 0 ? Math.min(100, Math.round((aCentavos(parte) * 100) / t)) : 0;
+  // Hacia abajo: 100 solo cuando ya se cobró todo
+  return t > 0 ? Math.min(100, Math.floor((aCentavos(parte) * 100) / t)) : 0;
 }
 
 const MESES = [
@@ -78,7 +79,7 @@ export function opcionesDeMes(
   actual: string,
 ): { valor: string; etiqueta: string }[] {
   const claves = new Set(periodos.map((p) => p.periodo));
-  claves.add(actual);
+  if (actual !== '') claves.add(actual);
   return [...claves]
     .sort()
     .reverse()

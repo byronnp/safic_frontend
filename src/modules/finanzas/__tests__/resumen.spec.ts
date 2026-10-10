@@ -56,6 +56,7 @@ describe('dinero en centavos', () => {
     expect(porcentaje('9856.00', '12320.00')).toBe(80);
     expect(porcentaje('20.00', '10.00')).toBe(100);
     expect(porcentaje('5.00', '0.00')).toBe(0);
+    expect(porcentaje('99.60', '100.00')).toBe(99);
   });
 });
 
@@ -78,6 +79,7 @@ describe('opcionesDeMes', () => {
       '2026-08',
     ]);
     expect(opcionesDeMes(emitidos, '2026-09')).toHaveLength(2);
+    expect(opcionesDeMes(emitidos, '')).toHaveLength(2);
   });
 });
 

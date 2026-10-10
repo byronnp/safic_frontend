@@ -124,6 +124,7 @@ import { aApiError } from '@/core/api/errors';
 import { useSessionStore } from '@/stores/session';
 import { formatoMoneda, formatoPorcentaje } from '@/utils/formato';
 
+import type { EmisionPeriodo } from '../services/periodos.service';
 import { useEmitirPeriodo, usePeriodos, useResumenFinanciero } from '../composables/usePeriodos';
 import {
   ESTADO_PERIODO,
@@ -149,7 +150,10 @@ const emitir = useEmitirPeriodo();
 
 const resumen = computed(() => consulta.data.value);
 const puedeEmitir = computed(
-  () => session.tienePermiso('cuotas.emitir') && resumen.value?.estado !== 'cerrado',
+  () =>
+    resumen.value !== undefined &&
+    resumen.value.estado !== 'cerrado' &&
+    session.tienePermiso('cuotas.emitir'),
 );
 
 const seleccion = computed({
@@ -173,6 +177,14 @@ const avance = computed(() =>
 );
 const tramos = computed(() => tramosConBarra(resumen.value?.antiguedad ?? []));
 
+/** "3 nuevas, 117 ya existían, 2 sin cuota mensual · total $ 9.856,00" */
+function textoEmision(e: EmisionPeriodo): string {
+  const partes = [`${e.creadas} ${e.creadas === 1 ? 'nueva' : 'nuevas'}`];
+  if (e.existentes > 0) partes.push(`${e.existentes} ya existían`);
+  if (e.sin_cuota > 0) partes.push(`${e.sin_cuota} sin cuota mensual`);
+  return `Cuotas emitidas: ${partes.join(', ')} · total ${formatoMoneda(e.total)}.`;
+}
+
 function vencimiento(dia: number): string {
   return dia === 0 ? 'el último día del mes' : `el día ${dia}`;
 }
@@ -194,7 +206,7 @@ function confirmarEmision(): void {
       onSuccess: (e) =>
         $q.notify({
           type: 'positive',
-          message: `Cuotas emitidas: ${e.creadas} nuevas, total ${formatoMoneda(e.total)}.`,
+          message: textoEmision(e),
         }),
       onError: (error) => {
         errorEmision.value = aApiError(error).mensaje;
