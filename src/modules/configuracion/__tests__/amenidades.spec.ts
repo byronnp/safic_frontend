@@ -12,7 +12,9 @@ import {
   nombresPrevistos,
   peticionAmenidad,
   tonoEstadoAmenidad,
+  errorFoto,
   errorUbicacion,
+  moverFoto,
   ubicacionParaGuardar,
   ubicacionesSugeridas,
   usoAmenidad,
@@ -44,6 +46,7 @@ function amenidad(cambios: Partial<AmenidadCondominio> = {}): AmenidadCondominio
     duracion_maxima_min: null,
     estado: 'disponible',
     mantenimiento_hasta: null,
+    fotos: [],
     ...cambios,
   };
 }
@@ -289,5 +292,50 @@ describe('ubicación de una amenidad', () => {
   it('al guardar recorta y un texto vacío quita la ubicación', () => {
     expect(ubicacionParaGuardar('  Torre A  ')).toBe('Torre A');
     expect(ubicacionParaGuardar('   ')).toBeNull();
+  });
+});
+
+describe('fotos de una amenidad', () => {
+  const jpg = { type: 'image/jpeg', size: 1024 };
+
+  it('acepta JPG y PNG de hasta 5 MB', () => {
+    expect(errorFoto(jpg, 0)).toBeNull();
+    expect(errorFoto({ type: 'image/png', size: 5 * 1024 * 1024 }, 4)).toBeNull();
+  });
+
+  it('rechaza otros formatos, las muy pesadas y pasar de cinco', () => {
+    expect(errorFoto({ type: 'image/svg+xml', size: 10 }, 0)).toBe('La foto debe ser JPG o PNG.');
+    expect(errorFoto({ type: 'application/pdf', size: 10 }, 0)).toBe('La foto debe ser JPG o PNG.');
+    expect(errorFoto({ type: 'image/jpeg', size: 5 * 1024 * 1024 + 1 }, 0)).toBe(
+      'La foto pesa más de 5 MB.',
+    );
+    expect(errorFoto(jpg, 5)).toBe('Una amenidad tiene hasta 5 fotos. Quita una para subir otra.');
+  });
+
+  it('mueve una foto una posición y no pasa de los extremos', () => {
+    expect(moverFoto([1, 2, 3], 2, -1)).toEqual([2, 1, 3]);
+    expect(moverFoto([1, 2, 3], 2, 1)).toEqual([1, 3, 2]);
+    expect(moverFoto([1, 2, 3], 1, -1)).toEqual([1, 2, 3]);
+    expect(moverFoto([1, 2, 3], 3, 1)).toEqual([1, 2, 3]);
+    expect(moverFoto([1, 2, 3], 9, 1)).toEqual([1, 2, 3]);
+  });
+});
+
+describe('servicio de fotos', () => {
+  it('sube como multipart, quita y ordena en sus rutas', async () => {
+    const post = vi.spyOn(api, 'post').mockResolvedValue({ data: { data: {} } });
+    const del = vi.spyOn(api, 'delete').mockResolvedValue({ data: { data: {} } });
+    const put = vi.spyOn(api, 'put').mockResolvedValue({ data: { data: {} } });
+
+    const archivo = new File(['x'], 'piscina.jpg', { type: 'image/jpeg' });
+    await amenidadesService.subirFoto(4, archivo);
+    await amenidadesService.quitarFoto(4, 9);
+    await amenidadesService.ordenarFotos(4, [3, 1, 2]);
+
+    const [ruta, formulario] = post.mock.calls[0] as [string, FormData];
+    expect(ruta).toBe('/amenidades/4/fotos');
+    expect((formulario.get('foto') as File).name).toBe('piscina.jpg');
+    expect(del).toHaveBeenCalledWith('/amenidades/4/fotos/9');
+    expect(put).toHaveBeenCalledWith('/amenidades/4/fotos/orden', { ids: [3, 1, 2] });
   });
 });
