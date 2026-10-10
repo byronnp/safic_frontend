@@ -80,6 +80,7 @@ Pantallas que pedían los documentos de arquitectura y no tenían mockup. Las ru
 | F5Constancia.dc.html | Admin · Constancia de convocatoria y poderes | `/asambleas/constancia` | modules/asambleas/pages/ConstanciaPage.vue |
 | F5RegistroMesa.dc.html | Secretario · Registro en mesa | `/asambleas/registro-mesa` | modules/asambleas/pages/RegistroMesaPage.vue |
 | F1PlataformaRegistros.dc.html | Super admin · Registros del sistema | `/plataforma/registros` | modules/plataforma/pages/RegistrosSistemaPage.vue |
+| F1EditarCondominio.dc.html | Super admin · Editar condominio (datos, ubicación, plan y unidades, administrador, estado) | `/plataforma/condominios/:id/editar` | modules/plataforma/pages/EditarCondominioPage.vue |
 | F1PlataformaSolicitudes.dc.html | Super admin · Solicitudes de rol | `/plataforma/solicitudes-rol` | modules/plataforma/pages/SolicitudesRolPage.vue |
 | F6Reportes.dc.html | Super admin y contador de plataforma · Reportes contables | `/plataforma/reportes` | modules/plataforma/pages/ReportesContablesPage.vue |
 | F3Areas.dc.html | Residente · Áreas comunes | `/app/areas` | modules/app-residente/pages/AreasPage.vue |
