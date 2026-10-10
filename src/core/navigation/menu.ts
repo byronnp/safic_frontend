@@ -101,6 +101,13 @@ export const MENU_BASE: ItemMenu[] = [
         ruta: 'finanzas-proveedores',
         permiso: 'finanzas.ver',
       },
+      {
+        id: 'finanzas.aprobaciones',
+        etiqueta: 'Aprobaciones',
+        icono: ICONOS.aprobaciones,
+        ruta: 'finanzas-aprobaciones',
+        permiso: 'gastos.aprobar-n2',
+      },
     ],
   },
   {

@@ -113,8 +113,8 @@
             <div class="text-right cxp__monto">{{ formatoMoneda(g.total) }}</div>
             <div class="text-right cxp__monto">{{ formatoMoneda(g.saldo) }}</div>
             <div>
-              <EstadoBadge :tono="ESTADO_GASTO[g.estado].tono">{{
-                ESTADO_GASTO[g.estado].texto
+              <EstadoBadge :tono="estadoVisualGasto(g).tono">{{
+                estadoVisualGasto(g).texto
               }}</EstadoBadge>
             </div>
           </button>
@@ -168,9 +168,26 @@
           <dd>{{ formatoMoneda(seleccionada.saldo) }}</dd>
         </dl>
 
-        <EstadoBadge :tono="ESTADO_GASTO[seleccionada.estado].tono">
-          {{ ESTADO_GASTO[seleccionada.estado].texto }}
+        <EstadoBadge :tono="estadoVisualGasto(seleccionada).tono">
+          {{ estadoVisualGasto(seleccionada).texto }}
         </EstadoBadge>
+
+        <AprobacionGasto :gasto-id="seleccionada.id" @resuelto="(m) => (resultado = m)" />
+
+        <q-btn
+          v-if="puedePagar && seleccionada.estado === 'aprobada'"
+          unelevated
+          no-caps
+          color="primary"
+          class="safic-btn"
+          icon="sym_r_payments"
+          label="Registrar pago"
+          :to="{
+            name: 'finanzas-pago-proveedor',
+            params: { id: seleccionada.proveedor.id },
+            query: { factura: seleccionada.id },
+          }"
+        />
       </aside>
     </div>
   </q-page>
@@ -187,10 +204,11 @@ import { useSessionStore } from '@/stores/session';
 import { refDebounced } from '@/utils/debounce';
 import { formatoFecha, formatoMoneda } from '@/utils/formato';
 
+import AprobacionGasto from '../components/AprobacionGasto.vue';
 import FacturaManualDialog from '../components/FacturaManualDialog.vue';
 import ImportarFacturaXmlBoton from '../components/ImportarFacturaXmlBoton.vue';
 import { useGastos } from '../composables/useGastos';
-import { ESTADO_GASTO, FILTROS_GASTOS, textoVence } from '../proveedores.logica';
+import { estadoVisualGasto, FILTROS_GASTOS, textoVence } from '../proveedores.logica';
 import type { FiltroGastos, Gasto } from '../services/gastos.service';
 
 const $q = useQuasar();
@@ -199,6 +217,7 @@ const session = useSessionStore();
 
 // Mostrar los botones es comodidad; la API exige gastos.registrar igual.
 const puedeRegistrar = computed(() => session.tienePermiso('gastos.registrar'));
+const puedePagar = computed(() => session.tienePermiso('gastos.pagar'));
 
 const filtro = ref<FiltroGastos>('todas');
 // «Ver facturas» desde Proveedores llega con el RUC en la dirección

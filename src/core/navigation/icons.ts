@@ -44,6 +44,7 @@ export const ICONOS = {
   // Módulos y pantallas (mismos nombres que en los mockups)
   resumen: 'sym_r_dashboard',
   pagosPorAprobar: 'sym_r_fact_check',
+  aprobaciones: 'sym_r_approval',
   conciliacion: 'sym_r_account_balance',
   cuentasPorPagar: 'sym_r_payments',
   agenda: 'sym_r_calendar_month',
