@@ -12,6 +12,8 @@ import {
   nombresPrevistos,
   peticionAmenidad,
   tonoEstadoAmenidad,
+  errorUbicacion,
+  ubicacionParaGuardar,
   ubicacionesSugeridas,
   usoAmenidad,
   vistaAmenidad,
@@ -273,5 +275,19 @@ describe('agregar amenidades', () => {
       'Torre A',
       'Torre B',
     ]);
+  });
+});
+
+describe('ubicación de una amenidad', () => {
+  it('acepta hasta 80 caracteres y vacía', () => {
+    expect(errorUbicacion('Torre A · PB')).toBeNull();
+    expect(errorUbicacion('   ')).toBeNull();
+    expect(errorUbicacion('a'.repeat(80))).toBeNull();
+    expect(errorUbicacion('a'.repeat(81))).toBe('La ubicación tiene máximo 80 caracteres.');
+  });
+
+  it('al guardar recorta y un texto vacío quita la ubicación', () => {
+    expect(ubicacionParaGuardar('  Torre A  ')).toBe('Torre A');
+    expect(ubicacionParaGuardar('   ')).toBeNull();
   });
 });

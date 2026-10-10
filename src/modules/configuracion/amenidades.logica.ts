@@ -240,6 +240,21 @@ export const CAMPOS_API_AMENIDAD: Record<string, keyof FormularioAmenidad> = {
   ubicacion: 'ubicacion',
 };
 
+export const UBICACION_MAXIMO = 80;
+
+/** Error de la ubicación escrita, o null si es válida (vacía está bien: se quita la ubicación). */
+export function errorUbicacion(texto: string): string | null {
+  return texto.trim().length > UBICACION_MAXIMO
+    ? `La ubicación tiene máximo ${UBICACION_MAXIMO} caracteres.`
+    : null;
+}
+
+/** Lo que viaja a la API: vacío quita la ubicación. */
+export function ubicacionParaGuardar(texto: string): string | null {
+  const limpio = texto.trim();
+  return limpio === '' ? null : limpio;
+}
+
 /** Ubicaciones sugeridas: el área social y cada bloque del condominio. */
 export function ubicacionesSugeridas(bloques: string[]): string[] {
   return ['Área social', ...bloques];
