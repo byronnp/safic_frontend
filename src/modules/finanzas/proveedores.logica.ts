@@ -1,10 +1,17 @@
 import { z } from 'zod';
 
 import { aCentavos, deCentavos } from '@/utils/dinero';
-import { formatoFechaCorta } from '@/utils/formato';
+import { formatoFechaCorta, formatoMoneda } from '@/utils/formato';
 
 import { normalizarMonto } from './cuotas.logica';
-import type { EstadoGasto, FacturaManual, FiltroGastos, Gasto } from './services/gastos.service';
+import type {
+  Aprobacion,
+  EstadoGasto,
+  FacturaManual,
+  FiltroGastos,
+  Gasto,
+} from './services/gastos.service';
+import type { NuevoPagoProveedor } from './services/pagos-proveedor.service';
 import type {
   EstadoProveedor,
   FiltroProveedores,
@@ -35,6 +42,17 @@ export const ESTADO_GASTO: Record<EstadoGasto, { texto: string; tono: Tono }> = 
   pagada: { texto: 'Pagada', tono: 'exito' },
   rechazada: { texto: 'Rechazada', tono: 'error' },
 };
+
+/** Estado que ve la persona: junta el estado, el nivel que falta y los abonos. */
+export function estadoVisualGasto(
+  g: Pick<Gasto, 'estado' | 'nivel_pendiente' | 'pagada_parcial'>,
+): { texto: string; tono: Tono } {
+  if (g.estado === 'por_aprobar' && g.nivel_pendiente === 2) {
+    return { texto: 'Falta 2.ª aprobación', tono: 'alerta' };
+  }
+  if (g.pagada_parcial) return { texto: 'Pagada parcial', tono: 'info' };
+  return ESTADO_GASTO[g.estado];
+}
 
 export const TIPOS_CUENTA: { valor: TipoCuenta; etiqueta: string }[] = [
   { valor: 'corriente', etiqueta: 'Corriente' },
@@ -274,5 +292,135 @@ export function peticionFactura(f: FormularioFactura): FacturaManual {
     con_iva: f.conIva,
     categoria: null,
     descripcion: opcional(f.descripcion),
+  };
+}
+
+// ---------- Aprobación ----------
+
+export function textoAprobacion(a: Aprobacion): string {
+  const quien = a.por ?? 'Alguien';
+  const cargo = a.en_subrogacion ? ' (vicepresidencia, en subrogación)' : '';
+  return `Nivel ${a.nivel} · ${a.decision === 'aprobada' ? 'aprobada' : 'rechazada'} por ${quien}${cargo}`;
+}
+
+/** Quién puede dar la aprobación que falta, para ofrecer o no los botones (la API lo exige igual). */
+export function nivelQuePuedeDar(
+  g: Pick<Gasto, 'estado' | 'nivel_pendiente'>,
+  tiene: (permiso: string) => boolean,
+): 1 | 2 | null {
+  if (g.estado !== 'por_aprobar' || g.nivel_pendiente === null) return null;
+  const permiso = g.nivel_pendiente === 1 ? 'gastos.aprobar-n1' : 'gastos.aprobar-n2';
+  return tiene(permiso) ? g.nivel_pendiente : null;
+}
+
+export function validarMotivo(motivo: string): string | undefined {
+  const m = motivo.trim();
+  if (m === '') return 'Escribe el motivo del rechazo.';
+  return m.length < 3 ? 'El motivo es muy corto.' : undefined;
+}
+
+// ---------- Pago a proveedor ----------
+
+export interface FormularioPagoProveedor {
+  proveedorId: number | null;
+  facturas: number[];
+  monto: string;
+  montoEditado: boolean;
+  cuentaBancariaId: number | null;
+  fechaPago: string;
+  referencia: string;
+}
+
+export const pagoProveedorVacio = (
+  hoy: string,
+  proveedorId: number | null,
+): FormularioPagoProveedor => ({
+  proveedorId,
+  facturas: [],
+  monto: '',
+  montoEditado: false,
+  cuentaBancariaId: null,
+  fechaPago: hoy,
+  referencia: '',
+});
+
+/** Suma de los saldos de las facturas elegidas, en centavos. */
+export function saldoElegido(facturas: readonly Gasto[], ids: readonly number[]): number {
+  return facturas.filter((g) => ids.includes(g.id)).reduce((a, g) => a + aCentavos(g.saldo), 0);
+}
+
+export type AvisoPago = { tono: 'info' | 'error' | 'alerta' | 'exito'; texto: string };
+
+/** El texto de aviso del mockup: sin facturas, sin monto, monto de más, abono o pago completo. */
+export function avisoDePago(saldo: number, monto: string): AvisoPago {
+  const m = normalizarMonto(monto);
+  const valido = /^\d{1,8}(\.\d{1,2})?$/.test(m);
+  if (saldo === 0) return { tono: 'info', texto: 'Elige al menos una factura.' };
+  if (!valido || aCentavos(m) <= 0)
+    return { tono: 'error', texto: 'Escribe el monto transferido.' };
+  const c = aCentavos(m);
+  if (c > saldo) {
+    return {
+      tono: 'error',
+      texto: `El monto supera el saldo elegido (${formatoMonedaCentavos(saldo)}). Revisa la transferencia.`,
+    };
+  }
+  if (c < saldo) {
+    return {
+      tono: 'alerta',
+      texto: `Abono de ${formatoMonedaCentavos(c)}: se aplica a la factura más antigua y queda un saldo de ${formatoMonedaCentavos(saldo - c)}.`,
+    };
+  }
+  return {
+    tono: 'exito',
+    texto: `Pago completo de ${formatoMonedaCentavos(saldo)}. Las facturas elegidas quedan pagadas.`,
+  };
+}
+
+function formatoMonedaCentavos(c: number): string {
+  return formatoMoneda(deCentavos(c));
+}
+
+export type ErroresPagoProveedor = Partial<
+  Record<
+    'proveedorId' | 'facturas' | 'monto' | 'cuentaBancariaId' | 'fechaPago' | 'referencia',
+    string | undefined
+  >
+>;
+
+export function validarPagoProveedor(
+  f: FormularioPagoProveedor,
+  saldo: number,
+  hoy: string,
+): ErroresPagoProveedor {
+  const e: ErroresPagoProveedor = {};
+  if (f.proveedorId === null) e.proveedorId = 'Elige el proveedor.';
+  if (f.facturas.length === 0) e.facturas = 'Elige al menos una factura.';
+  const m = normalizarMonto(f.monto);
+  if (!/^\d{1,8}(\.\d{1,2})?$/.test(m)) e.monto = 'Escribe un monto válido (hasta dos decimales).';
+  else if (aCentavos(m) <= 0) e.monto = 'El monto debe ser mayor a cero.';
+  else if (aCentavos(m) > saldo) e.monto = 'El monto supera el saldo de las facturas elegidas.';
+  if (f.cuentaBancariaId === null) e.cuentaBancariaId = 'Elige la cuenta desde la que pagaste.';
+  if (f.fechaPago === '') e.fechaPago = 'Elige la fecha de la transferencia.';
+  else if (f.fechaPago > hoy) e.fechaPago = 'La fecha no puede ser futura.';
+  const ref = f.referencia.trim();
+  if (ref.length < 3) e.referencia = 'Escribe la referencia del banco.';
+  else if (!/^[0-9A-Za-z\-/. ]+$/.test(ref))
+    e.referencia = 'La referencia solo lleva letras, números y guiones.';
+  return e;
+}
+
+export function peticionPagoProveedor(
+  f: FormularioPagoProveedor,
+  comprobante: File | null,
+): NuevoPagoProveedor {
+  return {
+    proveedor_id: f.proveedorId ?? 0,
+    facturas: f.facturas,
+    monto: normalizarMonto(f.monto),
+    cuenta_bancaria_id: f.cuentaBancariaId ?? 0,
+    fecha_pago: f.fechaPago,
+    referencia: f.referencia.trim(),
+    comprobante,
   };
 }

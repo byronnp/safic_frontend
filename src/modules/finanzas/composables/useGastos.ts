@@ -10,6 +10,7 @@ import {
   type FacturaXml,
   type FiltroGastos,
   type Gasto,
+  type GastoDetalle,
   type ListaGastos,
 } from '../services/gastos.service';
 import { clavesFinanzas } from './usePeriodos';
@@ -19,6 +20,22 @@ export const clavesGastos = {
   lista: (condominioId: number | null, filtro: FiltroGastos, buscar: string) =>
     ['finanzas', condominioId, 'gastos', filtro, buscar.trim()] as const,
 };
+
+export const clavesGasto = {
+  detalle: (condominioId: number | null, id: number) =>
+    ['finanzas', condominioId, 'gasto', id] as const,
+};
+
+export function useGasto(id: Ref<number | null>) {
+  const session = useSessionStore();
+
+  return useQuery<GastoDetalle, ApiError>({
+    queryKey: computed(() => clavesGasto.detalle(session.condominioId, id.value ?? 0)),
+    queryFn: () => gastosService.ver(id.value ?? 0),
+    enabled: computed(() => session.condominioId !== null && id.value !== null),
+    refetchOnWindowFocus: false,
+  });
+}
 
 export function useGastos(filtro: Ref<FiltroGastos>, buscar: Ref<string>) {
   const session = useSessionStore();
@@ -32,11 +49,13 @@ export function useGastos(filtro: Ref<FiltroGastos>, buscar: Ref<string>) {
   });
 }
 
-function useMutacionGastos<TVariables>(ejecutar: (variables: TVariables) => Promise<Gasto>) {
+function useMutacionGastos<TVariables, TDatos = Gasto>(
+  ejecutar: (variables: TVariables) => Promise<TDatos>,
+) {
   const session = useSessionStore();
   const queryClient = useQueryClient();
 
-  return useMutation<Gasto, ApiError, TVariables, { condominioId: number | null }>({
+  return useMutation<TDatos, ApiError, TVariables, { condominioId: number | null }>({
     mutationFn: ejecutar,
     onMutate: () => ({ condominioId: session.condominioId }),
     // También en error: la factura pudo guardarse aunque la respuesta falle. Cambian también
@@ -58,4 +77,16 @@ export function useRegistrarFactura() {
 
 export function useImportarFacturaXml() {
   return useMutacionGastos<FacturaXml>((d) => gastosService.importarXml(d));
+}
+
+export function useAprobarGasto() {
+  return useMutacionGastos<{ id: number; comentario: string | null }, GastoDetalle>(
+    ({ id, comentario }) => gastosService.aprobar(id, comentario),
+  );
+}
+
+export function useRechazarGasto() {
+  return useMutacionGastos<{ id: number; motivo: string }, GastoDetalle>(({ id, motivo }) =>
+    gastosService.rechazar(id, motivo),
+  );
 }

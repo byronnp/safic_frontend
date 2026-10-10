@@ -17,11 +17,35 @@ export interface Gasto {
   subtotal: string;
   iva: string;
   total: string;
+  pagado: string;
   saldo: string;
   estado: EstadoGasto;
+  /** Aprobada con abonos y saldo pendiente. */
+  pagada_parcial: boolean;
+  requiere_segunda_aprobacion: boolean;
+  /** Qué aprobación falta; null si ya no espera ninguna. */
+  nivel_pendiente: 1 | 2 | null;
+  motivo_rechazo: string | null;
   vencida: boolean;
   tiene_xml: boolean;
   tiene_pdf: boolean;
+}
+
+export interface Aprobacion {
+  nivel: 1 | 2;
+  decision: 'aprobada' | 'rechazada';
+  por: string | null;
+  comentario: string | null;
+  en_subrogacion: boolean;
+  en: string | null;
+}
+
+export interface GastoDetalle extends Gasto {
+  registrada_por: string | null;
+  /** La registró quien consulta: no puede aprobarla ni rechazarla. */
+  registrada_por_mi: boolean;
+  registrada_en: string | null;
+  aprobaciones: Aprobacion[];
 }
 
 export interface ResumenGastos {
@@ -80,6 +104,25 @@ export const gastosService = {
     if (datos.pdf) formulario.append('pdf', datos.pdf);
     if (datos.vence_el) formulario.append('vence_el', datos.vence_el);
     const { data } = await api.post<ApiRespuesta<Gasto>>('/gastos/importar-xml', formulario);
+    return data.data;
+  },
+
+  async ver(id: number): Promise<GastoDetalle> {
+    const { data } = await api.get<ApiRespuesta<GastoDetalle>>(`/gastos/${id}`);
+    return data.data;
+  },
+
+  async aprobar(id: number, comentario: string | null): Promise<GastoDetalle> {
+    const { data } = await api.post<ApiRespuesta<GastoDetalle>>(`/gastos/${id}/aprobar`, {
+      comentario,
+    });
+    return data.data;
+  },
+
+  async rechazar(id: number, motivo: string): Promise<GastoDetalle> {
+    const { data } = await api.post<ApiRespuesta<GastoDetalle>>(`/gastos/${id}/rechazar`, {
+      motivo,
+    });
     return data.data;
   },
 };

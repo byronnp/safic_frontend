@@ -3,778 +3,567 @@
     <section class="pago__principal">
       <PaginaEncabezado miga="Finanzas / Pagos a proveedores" titulo="Registrar pago" />
 
-      <div v-if="registro" class="pago__exito" role="status">
-        <q-icon name="sym_r_check" size="22px" class="pago__exito-icono" />
+      <div v-if="registrado" class="pago__exito" role="status">
+        <q-icon name="sym_r_check_circle" size="22px" />
         <div class="pago__exito-texto">
           <strong>
-            Pago {{ registro.numero }} registrado por {{ formatoMoneda(registro.monto) }}.
+            Pago {{ registrado.codigo }} registrado por {{ formatoMoneda(registrado.monto) }}.
           </strong>
-          {{ registro.detalle }} Se conciliará al importar el estado de cuenta de
-          {{ PAGO_FORMULARIO_INICIAL.bancoConciliacion }}.
+          Quedó aplicado a {{ registrado.facturas.length }}
+          {{ registrado.facturas.length === 1 ? 'factura' : 'facturas' }}.
         </div>
         <q-btn
           outline
           no-caps
           color="primary"
-          class="pago__otro"
-          label="Registrar otro"
-          @click="registrarOtro"
-        />
-      </div>
-
-      <div class="safic-card pago__bloque">
-        <label class="pago__campo pago__campo--proveedor">
-          Proveedor
-          <q-select
-            v-model="proveedorId"
-            class="pago__control"
-            outlined
-            emit-value
-            map-options
-            :options="opcionesProveedor"
-            aria-label="Proveedor"
-            @update:model-value="alCambiarProveedor"
-          />
-        </label>
-        <div class="pago__subtitulo">Facturas aprobadas pendientes</div>
-        <button
-          v-for="f in proveedor.facturas"
-          :key="f.id"
-          type="button"
-          class="pago__factura"
-          :class="{ 'pago__factura--activa': seleccion.includes(f.id) }"
-          role="checkbox"
-          :aria-checked="seleccion.includes(f.id)"
-          @click="alternar(f.id)"
-        >
-          <span class="pago__check">
-            <q-icon v-if="seleccion.includes(f.id)" name="sym_r_check" size="16px" />
-          </span>
-          <div class="pago__factura-info">
-            <div class="pago__factura-titulo">{{ f.factura }} · {{ f.descripcion }}</div>
-            <div class="pago__factura-vence" :class="{ 'pago__factura-vence--vencida': f.vencida }">
-              {{ f.vence }}
-            </div>
-          </div>
-          <div class="text-right">
-            <div class="pago__saldo-etiqueta">Saldo</div>
-            <div class="pago__saldo">{{ formatoMoneda(f.saldo) }}</div>
-          </div>
-        </button>
-        <div v-if="proveedor.facturas.length === 0" class="text-suave" style="font-size: 14px">
-          Este proveedor no tiene facturas aprobadas pendientes.
-        </div>
-      </div>
-
-      <div class="safic-card pago__formulario">
-        <label class="pago__campo">
-          Monto pagado
-          <q-input
-            v-model="montoTexto"
-            class="pago__control pago__control--monto"
-            :class="{ 'pago__control--error': !valido && totalElegido > 0 }"
-            outlined
-            inputmode="decimal"
-            aria-label="Monto pagado"
-            @update:model-value="alEditarMonto"
-          />
-        </label>
-        <label class="pago__campo">
-          Pagado desde
-          <q-select
-            v-model="cuentaOrigenId"
-            class="pago__control"
-            outlined
-            emit-value
-            map-options
-            :options="opcionesOrigen"
-            aria-label="Pagado desde"
-          />
-        </label>
-        <label class="pago__campo">
-          Fecha de la transferencia
-          <q-input
-            v-model="fecha"
-            class="pago__control"
-            outlined
-            mask="##/##/####"
-            placeholder="dd/mm/aaaa"
-            aria-label="Fecha de la transferencia"
-          />
-        </label>
-        <label class="pago__campo">
-          Referencia del banco
-          <q-input
-            v-model="referencia"
-            class="pago__control"
-            outlined
-            aria-label="Referencia del banco"
-          />
-        </label>
-        <div class="pago__comprobante">
-          <q-icon name="sym_r_upload" size="18px" color="primary" />
-          <span class="pago__comprobante-nombre">
-            <template v-if="comprobante">
-              <strong>{{ comprobante.nombre }}</strong> · {{ comprobante.tamano }}
-            </template>
-            <template v-else>Adjunta el comprobante de la transferencia</template>
-          </span>
-          <button type="button" class="pago__cambiar" @click="archivoInput?.click()">
-            {{ comprobante ? 'Cambiar' : 'Adjuntar' }}
-          </button>
-          <input
-            ref="archivoInput"
-            type="file"
-            accept=".pdf,image/*"
-            class="hidden"
-            aria-label="Comprobante de la transferencia"
-            @change="alAdjuntar"
-          />
-        </div>
-        <div class="pago__aviso" :style="{ background: aviso.fondo, color: aviso.texto }">
-          {{ aviso.mensaje }}
-        </div>
-      </div>
-
-      <div class="pago__acciones">
-        <q-btn
-          unelevated
-          no-caps
-          class="pago__cancelar"
-          label="Cancelar"
+          label="Volver a cuentas por pagar"
           :to="{ name: 'finanzas-cuentas-por-pagar' }"
         />
-        <q-btn
-          unelevated
-          no-caps
-          class="pago__registrar"
-          :class="{ 'pago__registrar--bloqueado': !valido }"
-          :disable="!valido"
-          label="Registrar pago"
-          @click="registrar"
-        />
       </div>
+
+      <div v-if="errorGeneral" class="safic-alerta" role="alert">{{ errorGeneral }}</div>
+
+      <q-form v-if="!registrado" novalidate class="safic-card pago__bloque" @submit="guardar">
+        <div class="safic-campo">
+          <label for="pago-prov" class="safic-campo__etiqueta">Proveedor</label>
+          <q-select
+            v-model="formulario.proveedorId"
+            for="pago-prov"
+            class="safic-input"
+            outlined
+            emit-value
+            map-options
+            hide-bottom-space
+            :options="opcionesProveedor"
+            :loading="proveedores.isPending.value"
+            :error="!!errores.proveedorId"
+            :error-message="errores.proveedorId"
+            @update:model-value="alCambiarProveedor"
+          />
+        </div>
+
+        <fieldset class="pago__facturas">
+          <legend class="safic-campo__etiqueta">Facturas aprobadas pendientes</legend>
+          <div v-if="gastos.isPending.value" aria-busy="true">
+            <q-skeleton v-for="i in 2" :key="i" type="rect" height="52px" class="q-mb-sm" />
+          </div>
+          <label
+            v-for="g in facturas"
+            :key="g.id"
+            class="pago__factura"
+            :class="{ 'pago__factura--activa': formulario.facturas.includes(g.id) }"
+          >
+            <input v-model="formulario.facturas" type="checkbox" :value="g.id" @change="alElegir" />
+            <span class="pago__factura-texto">
+              <strong>{{ g.numero }}</strong>
+              <span class="pago__sub">{{ g.descripcion ?? g.categoria ?? '' }}</span>
+              <span class="pago__sub" :class="{ pago__vencida: g.vencida }">
+                {{ textoVence(g)
+                }}<template v-if="g.pagada_parcial">
+                  · abonado {{ formatoMoneda(g.pagado) }}</template
+                >
+              </span>
+            </span>
+            <span class="pago__saldo">
+              <span class="pago__sub">Saldo</span>
+              {{ formatoMoneda(g.saldo) }}
+            </span>
+          </label>
+          <div
+            v-if="
+              formulario.proveedorId !== null && !gastos.isPending.value && facturas.length === 0
+            "
+            class="pago__sub"
+          >
+            Este proveedor no tiene facturas aprobadas con saldo.
+          </div>
+          <div v-if="errores.facturas" class="pago__error" role="alert">{{ errores.facturas }}</div>
+        </fieldset>
+
+        <div class="pago__fila">
+          <div class="safic-campo">
+            <label for="pago-monto" class="safic-campo__etiqueta">Monto pagado (USD)</label>
+            <q-input
+              v-model="formulario.monto"
+              for="pago-monto"
+              class="safic-input"
+              outlined
+              inputmode="decimal"
+              prefix="$"
+              hide-bottom-space
+              :error="!!errores.monto"
+              :error-message="errores.monto"
+              @update:model-value="formulario.montoEditado = true"
+            />
+          </div>
+          <div class="safic-campo">
+            <label for="pago-origen" class="safic-campo__etiqueta">Pagado desde</label>
+            <q-select
+              v-model="formulario.cuentaBancariaId"
+              for="pago-origen"
+              class="safic-input"
+              outlined
+              emit-value
+              map-options
+              hide-bottom-space
+              :options="opcionesOrigen"
+              :loading="cuentas.isPending.value"
+              :error="!!errores.cuentaBancariaId"
+              :error-message="errores.cuentaBancariaId"
+            />
+          </div>
+        </div>
+
+        <div class="pago__fila">
+          <div class="safic-campo">
+            <label for="pago-fecha" class="safic-campo__etiqueta">Fecha de la transferencia</label>
+            <q-input
+              v-model="formulario.fechaPago"
+              for="pago-fecha"
+              class="safic-input"
+              outlined
+              type="date"
+              :max="hoy"
+              hide-bottom-space
+              :error="!!errores.fechaPago"
+              :error-message="errores.fechaPago"
+            />
+          </div>
+          <div class="safic-campo">
+            <label for="pago-ref" class="safic-campo__etiqueta">Referencia del banco</label>
+            <q-input
+              v-model="formulario.referencia"
+              for="pago-ref"
+              class="safic-input"
+              outlined
+              maxlength="40"
+              hide-bottom-space
+              :error="!!errores.referencia"
+              :error-message="errores.referencia"
+            />
+          </div>
+        </div>
+
+        <div class="safic-campo">
+          <label for="pago-comprobante" class="safic-campo__etiqueta">Comprobante (opcional)</label>
+          <input
+            id="pago-comprobante"
+            type="file"
+            accept="image/jpeg,image/png,application/pdf"
+            @change="alElegirComprobante"
+          />
+          <div v-if="errorComprobante" class="pago__error" role="alert">{{ errorComprobante }}</div>
+        </div>
+
+        <div class="pago__aviso" :class="`pago__aviso--${aviso.tono}`" role="status">
+          {{ aviso.texto }}
+        </div>
+
+        <div class="row justify-end" style="gap: 10px">
+          <q-btn
+            unelevated
+            no-caps
+            class="safic-btn safic-btn--secundario"
+            label="Cancelar"
+            :disable="registrar.isPending.value"
+            :to="{ name: 'finanzas-cuentas-por-pagar' }"
+          />
+          <q-btn
+            type="submit"
+            color="primary"
+            unelevated
+            no-caps
+            class="safic-btn"
+            label="Registrar pago"
+            :loading="registrar.isPending.value"
+          />
+        </div>
+      </q-form>
     </section>
 
-    <aside class="pago__lateral">
-      <div class="safic-card pago__cuenta">
-        <h2>Cuenta del proveedor</h2>
-        <div class="pago__cuenta-ayuda">Úsala para transferir desde tu banca en línea.</div>
-        <div v-for="(dato, i) in datosCuenta" :key="dato.clave" class="pago__dato">
-          <div class="col-grow">
-            <div class="pago__dato-clave">{{ dato.clave }}</div>
-            <div class="pago__dato-valor">{{ dato.valor }}</div>
-          </div>
-          <button
-            type="button"
-            class="pago__copiar"
-            :aria-label="`Copiar ${dato.clave.toLowerCase()}`"
-            @click="copiar(i, dato.valor)"
-          >
-            {{ copiado === i ? 'Copiado' : 'Copiar' }}
-          </button>
-        </div>
-        <div class="pago__verificada">
-          Cuenta verificada el {{ proveedor.cuenta.verificada }} · sin cambios pendientes
+    <aside v-if="proveedor" class="safic-card pago__lateral" aria-labelledby="pago-cuenta">
+      <h2 id="pago-cuenta" class="pago__lateral-titulo">Cuenta del proveedor</h2>
+      <div class="pago__sub">Úsala para transferir desde tu banca en línea.</div>
+      <dl v-if="proveedor.cuenta" class="pago__cuenta">
+        <dt>Banco</dt>
+        <dd>{{ proveedor.cuenta.banco }}</dd>
+        <dt>Tipo</dt>
+        <dd>{{ etiquetaTipoCuenta(proveedor.cuenta.tipo) }}</dd>
+        <dt>Número</dt>
+        <dd>{{ proveedor.cuenta.numero }}</dd>
+        <dt>Titular</dt>
+        <dd>{{ proveedor.cuenta.titular }}</dd>
+        <dt>RUC</dt>
+        <dd>{{ proveedor.ruc }}</dd>
+      </dl>
+      <div v-else class="safic-alerta" role="alert">
+        Este proveedor aún no tiene una cuenta para pagos. Regístrala en Proveedores antes de pagar.
+      </div>
+      <div v-if="proveedor.cambio_de_cuenta" class="pago__cambio" role="status">
+        <q-icon name="sym_r_schedule" size="20px" />
+        <div>
+          Hay un cambio de cuenta en espera. {{ textoCambioDeCuenta(proveedor.cambio_de_cuenta) }}
+          Paga a la cuenta que ves arriba.
         </div>
       </div>
-      <div class="pago__reglas">
-        <strong>Reglas</strong><br />Solo aparecen facturas aprobadas. Con proveedores se permiten
-        abonos: si pagas menos del saldo, la factura queda en <em>pagado parcial</em>. No puedes
-        pagar más del saldo elegido. Si la cuenta del proveedor cambia, verás aviso y 24 h de
-        espera.
+      <div class="pago__sub">
+        <strong>Reglas.</strong> Solo aparecen facturas aprobadas. Con proveedores se permiten
+        abonos: si pagas menos del saldo, la factura queda pagada parcial. No puedes pagar más del
+        saldo elegido.
       </div>
     </aside>
   </q-page>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, reactive, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
-import { useQuasar } from 'quasar';
-import { z } from 'zod';
+
 import PaginaEncabezado from '@/components/PaginaEncabezado.vue';
+import { aApiError } from '@/core/api/errors';
+import { useCuentasBancarias } from '@/modules/configuracion/composables/useCuentasBancarias';
+import { aCentavos, deCentavos } from '@/utils/dinero';
+import { hoyEcuador } from '@/utils/fecha';
 import { formatoMoneda } from '@/utils/formato';
+
+import { useGastos } from '../composables/useGastos';
+import { useRegistrarPagoProveedor } from '../composables/usePagosProveedor';
+import { useProveedores } from '../composables/useProveedores';
 import {
-  PAGO_CUENTAS_ORIGEN,
-  PAGO_FORMULARIO_INICIAL,
-  PAGO_PROVEEDORES,
-} from '../demo/pago-proveedor';
-import type { ProveedorPago } from '../demo/pago-proveedor';
+  avisoDePago,
+  etiquetaTipoCuenta,
+  pagoProveedorVacio,
+  peticionPagoProveedor,
+  saldoElegido,
+  textoCambioDeCuenta,
+  textoVence,
+  validarPagoProveedor,
+  type ErroresPagoProveedor,
+} from '../proveedores.logica';
+import type { PagoProveedor } from '../services/pagos-proveedor.service';
 
-const $q = useQuasar();
 const route = useRoute();
+const hoy = hoyEcuador();
 
-const PROVEEDOR_VACIO: ProveedorPago = {
-  id: 0,
-  nombre: '',
-  ruc: '',
-  cuenta: { banco: '', tipo: '', numero: '', titular: '', ruc: '', verificada: '' },
-  facturas: [],
-};
+const proveedorInicial = Number(route.params.id) || null;
+const facturaInicial = Number(route.query.factura) || null;
 
-// La ruta trae el id de la factura elegida en Cuentas por pagar.
-const facturaId = Number(route.params.id);
-const proveedorInicial =
-  PAGO_PROVEEDORES.find((p) => p.facturas.some((f) => f.id === facturaId)) ??
-  PAGO_PROVEEDORES[0] ??
-  PROVEEDOR_VACIO;
-const facturaInicial = proveedorInicial.facturas.some((f) => f.id === facturaId)
-  ? facturaId
-  : proveedorInicial.facturas[0]?.id;
+const formulario = reactive(pagoProveedorVacio(hoy, proveedorInicial));
+const errores = reactive<ErroresPagoProveedor>({});
+const errorGeneral = ref<string | null>(null);
+const errorComprobante = ref<string | null>(null);
+const comprobante = ref<File | null>(null);
+const registrado = ref<PagoProveedor | null>(null);
 
-const proveedorId = ref(proveedorInicial.id);
-const seleccion = ref<number[]>(facturaInicial === undefined ? [] : [facturaInicial]);
-const montoTexto = ref('');
-const montoEditado = ref(false);
-const cuentaOrigenId = ref(PAGO_CUENTAS_ORIGEN[0]?.id ?? 0);
-const fecha = ref(PAGO_FORMULARIO_INICIAL.fecha);
-const referencia = ref(PAGO_FORMULARIO_INICIAL.referencia);
-const comprobante = ref<{ nombre: string; tamano: string } | null>({
-  ...PAGO_FORMULARIO_INICIAL.comprobante,
-});
-const copiado = ref(-1);
-const registro = ref<{ numero: string; monto: number; detalle: string } | null>(null);
-const archivoInput = ref<HTMLInputElement | null>(null);
+const proveedores = useProveedores(ref('todos'), ref(''));
+const gastos = useGastos(ref('por_pagar'), ref(''));
+const cuentas = useCuentasBancarias();
+const registrar = useRegistrarPagoProveedor();
 
-const opcionesProveedor = PAGO_PROVEEDORES.map((p, i) => ({
-  value: p.id,
-  // El primero muestra el RUC, como en el mockup.
-  label: i === 0 ? `${p.nombre} · RUC ${p.ruc}` : p.nombre,
-}));
-const opcionesOrigen = PAGO_CUENTAS_ORIGEN.map((c) => ({ value: c.id, label: c.nombre }));
-
+const opcionesProveedor = computed(() =>
+  (proveedores.data.value?.proveedores ?? []).map((p) => ({
+    value: p.id,
+    label: `${p.razon_social} · RUC ${p.ruc}`,
+  })),
+);
 const proveedor = computed(
-  () => PAGO_PROVEEDORES.find((p) => p.id === proveedorId.value) ?? PROVEEDOR_VACIO,
+  () => proveedores.data.value?.proveedores.find((p) => p.id === formulario.proveedorId) ?? null,
+);
+const opcionesOrigen = computed(() =>
+  (cuentas.data.value ?? [])
+    .filter((c) => c.activa)
+    .map((c) => ({
+      value: c.id,
+      label: `${c.banco} · ${etiquetaTipoCuenta(c.tipo)} •••• ${c.numero.slice(-4)}`,
+    })),
 );
 
-const datosCuenta = computed(() => {
-  const c = proveedor.value.cuenta;
-  return [
-    { clave: 'BANCO', valor: c.banco },
-    { clave: 'TIPO', valor: c.tipo },
-    { clave: 'NÚMERO', valor: c.numero },
-    { clave: 'TITULAR', valor: c.titular },
-    { clave: 'RUC', valor: c.ruc },
-  ];
+// Las más antiguas primero: así se aplican los abonos
+const facturas = computed(() =>
+  (gastos.data.value?.gastos ?? []).filter(
+    (g) =>
+      g.proveedor.id === formulario.proveedorId &&
+      g.estado === 'aprobada' &&
+      aCentavos(g.saldo) > 0,
+  ),
+);
+const saldo = computed(() => saldoElegido(facturas.value, formulario.facturas));
+const aviso = computed(() => avisoDePago(saldo.value, formulario.monto));
+
+// Mientras no escribas el monto, propone el saldo de lo elegido
+watch(saldo, (s) => {
+  if (!formulario.montoEditado) formulario.monto = s > 0 ? deCentavos(s) : '';
 });
 
-const centavos = (valor: number): number => Math.round(valor * 100);
-
-/** Saldo de las facturas elegidas, en dólares. */
-const totalElegido = computed(
-  () =>
-    proveedor.value.facturas
-      .filter((f) => seleccion.value.includes(f.id))
-      .reduce((suma, f) => suma + centavos(f.saldo), 0) / 100,
+// La factura que llega en la dirección se marca cuando carga la lista
+watch(
+  facturas,
+  (lista) => {
+    if (
+      facturaInicial !== null &&
+      formulario.facturas.length === 0 &&
+      lista.some((g) => g.id === facturaInicial)
+    ) {
+      formulario.facturas = [facturaInicial];
+    }
+  },
+  { once: true },
 );
 
-/** "1.150,50" → 1150.5 (formato de Ecuador). */
-function leerMonto(texto: string): number {
-  const limpio = texto.trim().replace(/\$/g, '').replace(/\s/g, '');
-  if (!/^\d{1,3}(\.\d{3})*(,\d{1,2})?$|^\d+(,\d{1,2})?$/.test(limpio)) {
-    return Number.NaN;
-  }
-  return Number(limpio.replace(/\./g, '').replace(',', '.'));
-}
-
-function montoEnTexto(valor: number): string {
-  return valor.toLocaleString('es-EC', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
-
-const monto = computed(() =>
-  montoEditado.value ? leerMonto(montoTexto.value) : totalElegido.value,
+// La cuenta de origen: si solo hay una, ya viene elegida
+watch(
+  opcionesOrigen,
+  (o) => {
+    if (formulario.cuentaBancariaId === null && o.length === 1)
+      formulario.cuentaBancariaId = o[0]?.value ?? null;
+  },
+  { immediate: true },
 );
-
-const esquema = computed(() =>
-  z.object({
-    facturas: z.array(z.number()).min(1, 'Elige al menos una factura.'),
-    monto: z
-      .number('Escribe el monto transferido.')
-      .refine((v) => Number.isFinite(v) && v > 0, 'Escribe el monto transferido.')
-      .refine(
-        (v) => centavos(v) <= centavos(totalElegido.value),
-        `El monto supera el saldo elegido (${formatoMoneda(totalElegido.value)}). Revisa la transferencia.`,
-      ),
-  }),
-);
-
-const validacion = computed(() =>
-  esquema.value.safeParse({ facturas: seleccion.value, monto: monto.value }),
-);
-const valido = computed(() => validacion.value.success);
-
-const aviso = computed(() => {
-  if (!validacion.value.success) {
-    const mensaje = validacion.value.error.issues[0]?.message ?? 'Revisa los datos.';
-    const neutro = totalElegido.value === 0;
-    return {
-      mensaje,
-      fondo: neutro ? '#F1EFE8' : '#FDE8E6',
-      texto: neutro ? '#3D3A33' : '#7F1810',
-    };
-  }
-  const restante = (centavos(totalElegido.value) - centavos(monto.value)) / 100;
-  if (restante > 0) {
-    return {
-      mensaje: `Abono de ${formatoMoneda(monto.value)}: se aplica a la factura más antigua y queda un saldo de ${formatoMoneda(restante)}.`,
-      fondo: '#FFF7EC',
-      texto: '#7A3808',
-    };
-  }
-  return {
-    mensaje: `Pago completo de ${formatoMoneda(totalElegido.value)}. Las facturas elegidas quedan pagadas.`,
-    fondo: '#E3EFEC',
-    texto: '#0B4A47',
-  };
-});
-
-// Mientras no se edite, el monto sigue al saldo elegido.
-montoTexto.value = montoEnTexto(totalElegido.value);
-
-function sincronizarMonto(): void {
-  montoEditado.value = false;
-  montoTexto.value = montoEnTexto(totalElegido.value);
-}
-
-function alternar(id: number): void {
-  seleccion.value = seleccion.value.includes(id)
-    ? seleccion.value.filter((x) => x !== id)
-    : [...seleccion.value, id];
-  registro.value = null;
-  sincronizarMonto();
-}
 
 function alCambiarProveedor(): void {
-  const primera = proveedor.value.facturas[0];
-  seleccion.value = primera ? [primera.id] : [];
-  registro.value = null;
-  copiado.value = -1;
-  sincronizarMonto();
+  formulario.facturas = [];
+  formulario.montoEditado = false;
+  formulario.monto = '';
 }
 
-function alEditarMonto(): void {
-  montoEditado.value = true;
-  registro.value = null;
+function alElegir(): void {
+  formulario.montoEditado = false;
+  formulario.monto = saldo.value > 0 ? deCentavos(saldo.value) : '';
 }
 
-function alAdjuntar(evento: Event): void {
-  const input = evento.target as HTMLInputElement;
-  const archivo = input.files?.[0];
-  if (archivo) {
-    comprobante.value = {
-      nombre: archivo.name,
-      tamano: `${Math.max(1, Math.round(archivo.size / 1024))} KB`,
-    };
+const TIPOS_COMPROBANTE = ['image/jpeg', 'image/png', 'application/pdf'];
+
+function alElegirComprobante(e: Event): void {
+  errorComprobante.value = null;
+  const entrada = e.target as HTMLInputElement;
+  const archivo = entrada.files?.[0] ?? null;
+  if (archivo && !TIPOS_COMPROBANTE.includes(archivo.type)) {
+    errorComprobante.value = 'El comprobante debe ser una foto (JPG o PNG) o un PDF.';
+    comprobante.value = null;
+    entrada.value = '';
+    return;
   }
-  input.value = '';
+  if (archivo && archivo.size > 5 * 1024 * 1024) {
+    errorComprobante.value = 'El comprobante pesa más de 5 MB.';
+    comprobante.value = null;
+    return;
+  }
+  comprobante.value = archivo;
 }
 
-async function copiar(indice: number, valor: string): Promise<void> {
+async function guardar(): Promise<void> {
+  // Enter dentro de un campo también envía el formulario: el pago no se registra dos veces
+  if (registrar.isPending.value) return;
+  errorGeneral.value = null;
+  for (const k of [
+    'proveedorId',
+    'facturas',
+    'monto',
+    'cuentaBancariaId',
+    'fechaPago',
+    'referencia',
+  ] as const)
+    errores[k] = undefined;
+
+  const problemas = validarPagoProveedor(formulario, saldo.value, hoy);
+  if (Object.keys(problemas).length > 0 || errorComprobante.value) {
+    Object.assign(errores, problemas);
+    return;
+  }
+
   try {
-    await navigator.clipboard.writeText(valor);
-  } catch {
-    // Sin permiso de portapapeles: igual se marca para no bloquear al usuario.
+    registrado.value = await registrar.mutateAsync(
+      peticionPagoProveedor(formulario, comprobante.value),
+    );
+  } catch (error) {
+    const apiError = aApiError(error);
+    const deCampos: ErroresPagoProveedor = {
+      monto: apiError.campo('monto'),
+      referencia: apiError.campo('referencia'),
+      fechaPago: apiError.campo('fecha_pago'),
+      cuentaBancariaId: apiError.campo('cuenta_bancaria_id'),
+      facturas: apiError.campo('facturas'),
+      proveedorId: apiError.campo('proveedor_id'),
+    };
+    Object.assign(errores, deCampos);
+    // Si ningún campo trae el error, se muestra el mensaje del servidor (decide el código, no el texto)
+    if (!Object.values(deCampos).some(Boolean)) {
+      const incierto = apiError.estado === 0 || apiError.estado >= 500;
+      errorGeneral.value = incierto
+        ? `${apiError.mensaje} Revisa los pagos antes de reintentar: el pago pudo registrarse.`
+        : apiError.mensaje;
+    }
   }
-  copiado.value = indice;
-}
-
-function registrar(): void {
-  if (!valido.value) return;
-  const restante = (centavos(totalElegido.value) - centavos(monto.value)) / 100;
-  registro.value = {
-    numero: PAGO_FORMULARIO_INICIAL.siguienteNumero,
-    monto: monto.value,
-    detalle:
-      restante > 0
-        ? `Queda un saldo de ${formatoMoneda(restante)}.`
-        : 'Facturas pagadas por completo.',
-  };
-  $q.notify({ type: 'positive', message: 'Pago registrado.' });
-}
-
-function registrarOtro(): void {
-  registro.value = null;
-  seleccion.value = [];
-  sincronizarMonto();
 }
 </script>
 
 <style scoped>
-.pago.safic-main {
-  padding: 22px 32px;
+.pago {
+  display: flex;
   gap: 18px;
-  flex-direction: row;
   align-items: flex-start;
+  flex-wrap: wrap;
 }
 
 .pago__principal {
-  flex-grow: 1;
+  flex: 1 1 560px;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  min-width: 0;
+  gap: 16px;
+}
+
+.pago__bloque {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 20px;
 }
 
 .pago__exito {
   display: flex;
   align-items: center;
   gap: 12px;
+  flex-wrap: wrap;
+  padding: 14px 16px;
+  border-radius: 12px;
   background: #e3efec;
-  border: 1px solid #b9d7d0;
-  border-radius: 14px;
-  padding: 14px 18px;
   color: #0b4a47;
 }
 
-.pago__exito-icono {
-  flex-shrink: 0;
-  font-variation-settings: 'wght' 700;
-}
-
 .pago__exito-texto {
-  flex-grow: 1;
-  font-size: 13px;
-  line-height: 1.45;
+  flex: 1 1 260px;
 }
 
-.pago__otro.q-btn {
-  min-height: 38px;
-  padding: 0 14px;
-  border-radius: 9px;
-  font-size: 13px;
-  font-weight: 700;
-  background: #ffffff;
-  flex-shrink: 0;
-}
-
-.pago__bloque {
-  padding: 16px 18px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.pago__campo {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--safic-texto-2);
-  min-width: 0;
-}
-
-.pago__campo--proveedor {
-  max-width: 420px;
-}
-
-.pago__control :deep(.q-field__control) {
-  min-height: 44px;
-  height: 44px;
-  border-radius: 9px;
-  padding: 0 12px;
-  background: #ffffff;
-}
-
-.pago__control :deep(.q-field__control::before) {
-  border-color: var(--safic-borde-campo);
-}
-
-.pago__control :deep(.q-field__marginal) {
-  height: 44px;
-}
-
-.pago__control :deep(.q-field__native) {
-  min-height: 44px;
+.pago__facturas {
+  border: none;
+  margin: 0;
   padding: 0;
-  font-size: 15px;
-  font-weight: 400;
-  color: var(--safic-texto);
-}
-
-.pago__control--monto :deep(.q-field__native) {
-  font-size: 16px;
-  font-weight: 800;
-}
-
-.pago__control--error :deep(.q-field__control::before) {
-  border: 2px solid #9b1c12;
-}
-
-.pago__subtitulo {
-  font-size: 13px;
-  font-weight: 800;
-  color: var(--safic-texto-2);
-  margin-top: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .pago__factura {
   display: flex;
   align-items: center;
   gap: 14px;
-  width: 100%;
   padding: 12px 14px;
+  border: 1px solid var(--safic-borde);
   border-radius: 12px;
   cursor: pointer;
-  font-family: inherit;
-  color: var(--safic-texto);
-  border: 1px solid var(--safic-borde);
-  background: #ffffff;
-  text-align: left;
 }
 
 .pago__factura--activa {
   border: 2px solid var(--q-primary);
-  background: #f2f7f6;
   padding: 11px 13px;
 }
 
-.pago__check {
-  width: 22px;
-  height: 22px;
-  border-radius: 6px;
+.pago__factura-texto {
+  flex: 1;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  border: 2px solid #b9b3a5;
-}
-
-.pago__factura--activa .pago__check {
-  background: var(--q-primary);
-  border-color: var(--q-primary);
-  color: #ffffff;
-}
-
-.pago__check .q-icon {
-  font-variation-settings: 'wght' 700;
-}
-
-.pago__factura-info {
-  flex-grow: 1;
+  flex-direction: column;
+  gap: 2px;
   min-width: 0;
-}
-
-.pago__factura-titulo {
-  font-size: 14px;
-  font-weight: 800;
-}
-
-.pago__factura-vence {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--safic-texto-suave);
-}
-
-.pago__factura-vence--vencida {
-  color: #9b1c12;
-}
-
-.pago__saldo-etiqueta {
-  font-size: 12px;
-  color: var(--safic-texto-suave);
 }
 
 .pago__saldo {
-  font-size: 16px;
-  font-weight: 800;
-  white-space: nowrap;
-}
-
-.pago__formulario {
-  padding: 16px 18px;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px 16px;
-}
-
-.pago__comprobante {
-  grid-column: span 2;
   display: flex;
-  align-items: center;
-  gap: 12px;
-  border: 1px dashed #b9b3a5;
-  border-radius: 10px;
-  padding: 0 14px;
-  font-size: 13px;
-  color: var(--safic-texto-2);
-  align-self: end;
-  height: 44px;
-  min-width: 0;
+  flex-direction: column;
+  align-items: flex-end;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
 }
 
-.pago__comprobante-nombre {
-  flex: 1 1 auto;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.pago__sub {
+  font-size: 12px;
+  color: var(--safic-texto-suave);
 }
 
-.pago__cambiar {
-  border: none;
-  background: transparent;
-  padding: 0;
-  font-family: inherit;
-  font-size: 13px;
-  color: var(--q-primary);
+.pago__vencida {
+  color: #9b1c12;
   font-weight: 700;
-  cursor: pointer;
+}
+
+.pago__error {
+  font-size: 12px;
+  font-weight: 700;
+  color: #9b1c12;
+}
+
+.pago__fila {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
 }
 
 .pago__aviso {
-  grid-column: span 3;
+  padding: 12px 14px;
   border-radius: 10px;
-  padding: 10px 14px;
-  font-size: 13px;
-  font-weight: 600;
-}
-
-.pago__acciones {
-  display: flex;
-  gap: 12px;
-  justify-content: flex-end;
-}
-
-.pago__cancelar.q-btn,
-.pago__registrar.q-btn {
-  min-height: 48px;
-  border-radius: 10px;
+  font-size: 14px;
   font-weight: 700;
 }
 
-.pago__cancelar.q-btn {
-  padding: 0 18px;
-  border: 1px solid var(--safic-borde-2);
-  background: #ffffff;
-  color: var(--safic-texto);
-  font-size: 14px;
+.pago__aviso--info {
+  background: #f1efe8;
+  color: #3d3a33;
 }
 
-.pago__registrar.q-btn {
-  padding: 0 22px;
-  font-size: 15px;
-  background: var(--q-primary);
-  color: #ffffff;
+.pago__aviso--error {
+  background: #fde8e6;
+  color: #7f1810;
 }
 
-.pago__registrar--bloqueado.q-btn {
-  background: var(--safic-borde);
-  color: var(--safic-texto-tenue);
+.pago__aviso--alerta {
+  background: #fff7ec;
+  color: #7a3808;
 }
 
-.pago__registrar--bloqueado.q-btn.disabled {
-  opacity: 1 !important;
+.pago__aviso--exito {
+  background: #e3efec;
+  color: #0b4a47;
 }
 
 .pago__lateral {
-  width: 340px;
-  flex-shrink: 0;
+  flex: 0 0 340px;
+  max-width: 100%;
+  padding: 20px;
   display: flex;
   flex-direction: column;
   gap: 14px;
 }
 
-.pago__cuenta {
-  padding: 18px 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.pago__cuenta h2 {
+.pago__lateral-titulo {
   margin: 0;
   font-size: 16px;
-  line-height: 1.4;
   font-weight: 800;
 }
 
-.pago__cuenta-ayuda {
-  font-size: 12px;
-  color: var(--safic-texto-suave);
-}
-
-.pago__dato {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  border-bottom: 1px solid var(--safic-linea-2);
-  padding-bottom: 8px;
-}
-
-.pago__dato-clave {
-  font-size: 11px;
-  color: var(--safic-texto-suave);
-  font-weight: 700;
-}
-
-.pago__dato-valor {
+.pago__cuenta {
+  display: grid;
+  grid-template-columns: 70px 1fr;
+  gap: 6px 10px;
+  margin: 0;
   font-size: 14px;
-  font-weight: 700;
 }
 
-.pago__copiar {
-  height: 30px;
-  padding: 0 10px;
-  border-radius: 8px;
-  border: 1px solid var(--safic-borde-2);
-  background: #ffffff;
-  font-family: inherit;
-  font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
-  color: var(--q-primary);
+.pago__cuenta dt {
+  color: var(--safic-texto-suave);
 }
 
-.pago__verificada {
+.pago__cuenta dd {
+  margin: 0;
+  font-weight: 700;
+  word-break: break-all;
+}
+
+.pago__cambio {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  background: #e3efec;
-  color: #0b4a47;
+  gap: 10px;
+  padding: 12px 14px;
   border-radius: 10px;
-  padding: 8px 12px;
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.pago__reglas {
-  background: #f1efe8;
-  border-radius: 14px;
-  padding: 14px 16px;
-  font-size: 12px;
-  color: var(--safic-texto-2);
-  line-height: 1.55;
-}
-
-@media (max-width: 1023px) {
-  .pago.safic-main {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .pago__lateral {
-    width: auto;
-  }
-}
-
-@media (max-width: 599px) {
-  .pago.safic-main {
-    padding: 20px 16px;
-  }
-
-  .pago__formulario {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .pago__comprobante,
-  .pago__aviso {
-    grid-column: auto;
-  }
-
-  .pago__exito {
-    flex-wrap: wrap;
-  }
+  background: #fff1dc;
+  color: #8a3f0a;
+  font-size: 13px;
 }
 </style>

@@ -151,13 +151,22 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/modules/finanzas/pages/ProveedoresPage.vue'),
         meta: { permiso: 'finanzas.ver', titulo: 'Proveedores' },
       },
-      previa(
-        'finanzas/cuentas-por-pagar/:id/pago',
-        'finanzas-pago-proveedor',
-        'Registrar pago a proveedor',
-        () => import('@/modules/finanzas/pages/PagoProveedorPage.vue'),
-        { menuActivo: 'finanzas-cuentas-por-pagar' },
-      ),
+      {
+        path: 'finanzas/cuentas-por-pagar/:id(\\d+)/pago',
+        name: 'finanzas-pago-proveedor',
+        component: () => import('@/modules/finanzas/pages/PagoProveedorPage.vue'),
+        meta: {
+          permiso: 'gastos.pagar',
+          titulo: 'Registrar pago a proveedor',
+          menuActivo: 'finanzas-cuentas-por-pagar',
+        },
+      },
+      {
+        path: 'finanzas/aprobaciones',
+        name: 'finanzas-aprobaciones',
+        component: () => import('@/modules/finanzas/pages/AprobacionesPage.vue'),
+        meta: { permiso: 'gastos.aprobar-n2', titulo: 'Aprobaciones pendientes' },
+      },
 
       // Fase 3 · Áreas comunes
       previa(
