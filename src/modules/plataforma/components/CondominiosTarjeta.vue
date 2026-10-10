@@ -40,6 +40,18 @@
       <div class="tarjeta__admin" :title="administrador?.email">{{ adminTxt }}</div>
     </div>
 
+    <div v-if="puedeEditar" class="tarjeta__acciones">
+      <button type="button" class="tarjeta__reenviar" @click="editar">Editar datos</button>
+      <button
+        type="button"
+        class="tarjeta__reenviar"
+        :class="{ 'tarjeta__reenviar--peligro': condominio.estado !== 'suspendido' }"
+        @click="cambiarEstado"
+      >
+        {{ condominio.estado === 'suspendido' ? 'Reactivar' : 'Inactivar' }}
+      </button>
+    </div>
+
     <!-- Invitación pendiente: el administrador aún no crea su contraseña -->
     <div v-if="pendiente" class="tarjeta__pendiente">
       <EstadoBadge tono="alerta" texto="Invitación pendiente" />
@@ -70,6 +82,8 @@ import type {
 import { useSessionStore } from '@/stores/session';
 import { formatoMoneda } from '@/utils/formato';
 
+import EditarCondominioDialog from './EditarCondominioDialog.vue';
+import MotivoCondominioDialog from './MotivoCondominioDialog.vue';
 import ReenviarInvitacionDialog from './ReenviarInvitacionDialog.vue';
 
 const props = defineProps<{ condominio: CondominioPlataforma }>();
@@ -78,6 +92,31 @@ const $q = useQuasar();
 const session = useSessionStore();
 // Mostrar el botón es comodidad; la API exige plataforma.condominios de todas formas.
 const puedeReenviar = computed(() => session.tienePermisoPlataforma('plataforma.condominios'));
+
+// Solo el super admin edita e inactiva; la API exige plataforma.condominios-editar de todas formas.
+const puedeEditar = computed(() => session.tienePermisoPlataforma('plataforma.condominios-editar'));
+
+function editar(): void {
+  $q.dialog({
+    component: EditarCondominioDialog,
+    componentProps: { condominio: props.condominio },
+  }).onOk((c: CondominioPlataforma) => {
+    $q.notify({ type: 'positive', message: `Datos de ${c.nombre} actualizados.` });
+  });
+}
+
+function cambiarEstado(): void {
+  const inactivar = props.condominio.estado !== 'suspendido';
+  $q.dialog({
+    component: MotivoCondominioDialog,
+    componentProps: { condominio: props.condominio, inactivar },
+  }).onOk((c: CondominioPlataforma) => {
+    $q.notify({
+      type: 'positive',
+      message: inactivar ? `${c.nombre} quedó inactivo.` : `${c.nombre} fue reactivado.`,
+    });
+  });
+}
 
 const ESTADO: Record<EstadoCondominio, { tono: TonoEstado; texto: string }> = {
   activo: { tono: 'exito', texto: 'Activo' },
@@ -155,6 +194,17 @@ const adminTxt = computed(() => {
   font-family: inherit;
   cursor: pointer;
   flex-shrink: 0;
+}
+
+.tarjeta__acciones {
+  display: flex;
+  gap: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--safic-linea);
+}
+
+.tarjeta__reenviar--peligro {
+  color: #9b1c12;
 }
 
 .tarjeta__reenviar:focus-visible {

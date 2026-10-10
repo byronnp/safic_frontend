@@ -60,6 +60,19 @@ export interface CondominioPlataforma {
   creado_en: string;
 }
 
+export interface EdicionCondominio {
+  nombre?: string;
+  tipo?: TipoCondominio;
+  ruc?: string;
+  razon_social?: string;
+  direccion?: string;
+  telefono?: string | null;
+  email_contacto?: string | null;
+  total_unidades?: number;
+  plan_codigo?: CodigoPlan;
+  valor_unidad?: string;
+}
+
 export interface UsuarioEncontrado {
   id: number;
   nombre: string;
@@ -167,6 +180,32 @@ export const plataformaService = {
     const { data } = await api.get<ApiRespuesta<UsuarioEncontrado | null>>(
       '/plataforma/usuarios/buscar',
       { params: { email } },
+    );
+    return data.data;
+  },
+
+  /** Solo el super admin (plataforma.condominios-editar). */
+  async editar(id: number, cambios: EdicionCondominio): Promise<CondominioPlataforma> {
+    const { data } = await api.patch<ApiRespuesta<CondominioPlataforma>>(
+      `/plataforma/condominios/${id}`,
+      cambios,
+    );
+    return data.data;
+  },
+
+  /** Suspende el acceso de todos los usuarios del condominio (no borra nada). */
+  async inactivar(id: number, motivo: string): Promise<CondominioPlataforma> {
+    const { data } = await api.post<ApiRespuesta<CondominioPlataforma>>(
+      `/plataforma/condominios/${id}/inactivar`,
+      { motivo },
+    );
+    return data.data;
+  },
+
+  async reactivar(id: number, motivo: string): Promise<CondominioPlataforma> {
+    const { data } = await api.post<ApiRespuesta<CondominioPlataforma>>(
+      `/plataforma/condominios/${id}/reactivar`,
+      { motivo },
     );
     return data.data;
   },
