@@ -6,6 +6,14 @@ export type CategoriaAmenidad = 'recreacion' | 'deporte' | 'social' | 'servicios
 export type OrigenAmenidad = 'catalogo' | 'propia';
 export type EstadoAmenidad = 'disponible' | 'mantenimiento' | 'inactiva';
 
+export interface FotoAmenidad {
+  id: number;
+  /** 1 es la portada. */
+  orden: number;
+  /** Enlace temporal (10 minutos) del bucket privado: no se guarda. */
+  url: string;
+}
+
 export interface AmenidadCondominio {
   id: number;
   nombre: string;
@@ -24,6 +32,8 @@ export interface AmenidadCondominio {
   estado: EstadoAmenidad;
   /** AAAA-MM-DD; solo en mantenimiento. */
   mantenimiento_hasta: string | null;
+  /** Hasta 5; la primera es la portada. */
+  fotos: FotoAmenidad[];
 }
 
 export interface TipoCatalogo {
@@ -73,6 +83,32 @@ export const amenidadesService = {
 
   async actualizar(id: number, datos: ActualizarAmenidad): Promise<AmenidadCondominio> {
     const { data } = await api.patch<ApiRespuesta<AmenidadCondominio>>(`/amenidades/${id}`, datos);
+    return data.data;
+  },
+
+  async subirFoto(id: number, foto: File): Promise<AmenidadCondominio> {
+    const formulario = new FormData();
+    formulario.append('foto', foto);
+    const { data } = await api.post<ApiRespuesta<AmenidadCondominio>>(
+      `/amenidades/${id}/fotos`,
+      formulario,
+    );
+    return data.data;
+  },
+
+  async quitarFoto(id: number, fotoId: number): Promise<AmenidadCondominio> {
+    const { data } = await api.delete<ApiRespuesta<AmenidadCondominio>>(
+      `/amenidades/${id}/fotos/${fotoId}`,
+    );
+    return data.data;
+  },
+
+  /** La lista completa de ids en el orden nuevo (la primera es la portada). */
+  async ordenarFotos(id: number, ids: number[]): Promise<AmenidadCondominio> {
+    const { data } = await api.put<ApiRespuesta<AmenidadCondominio>>(
+      `/amenidades/${id}/fotos/orden`,
+      { ids },
+    );
     return data.data;
   },
 };

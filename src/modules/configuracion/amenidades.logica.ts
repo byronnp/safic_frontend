@@ -259,3 +259,36 @@ export function ubicacionParaGuardar(texto: string): string | null {
 export function ubicacionesSugeridas(bloques: string[]): string[] {
   return ['Área social', ...bloques];
 }
+
+export const FOTOS_MAXIMO = 5;
+export const FOTO_MAXIMO_MB = 5;
+const TIPOS_FOTO = ['image/jpeg', 'image/png'];
+
+/** Error de la foto elegida (antes de subirla), o null si se puede subir. La API vuelve a validar. */
+export function errorFoto(
+  archivo: { type: string; size: number },
+  fotosActuales: number,
+): string | null {
+  if (fotosActuales >= FOTOS_MAXIMO) {
+    return `Una amenidad tiene hasta ${FOTOS_MAXIMO} fotos. Quita una para subir otra.`;
+  }
+  if (!TIPOS_FOTO.includes(archivo.type)) {
+    return 'La foto debe ser JPG o PNG.';
+  }
+  if (archivo.size > FOTO_MAXIMO_MB * 1024 * 1024) {
+    return `La foto pesa más de ${FOTO_MAXIMO_MB} MB.`;
+  }
+  return null;
+}
+
+/** Ids en el orden nuevo al mover una foto una posición; sin cambio si ya está en el extremo. */
+export function moverFoto(ids: readonly number[], id: number, direccion: -1 | 1): number[] {
+  const desde = ids.indexOf(id);
+  const hasta = desde + direccion;
+  if (desde < 0 || hasta < 0 || hasta >= ids.length) {
+    return [...ids];
+  }
+  const nuevo = [...ids];
+  [nuevo[desde], nuevo[hasta]] = [nuevo[hasta]!, nuevo[desde]!];
+  return nuevo;
+}

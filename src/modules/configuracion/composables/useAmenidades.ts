@@ -26,6 +26,8 @@ export function useAmenidades() {
     queryFn: () => amenidadesService.listar(),
     enabled: computed(() => session.condominioId !== null),
     refetchOnWindowFocus: false,
+    // Los enlaces de las fotos duran 10 minutos: se renuevan antes de que venzan
+    refetchInterval: 8 * 60_000,
   });
 }
 
@@ -56,7 +58,9 @@ function useMutacionAmenidades<TDatos, TVariables>(
     onMutate: () => ({ condominioId: session.condominioId }),
     onSettled: (_datos, _error, _variables, contexto) => {
       if (contexto?.condominioId != null) {
-        void queryClient.invalidateQueries({
+        // Se devuelve la promesa: la mutación sigue «en curso» hasta que llega la lista nueva
+        // y no se puede actuar sobre fotos u órdenes ya cambiados
+        return queryClient.invalidateQueries({
           queryKey: clavesAmenidades.todas(contexto.condominioId),
         });
       }
@@ -73,5 +77,23 @@ export function useAgregarAmenidad() {
 export function useActualizarAmenidad() {
   return useMutacionAmenidades<AmenidadCondominio, { id: number; datos: ActualizarAmenidad }>(
     ({ id, datos }) => amenidadesService.actualizar(id, datos),
+  );
+}
+
+export function useSubirFotoAmenidad() {
+  return useMutacionAmenidades<AmenidadCondominio, { id: number; foto: File }>(({ id, foto }) =>
+    amenidadesService.subirFoto(id, foto),
+  );
+}
+
+export function useQuitarFotoAmenidad() {
+  return useMutacionAmenidades<AmenidadCondominio, { id: number; fotoId: number }>(
+    ({ id, fotoId }) => amenidadesService.quitarFoto(id, fotoId),
+  );
+}
+
+export function useOrdenarFotosAmenidad() {
+  return useMutacionAmenidades<AmenidadCondominio, { id: number; ids: number[] }>(({ id, ids }) =>
+    amenidadesService.ordenarFotos(id, ids),
   );
 }

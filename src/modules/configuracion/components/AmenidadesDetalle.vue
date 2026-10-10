@@ -1,6 +1,6 @@
 <template>
   <!-- Panel de detalle de una amenidad (mockup F1AmenidadesCondominio) -->
-  <div class="fotos">Sin fotos</div>
+  <AmenidadesFotos :amenidad="amenidad" />
   <div>
     <div class="detalle__antetitulo">
       {{ amenidad.tipo ?? 'Propia del condominio' }} ·
@@ -119,6 +119,7 @@ import {
   usoAmenidad,
 } from '../amenidades.logica';
 import { useActualizarAmenidad } from '../composables/useAmenidades';
+import AmenidadesFotos from './AmenidadesFotos.vue';
 import type { ActualizarAmenidad, AmenidadCondominio } from '../services/amenidades.service';
 import { hoyEcuador } from '../usuarios.logica';
 
@@ -271,19 +272,6 @@ function confirmarDesactivar(): void {
 </script>
 
 <style scoped>
-.fotos {
-  height: 120px;
-  flex-shrink: 0;
-  border-radius: 12px;
-  background: #dce7e4;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #0b4a47;
-  font-size: 13px;
-  font-weight: 700;
-}
-
 .detalle__antetitulo {
   font-size: 12px;
   color: var(--safic-texto-suave);
