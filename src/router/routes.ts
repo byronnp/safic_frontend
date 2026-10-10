@@ -296,12 +296,12 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/modules/plataforma/pages/CatalogoAmenidadesPage.vue'),
         meta: { permiso: 'plataforma.condominios', titulo: 'Catálogo de amenidades' },
       },
-      previa(
-        'roles',
-        'plataforma-roles',
-        'Roles y permisos',
-        () => import('@/modules/plataforma/pages/RolesPermisosPage.vue'),
-      ),
+      {
+        path: 'roles',
+        name: 'plataforma-roles',
+        component: () => import('@/modules/plataforma/pages/RolesPermisosPage.vue'),
+        meta: { permiso: 'plataforma.roles', titulo: 'Roles y permisos' },
+      },
       {
         path: 'menu',
         name: 'plataforma-menu',
