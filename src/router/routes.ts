@@ -139,12 +139,18 @@ const routes: RouteRecordRaw[] = [
         'Conciliación bancaria',
         () => import('@/modules/finanzas/pages/ConciliacionPage.vue'),
       ),
-      previa(
-        'finanzas/cuentas-por-pagar',
-        'finanzas-cuentas-por-pagar',
-        'Cuentas por pagar',
-        () => import('@/modules/finanzas/pages/CuentasPorPagarPage.vue'),
-      ),
+      {
+        path: 'finanzas/cuentas-por-pagar',
+        name: 'finanzas-cuentas-por-pagar',
+        component: () => import('@/modules/finanzas/pages/CuentasPorPagarPage.vue'),
+        meta: { permiso: 'finanzas.ver', titulo: 'Cuentas por pagar' },
+      },
+      {
+        path: 'finanzas/proveedores',
+        name: 'finanzas-proveedores',
+        component: () => import('@/modules/finanzas/pages/ProveedoresPage.vue'),
+        meta: { permiso: 'finanzas.ver', titulo: 'Proveedores' },
+      },
       previa(
         'finanzas/cuentas-por-pagar/:id/pago',
         'finanzas-pago-proveedor',
