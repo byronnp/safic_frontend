@@ -73,6 +73,13 @@ export const MENU_BASE: ItemMenu[] = [
         permiso: 'finanzas.ver',
       },
       {
+        id: 'finanzas.cierre',
+        etiqueta: 'Cierre de mes',
+        icono: ICONOS.bloqueado,
+        ruta: 'finanzas-cierre-mes',
+        permiso: 'finanzas.ver',
+      },
+      {
         id: 'finanzas.pagos',
         etiqueta: 'Pagos por aprobar',
         icono: ICONOS.pagosPorAprobar,
