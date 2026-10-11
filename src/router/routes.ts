@@ -139,12 +139,12 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/modules/finanzas/pages/CierreMesPage.vue'),
         meta: { permiso: 'finanzas.ver', titulo: 'Cierre de mes' },
       },
-      previa(
-        'finanzas/conciliacion',
-        'finanzas-conciliacion',
-        'Conciliación bancaria',
-        () => import('@/modules/finanzas/pages/ConciliacionPage.vue'),
-      ),
+      {
+        path: 'finanzas/conciliacion',
+        name: 'finanzas-conciliacion',
+        component: () => import('@/modules/finanzas/pages/ConciliacionPage.vue'),
+        meta: { permiso: 'finanzas.ver', titulo: 'Conciliación bancaria' },
+      },
       {
         path: 'finanzas/cuentas-por-pagar',
         name: 'finanzas-cuentas-por-pagar',
