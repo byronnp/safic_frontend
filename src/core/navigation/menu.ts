@@ -91,8 +91,7 @@ export const MENU_BASE: ItemMenu[] = [
         etiqueta: 'Conciliación bancaria',
         icono: ICONOS.conciliacion,
         ruta: 'finanzas-conciliacion',
-        permiso: 'pagos.aprobar',
-        vistaPrevia: true,
+        permiso: 'finanzas.ver',
       },
       {
         id: 'finanzas.cuentas',

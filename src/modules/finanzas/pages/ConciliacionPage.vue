@@ -1,699 +1,704 @@
 <template>
-  <q-page class="safic-main conciliacion">
+  <q-page class="safic-main conc">
     <PaginaEncabezado
       miga="Finanzas / Conciliación bancaria"
-      :titulo="`Conciliación · ${CONCILIACION_PERIODO.titulo}`"
+      :titulo="`Conciliación · ${nombreMes(periodo)}`"
     >
       <template #acciones>
-        <button type="button" class="conciliacion__cuenta" aria-haspopup="menu">
-          <div>
-            <div class="conciliacion__cuenta-etiqueta">Cuenta</div>
-            <div class="conciliacion__cuenta-nombre">{{ cuenta.nombre }}</div>
-          </div>
-          <q-icon name="sym_r_expand_more" size="18px" class="text-suave" />
-          <q-menu anchor="bottom right" self="top right" class="conciliacion__menu">
-            <q-list style="min-width: 260px">
-              <q-item
-                v-for="c in CONCILIACION_CUENTAS"
-                :key="c.id"
-                v-close-popup
-                clickable
-                :active="c.id === cuenta.id"
-                active-class="text-primary text-weight-bold"
-                @click="cuentaId = c.id"
-              >
-                <q-item-section>{{ c.nombre }}</q-item-section>
-              </q-item>
-            </q-list>
-          </q-menu>
-        </button>
+        <label for="conc-mes" class="conc__etiqueta">Mes</label>
+        <q-select
+          v-model="periodo"
+          for="conc-mes"
+          class="safic-input conc__select"
+          outlined
+          dense
+          emit-value
+          map-options
+          :options="opcionesMes"
+        />
         <q-btn
+          v-if="puedeGestionar"
           unelevated
           no-caps
-          class="safic-btn safic-btn--secundario conciliacion__subir"
-          icon="sym_r_upload"
+          color="primary"
+          class="safic-btn"
+          icon="sym_r_upload_file"
           label="Subir estado de cuenta"
-          @click="archivoInput?.click()"
-        />
-        <input
-          ref="archivoInput"
-          type="file"
-          accept=".xlsx,.xls,.csv"
-          class="hidden"
-          aria-label="Estado de cuenta"
-          @change="alSubir"
+          @click="subir"
         />
       </template>
     </PaginaEncabezado>
 
-    <div class="safic-card conciliacion__archivo">
-      <div class="conciliacion__archivo-info">
-        <div class="conciliacion__archivo-icono">
-          <q-icon name="sym_r_description" size="20px" />
-        </div>
-        <div>
-          <div class="text-weight-bold">{{ archivo.nombre }}</div>
-          <div class="conciliacion__sub">
-            {{ archivo.periodo }} · {{ archivo.movimientos }} movimientos ·
-            {{ archivo.duplicadosDescartados }} duplicados descartados
-          </div>
-        </div>
-      </div>
-      <div>
-        <div class="conciliacion__sub">Saldo inicial banco</div>
-        <div class="text-weight-bolder">{{ formatoMoneda(archivo.saldoInicial) }}</div>
-      </div>
-      <div>
-        <div class="conciliacion__sub">Saldo final banco</div>
-        <div class="text-weight-bolder">{{ formatoMoneda(archivo.saldoFinal) }}</div>
-      </div>
-      <EstadoBadge :tono="archivo.cuadra ? 'exito' : 'error'" class="conciliacion__archivo-badge">
-        {{ archivo.cuadra ? 'Archivo cuadra' : 'Archivo no cuadra' }}
-      </EstadoBadge>
+    <div v-if="resultado" class="conc__resultado" role="status">{{ resultado }}</div>
+    <div v-if="errorAccion" class="safic-alerta" role="alert">{{ errorAccion }}</div>
+
+    <div v-if="estados.isError.value" class="safic-alerta" role="alert">
+      {{ estados.error.value?.mensaje }}
+      <q-btn flat no-caps dense label="Reintentar" @click="estados.refetch()" />
+    </div>
+    <div v-else-if="estados.isPending.value" aria-busy="true">
+      <q-skeleton v-for="i in 3" :key="i" type="rect" height="56px" class="q-mb-sm" />
     </div>
 
-    <div class="conciliacion__cuerpo">
-      <section class="safic-card conciliacion__movimientos">
-        <div class="conciliacion__pestanas" role="tablist" aria-label="Movimientos del banco">
-          <button
-            v-for="p in pestanas"
-            :key="p.clave"
-            type="button"
-            role="tab"
-            class="conciliacion__pestana"
-            :class="{ 'conciliacion__pestana--activa': p.clave === pestana }"
-            :aria-selected="p.clave === pestana"
-            @click="pestana = p.clave"
-          >
-            {{ p.etiqueta }}
-            <span
-              class="conciliacion__conteo"
-              :class="{ 'conciliacion__conteo--pendiente': p.clave !== 'auto' && p.conteo > 0 }"
-            >
-              {{ p.conteo }}
-            </span>
-          </button>
-        </div>
-        <div class="conciliacion__desplazable" role="tabpanel">
-          <div
-            v-for="m in filas"
-            :key="m.id"
-            class="conciliacion__fila"
-            :class="{ 'conciliacion__fila--pendiente': !m.hecho }"
-          >
-            <div class="text-suave">{{ m.fecha }}</div>
-            <div class="conciliacion__desc">
-              <div class="conciliacion__mono">{{ m.descripcion }}</div>
-              <div class="conciliacion__sub">Ref. {{ m.referencia }}</div>
-            </div>
-            <div
-              class="conciliacion__monto"
-              :class="m.monto < 0 ? 'conciliacion__monto--egreso' : 'conciliacion__monto--ingreso'"
-            >
-              {{ moneda(m.monto) }}
-            </div>
-            <div class="conciliacion__propuesta">{{ m.propuesta }}</div>
-            <div class="conciliacion__accion">
-              <q-btn
-                v-if="!m.hecho"
-                unelevated
-                no-caps
-                color="primary"
-                class="conciliacion__confirmar"
-                :label="m.accion"
-                @click="confirmar(m.id)"
-              />
-              <span v-else class="conciliacion__hecho">
-                <q-icon name="sym_r_check" size="16px" class="conciliacion__check" />
-                {{ m.automatico ? 'Registrado solo' : m.textoHecho }}
-              </span>
-            </div>
-          </div>
-        </div>
-        <div class="conciliacion__nota">{{ notaPestana }}</div>
-      </section>
+    <div v-else-if="lista.length === 0" class="safic-card conc__vacio">
+      <q-icon name="sym_r_account_balance" size="40px" class="text-suave" />
+      <div class="text-weight-bold">
+        Aún no hay estado de cuenta de {{ nombreMes(periodo).toLowerCase() }}
+      </div>
+      <div class="text-suave">
+        Sube el archivo del banco para cruzar sus movimientos con los pagos.
+      </div>
+      <q-btn
+        v-if="puedeGestionar"
+        unelevated
+        no-caps
+        color="primary"
+        class="safic-btn"
+        label="Subir estado de cuenta"
+        @click="subir"
+      />
+    </div>
 
-      <aside class="safic-card conciliacion__cuadre" aria-labelledby="conciliacion-cuadre">
-        <h2 id="conciliacion-cuadre">Cuadre del mes</h2>
-        <div class="conciliacion__linea">
-          <span>Saldo inicial</span><span>{{ moneda(cuadre.saldoInicial) }}</span>
-        </div>
-        <div class="conciliacion__linea">
-          <span>+ Pagos de residentes</span><span>{{ moneda(cuadre.pagosResidentes) }}</span>
-        </div>
-        <div class="conciliacion__linea">
-          <span>+ Intereses</span><span>{{ moneda(cuadre.intereses) }}</span>
-        </div>
-        <div class="conciliacion__linea">
-          <span>− Gastos pagados</span><span>{{ moneda(cuadre.gastosPagados) }}</span>
-        </div>
-        <div class="conciliacion__linea">
-          <span>− Comisiones bancarias</span><span>{{ moneda(comisiones) }}</span>
-        </div>
-        <div class="conciliacion__linea conciliacion__linea--total conciliacion__linea--borde">
-          <span>Saldo en la app</span><span>{{ moneda(saldoApp) }}</span>
-        </div>
-        <div class="conciliacion__linea conciliacion__linea--total">
-          <span>Saldo en el banco</span><span>{{ moneda(cuadre.saldoBanco) }}</span>
-        </div>
-        <div
-          class="conciliacion__diferencia"
-          :class="{ 'conciliacion__diferencia--ok': cuadrado }"
-          role="status"
+    <template v-else>
+      <div v-if="lista.length > 1" role="tablist" aria-label="Cuenta" class="conc__pildoras">
+        <button
+          v-for="e in lista"
+          :key="e.id"
+          type="button"
+          role="tab"
+          class="safic-pildora"
+          :class="{ 'safic-pildora--activa': e.id === estadoId }"
+          :aria-selected="e.id === estadoId"
+          @click="elegirEstado(e.id)"
         >
-          <div class="conciliacion__diferencia-etiqueta">Diferencia</div>
-          <div class="conciliacion__diferencia-valor">{{ moneda(diferencia) }}</div>
-          <div class="conciliacion__diferencia-nota">
-            {{
-              cuadrado
-                ? 'La app cuadra con el banco'
-                : 'Pendiente de clasificar en sugeridos y sin identificar'
-            }}
-          </div>
-        </div>
-        <div class="col-grow" />
-        <q-btn
-          unelevated
-          no-caps
-          class="conciliacion__ajuste"
-          label="Registrar ajuste con motivo"
-          @click="ajusteAbierto = true"
-        />
-        <q-btn
-          unelevated
-          no-caps
-          class="conciliacion__cerrar"
-          :class="{ 'conciliacion__cerrar--bloqueado': !cuadrado || cerrado }"
-          :disable="!cuadrado || cerrado"
-          :label="cerrado ? `${mesCapital} cerrado` : `Cerrar ${CONCILIACION_PERIODO.mes}`"
-          @click="cerrarMes"
-        />
-      </aside>
-    </div>
+          {{ e.cuenta }}{{ e.pendientes ? ` (${e.pendientes})` : '' }}
+        </button>
+      </div>
 
-    <q-dialog v-model="ajusteAbierto">
-      <q-card class="safic-dialogo q-pa-lg">
-        <div class="safic-dialogo__titulo q-mb-md">Registrar ajuste</div>
-        <q-form class="column" style="gap: 14px" @submit.prevent="guardarAjuste">
-          <label class="safic-campo">
-            <span class="safic-campo__etiqueta">Monto</span>
-            <q-input
-              v-model.number="ajuste.monto"
-              class="safic-input"
-              outlined
-              type="number"
-              step="0.01"
-              prefix="$"
-              :rules="[(v: number) => (Number.isFinite(v) && v !== 0) || 'Ingresa un monto.']"
-              hide-bottom-space
-            />
-          </label>
-          <label class="safic-campo">
-            <span class="safic-campo__etiqueta">Motivo</span>
-            <q-input
-              v-model="ajuste.motivo"
-              class="safic-input"
-              outlined
-              autogrow
-              :rules="[(v: string) => v.trim().length >= 5 || 'Explica el motivo del ajuste.']"
-              hide-bottom-space
-            />
-          </label>
-          <div class="row justify-end" style="gap: 10px">
-            <q-btn
-              v-close-popup
-              unelevated
-              no-caps
-              class="safic-btn safic-btn--secundario"
-              label="Cancelar"
-            />
-            <q-btn
-              unelevated
-              no-caps
-              color="primary"
-              class="safic-btn"
-              type="submit"
-              label="Registrar"
-            />
+      <div v-if="detalle.isError.value" class="safic-alerta" role="alert">
+        {{ detalle.error.value?.mensaje }}
+        <q-btn flat no-caps dense label="Reintentar" @click="detalle.refetch()" />
+      </div>
+      <div v-else-if="!conciliacion" aria-busy="true">
+        <q-skeleton type="rect" height="200px" />
+      </div>
+
+      <div v-else class="conc__cuerpo">
+        <section class="conc__principal" aria-label="Movimientos">
+          <div class="safic-card conc__archivo">
+            <div>
+              <div class="text-weight-bold">{{ conciliacion.cuenta }}</div>
+              <div class="conc__sub">
+                {{ conciliacion.archivo_nombre }} · {{ conciliacion.movimientos }} movimientos ·
+                {{ conciliacion.duplicados }} duplicados descartados
+              </div>
+            </div>
+            <div class="conc__saldos">
+              <div>
+                <div class="conc__sub">Saldo inicial banco</div>
+                <strong>{{ saldo(conciliacion.cuadre.saldo_inicial) }}</strong>
+              </div>
+              <div>
+                <div class="conc__sub">Saldo final banco</div>
+                <strong>{{ saldo(conciliacion.cuadre.saldo_banco) }}</strong>
+              </div>
+              <EstadoBadge :tono="conciliacion.cuadre.archivo_cuadra === false ? 'error' : 'exito'">
+                {{ textoArchivoCuadra(conciliacion.cuadre) }}
+              </EstadoBadge>
+            </div>
           </div>
-        </q-form>
-      </q-card>
-    </q-dialog>
+
+          <div role="tablist" aria-label="Estado de las líneas" class="conc__tabs">
+            <button
+              v-for="p in PESTANAS"
+              :key="p.clave"
+              type="button"
+              role="tab"
+              class="conc__tab"
+              :class="{ 'conc__tab--activa': p.clave === pestana }"
+              :aria-selected="p.clave === pestana"
+              @click="pestana = p.clave"
+            >
+              {{ p.etiqueta }}
+              <span class="conc__cuenta">{{ conciliacion.conteos[p.clave] }}</span>
+            </button>
+          </div>
+
+          <q-checkbox
+            v-if="pestana !== 'automaticos' && puedeGestionar"
+            v-model="guardarRegla"
+            label="Guardar la clasificación como regla para líneas parecidas"
+          />
+
+          <div class="safic-card conc__lineas">
+            <div v-for="l in lineas" :key="l.id" class="conc__linea">
+              <div class="conc__fecha">{{ formatoFechaCorta(l.fecha) }}</div>
+              <div class="conc__desc">
+                <div class="text-weight-bold">{{ l.descripcion }}</div>
+                <div class="conc__sub">
+                  <template v-if="l.referencia">Ref. {{ l.referencia }} · </template>
+                  <template v-if="pestana === 'automaticos'">{{ nombreTipo(l.tipo) }}</template>
+                  <template v-else>{{
+                    l.propuesta?.texto ?? 'Sin regla: elige el tipo.'
+                  }}</template>
+                </div>
+              </div>
+              <div class="conc__monto" :class="{ 'conc__monto--entra': esCredito(l) }">
+                {{ montoConSigno(l.monto) }}
+              </div>
+              <div v-if="puedeGestionar" class="conc__accion">
+                <template v-if="pestana === 'automaticos'">
+                  <q-btn
+                    flat
+                    no-caps
+                    dense
+                    label="Deshacer"
+                    :disable="ocupado"
+                    @click="deshacer(l)"
+                  />
+                </template>
+                <template v-else-if="pestana === 'sugeridos'">
+                  <q-btn
+                    v-if="accionDeSugerida(l)"
+                    unelevated
+                    no-caps
+                    color="primary"
+                    class="safic-btn"
+                    :label="accionDeSugerida(l)?.etiqueta"
+                    :disable="ocupado"
+                    @click="aplicarSugerencia(l)"
+                  />
+                </template>
+                <q-btn-dropdown
+                  v-else
+                  outline
+                  no-caps
+                  color="primary"
+                  label="Clasificar como"
+                  :disable="ocupado"
+                >
+                  <q-list>
+                    <q-item
+                      v-for="t in tiposPara(l)"
+                      :key="t.valor"
+                      v-close-popup
+                      clickable
+                      @click="clasificar(l, t.valor)"
+                    >
+                      <q-item-section>{{ t.etiqueta }}</q-item-section>
+                    </q-item>
+                  </q-list>
+                </q-btn-dropdown>
+              </div>
+            </div>
+            <div v-if="lineas.length === 0" class="conc__vacio-lista">
+              <q-icon name="sym_r_task_alt" size="36px" class="text-suave" />
+              <div class="text-weight-bold">{{ vacioLista }}</div>
+            </div>
+          </div>
+        </section>
+
+        <aside class="safic-card conc__cuadre" aria-labelledby="conc-cuadre">
+          <h2 id="conc-cuadre" class="conc__h2">Cuadre del mes</h2>
+          <dl class="conc__valores">
+            <dt>Saldo inicial</dt>
+            <dd>{{ saldo(conciliacion.cuadre.saldo_inicial) }}</dd>
+            <dt>+ Pagos de residentes</dt>
+            <dd>{{ saldo(conciliacion.cuadre.pagos_residentes) }}</dd>
+            <dt>+ Intereses</dt>
+            <dd>{{ saldo(conciliacion.cuadre.intereses) }}</dd>
+            <dt>− Gastos pagados</dt>
+            <dd>{{ saldo(conciliacion.cuadre.gastos_pagados) }}</dd>
+            <dt>− Comisiones bancarias</dt>
+            <dd>{{ saldo(conciliacion.cuadre.comisiones) }}</dd>
+            <template v-if="aCentavos(conciliacion.cuadre.otros) !== 0">
+              <dt>± Otros movimientos</dt>
+              <dd>{{ saldo(conciliacion.cuadre.otros) }}</dd>
+            </template>
+            <template v-if="aCentavos(conciliacion.cuadre.ajustes) !== 0">
+              <dt>± Ajustes</dt>
+              <dd>{{ saldo(conciliacion.cuadre.ajustes) }}</dd>
+            </template>
+            <dt class="conc__total">Saldo en la app</dt>
+            <dd class="conc__total">{{ saldo(conciliacion.cuadre.saldo_app) }}</dd>
+            <dt>Saldo en el banco</dt>
+            <dd>{{ saldo(conciliacion.cuadre.saldo_banco) }}</dd>
+            <dt class="conc__total">Diferencia</dt>
+            <dd class="conc__total" :class="`conc__dif--${nota.tono}`">
+              {{ saldo(conciliacion.cuadre.diferencia) }}
+            </dd>
+          </dl>
+          <div class="conc__nota" :class="`conc__nota--${nota.tono}`" role="status">
+            {{ nota.texto }}
+          </div>
+
+          <q-btn
+            v-if="puedeGestionar"
+            outline
+            no-caps
+            color="primary"
+            label="Registrar ajuste con motivo"
+            :disable="ocupado"
+            @click="ajustar"
+          />
+          <q-btn
+            v-if="puedeVerCierre"
+            unelevated
+            no-caps
+            color="primary"
+            class="safic-btn"
+            icon="sym_r_lock"
+            :label="`Ir al cierre de ${nombreMes(periodo).toLowerCase()}`"
+            :to="{ name: 'finanzas-cierre-mes' }"
+          />
+        </aside>
+      </div>
+    </template>
   </q-page>
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, ref } from 'vue';
 import { useQuasar } from 'quasar';
-import PaginaEncabezado from '@/components/PaginaEncabezado.vue';
+import { computed, ref, watch } from 'vue';
+
 import EstadoBadge from '@/components/EstadoBadge.vue';
-import { formatoMoneda } from '@/utils/formato';
+import PaginaEncabezado from '@/components/PaginaEncabezado.vue';
+import { aApiError } from '@/core/api/errors';
+import { useSessionStore } from '@/stores/session';
+import { aCentavos } from '@/utils/dinero';
+import { hoyEcuador } from '@/utils/fecha';
+import { formatoFechaCorta, formatoMoneda } from '@/utils/formato';
+import { nombreMes } from '@/utils/periodo';
+
+import AjusteConciliacionDialog from '../components/AjusteConciliacionDialog.vue';
+import ImportarEstadoDialog from '../components/ImportarEstadoDialog.vue';
+import { mesAnterior } from '../cierre-mes.logica';
 import {
-  CONCILIACION_ARCHIVO,
-  CONCILIACION_CUADRE,
-  CONCILIACION_CUENTAS,
-  CONCILIACION_MOVIMIENTOS,
-  CONCILIACION_PERIODO,
-  CONCILIACION_TOTAL_AUTOMATICOS,
-} from '../demo/conciliacion';
-import type { PestanaConciliacion } from '../demo/conciliacion';
+  accionDeSugerida,
+  ajusteSugerido,
+  esCredito,
+  montoConSigno,
+  nombreTipo,
+  notaDiferencia,
+  PESTANAS,
+  textoArchivoCuadra,
+  TIPOS_MANUALES,
+  type Pestana,
+} from '../conciliacion.logica';
+import {
+  useClasificarLinea,
+  useConciliacion,
+  useDeshacerLinea,
+  useEstadosCuenta,
+  useVincularLinea,
+} from '../composables/useConciliacion';
+import { usePeriodos } from '../composables/usePeriodos';
+import { opcionesDeMes } from '../resumen.logica';
+import type {
+  LineaBanco,
+  ResultadoImportacion,
+  TipoManual,
+} from '../services/conciliacion.service';
 
 const $q = useQuasar();
+const session = useSessionStore();
 
-const archivo = CONCILIACION_ARCHIVO;
-const cuadre = CONCILIACION_CUADRE;
+// Mostrar los botones es comodidad; la API exige conciliacion.gestionar y finanzas.ver igual.
+const puedeGestionar = computed(() => session.tienePermiso('conciliacion.gestionar'));
+const puedeVerCierre = computed(() => session.tienePermiso('finanzas.ver'));
 
-const cuentaId = ref(CONCILIACION_CUENTAS[0]?.id ?? 0);
-const cuenta = computed(
+const periodo = ref(mesAnterior(hoyEcuador().slice(0, 7)));
+const pestana = ref<Pestana>('sugeridos');
+const guardarRegla = ref(false);
+const resultado = ref<string | null>(null);
+const errorAccion = ref<string | null>(null);
+const elegido = ref<number | null>(null);
+
+const periodos = usePeriodos();
+const opcionesMes = computed(() => opcionesDeMes(periodos.data.value ?? [], periodo.value));
+
+const estados = useEstadosCuenta(periodo);
+const lista = computed(() => estados.data.value ?? []);
+// El estado elegido, o el primero del mes si no hay (o el elegido ya no está)
+const estadoId = computed(() => {
+  const e = lista.value.find((x) => x.id === elegido.value) ?? lista.value[0];
+  return e?.id ?? null;
+});
+const detalle = useConciliacion(estadoId);
+const conciliacion = computed(() =>
+  detalle.data.value && detalle.data.value.id === estadoId.value ? detalle.data.value : null,
+);
+
+const vincular = useVincularLinea();
+const clasificarMutacion = useClasificarLinea();
+const deshacerMutacion = useDeshacerLinea();
+const ocupado = computed(
   () =>
-    CONCILIACION_CUENTAS.find((c) => c.id === cuentaId.value) ?? { id: 0, nombre: 'Sin cuenta' },
-);
-const archivoInput = ref<HTMLInputElement | null>(null);
-
-const pestana = ref<PestanaConciliacion>('sug');
-const hechos = ref<Record<string, boolean>>({});
-const ajustes = ref(0);
-const cerrado = ref(false);
-const ajusteAbierto = ref(false);
-const ajuste = reactive({ monto: 0, motivo: '' });
-
-const mesCapital =
-  CONCILIACION_PERIODO.mes.charAt(0).toUpperCase() + CONCILIACION_PERIODO.mes.slice(1);
-
-/** "− $ 3.450,00" como en el mockup (signo separado del símbolo). */
-function moneda(valor: number): string {
-  return valor < 0 ? `− ${formatoMoneda(Math.abs(valor))}` : formatoMoneda(valor);
-}
-
-const centavos = (valor: number): number => Math.round(valor * 100);
-
-function pendientes(clave: PestanaConciliacion): number {
-  return CONCILIACION_MOVIMIENTOS[clave].filter((m) => !hechos.value[m.id]).length;
-}
-
-const pestanas = computed(() => [
-  { clave: 'auto' as const, etiqueta: 'Automáticos', conteo: CONCILIACION_TOTAL_AUTOMATICOS },
-  { clave: 'sug' as const, etiqueta: 'Sugeridos', conteo: pendientes('sug') },
-  { clave: 'sin' as const, etiqueta: 'Sin identificar', conteo: pendientes('sin') },
-]);
-
-const filas = computed(() =>
-  CONCILIACION_MOVIMIENTOS[pestana.value].map((m) => ({
-    ...m,
-    hecho: m.automatico === true || hechos.value[m.id] === true,
-  })),
+    vincular.isPending.value ||
+    clasificarMutacion.isPending.value ||
+    deshacerMutacion.isPending.value,
 );
 
-const notaPestana = computed(() =>
-  pestana.value === 'auto'
-    ? `Mostrando ${CONCILIACION_MOVIMIENTOS.auto.length} de ${CONCILIACION_TOTAL_AUTOMATICOS} movimientos registrados automáticamente por código de unidad, monto exacto o reglas guardadas.`
-    : 'Confirma cada propuesta; al clasificar puedes guardar una regla para que el próximo mes entre automático.',
+const lineas = computed(() => {
+  const c = conciliacion.value;
+  if (!c) return [];
+  return pestana.value === 'automaticos'
+    ? c.automaticos
+    : pestana.value === 'sugeridos'
+      ? c.sugeridos
+      : c.sin_identificar;
+});
+const vacioLista = computed(() =>
+  pestana.value === 'automaticos'
+    ? 'Todavía no hay líneas conciliadas.'
+    : pestana.value === 'sugeridos'
+      ? 'No hay sugerencias pendientes.'
+      : 'No hay líneas sin identificar.',
+);
+const nota = computed(() =>
+  conciliacion.value
+    ? notaDiferencia(conciliacion.value.cuadre)
+    : { tono: 'info' as const, texto: '' },
 );
 
-/** Comisiones confirmadas, en dólares (positivo = se restan del saldo). */
-const comisiones = computed(() => {
-  const total = [...CONCILIACION_MOVIMIENTOS.sug, ...CONCILIACION_MOVIMIENTOS.sin]
-    .filter((m) => hechos.value[m.id])
-    .reduce((suma, m) => suma - centavos(m.efecto ?? 0), 0);
-  return total / 100;
+const saldo = (v: string | null): string => (v === null ? '—' : formatoMoneda(v));
+
+// Al cambiar de mes o de condominio no quedan avisos ni selecciones del anterior
+watch([periodo, () => session.condominioId], () => {
+  elegido.value = null;
+  resultado.value = null;
+  errorAccion.value = null;
 });
 
-const saldoApp = computed(
-  () => (centavos(cuadre.saldoApp) - centavos(comisiones.value) + ajustes.value) / 100,
-);
-const diferencia = computed(() => (centavos(cuadre.saldoBanco) - centavos(saldoApp.value)) / 100);
-const cuadrado = computed(() => diferencia.value === 0);
-
-function confirmar(id: string): void {
-  hechos.value = { ...hechos.value, [id]: true };
+function elegirEstado(id: number): void {
+  elegido.value = id;
+  resultado.value = null;
 }
 
-function alSubir(evento: Event): void {
-  const input = evento.target as HTMLInputElement;
-  const nombre = input.files?.[0]?.name;
-  if (nombre) {
-    $q.notify({ type: 'positive', message: `Estado de cuenta ${nombre} recibido.` });
+function tiposPara(l: LineaBanco) {
+  // Una comisión es un débito y un interés un crédito; «otro» sirve para ambos
+  return TIPOS_MANUALES.filter((t) =>
+    t.valor === 'comision' ? !esCredito(l) : t.valor === 'interes' ? esCredito(l) : true,
+  );
+}
+
+function subir(): void {
+  errorAccion.value = null;
+  $q.dialog({
+    component: ImportarEstadoDialog,
+    componentProps: {
+      periodo: periodo.value,
+      cuentaBancariaId: conciliacion.value?.cuenta_bancaria_id ?? null,
+    },
+  }).onOk((r: ResultadoImportacion) => {
+    // Primero se actualiza la lista de estados: así el nuevo ya está cuando se elige
+    void estados.refetch().then(() => {
+      elegido.value = r.conciliacion.id;
+      pestana.value =
+        r.conciliacion.conteos.sugeridos > 0
+          ? 'sugeridos'
+          : r.conciliacion.conteos.sin_identificar > 0
+            ? 'sin_identificar'
+            : 'automaticos';
+    });
+    resultado.value = `Importado: ${r.nuevos} movimientos nuevos, ${r.duplicados} duplicados descartados${r.fueraDelMes ? `, ${r.fueraDelMes} fuera del mes` : ''}.`;
+  });
+}
+
+function alFallar(error: unknown): void {
+  errorAccion.value = aApiError(error).mensaje;
+}
+
+function aplicarSugerencia(l: LineaBanco): void {
+  const accion = accionDeSugerida(l);
+  if (!accion || ocupado.value || !l.propuesta) return;
+  errorAccion.value = null;
+  if (accion.tipo === 'vincular' && l.propuesta.id !== null) {
+    vincular.mutate(
+      {
+        id: l.id,
+        tipo: l.propuesta.tipo as 'pago_residente' | 'pago_proveedor',
+        pagoId: l.propuesta.id,
+      },
+      { onSuccess: () => (resultado.value = 'Línea conciliada.'), onError: alFallar },
+    );
+  } else {
+    clasificarMutacion.mutate(
+      { id: l.id, tipo: l.propuesta.tipo as TipoManual, guardarRegla: guardarRegla.value },
+      { onSuccess: () => (resultado.value = 'Línea clasificada.'), onError: alFallar },
+    );
   }
-  input.value = '';
 }
 
-function guardarAjuste(): void {
-  ajustes.value += centavos(ajuste.monto);
-  ajusteAbierto.value = false;
-  ajuste.monto = 0;
-  ajuste.motivo = '';
-  $q.notify({ type: 'positive', message: 'Ajuste registrado.' });
+function clasificar(l: LineaBanco, tipo: TipoManual): void {
+  if (ocupado.value) return;
+  errorAccion.value = null;
+  clasificarMutacion.mutate(
+    { id: l.id, tipo, guardarRegla: guardarRegla.value },
+    { onSuccess: () => (resultado.value = 'Línea clasificada.'), onError: alFallar },
+  );
 }
 
-function cerrarMes(): void {
-  cerrado.value = true;
-  $q.notify({ type: 'positive', message: `${mesCapital} quedó cerrado y conciliado.` });
+function deshacer(l: LineaBanco): void {
+  errorAccion.value = null;
+  $q.dialog({
+    title: 'Deshacer la conciliación',
+    message: `La línea «${l.descripcion}» vuelve a clasificarse y su pago queda libre.`,
+    cancel: { label: 'Cancelar', flat: true, noCaps: true },
+    ok: { label: 'Deshacer', color: 'negative', unelevated: true, noCaps: true },
+    persistent: true,
+  }).onOk(() => {
+    if (ocupado.value) return;
+    deshacerMutacion.mutate(l.id, {
+      onSuccess: () => (resultado.value = 'Conciliación deshecha.'),
+      onError: alFallar,
+    });
+  });
+}
+
+function ajustar(): void {
+  const c = conciliacion.value;
+  if (!c) return;
+  errorAccion.value = null;
+  $q.dialog({
+    component: AjusteConciliacionDialog,
+    componentProps: { estadoId: c.id, sugerido: ajusteSugerido(c.cuadre) },
+  }).onOk(() => {
+    resultado.value = 'Ajuste registrado.';
+  });
 }
 </script>
 
 <style scoped>
-.conciliacion.safic-main {
-  padding: 24px 32px;
+.conc {
+  display: flex;
+  flex-direction: column;
   gap: 16px;
 }
 
-.conciliacion__cuenta {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  height: 46px;
-  padding: 0 14px;
-  border: 1px solid var(--safic-borde-2);
-  border-radius: 10px;
-  background: #ffffff;
-  cursor: pointer;
-  text-align: left;
-  font-family: inherit;
-  color: var(--safic-texto);
-}
-
-.conciliacion__cuenta-etiqueta {
-  font-size: 11px;
+.conc__etiqueta {
+  font-size: 13px;
+  font-weight: 700;
   color: var(--safic-texto-suave);
-  font-weight: 600;
 }
 
-.conciliacion__cuenta-nombre {
-  font-size: 14px;
+.conc__select {
+  min-width: 190px;
+}
+
+.conc__resultado {
+  padding: 12px 16px;
+  border-radius: 10px;
+  background: #e3efec;
+  color: #0b4a47;
   font-weight: 700;
 }
 
-.conciliacion__subir.q-btn {
-  min-height: 46px;
-  padding: 0 16px;
-}
-
-.conciliacion__subir :deep(.q-icon) {
-  font-size: 18px;
-  margin-right: 8px;
-}
-
-.conciliacion__archivo {
-  padding: 14px 20px;
+.conc__vacio {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 12px 28px;
-  font-size: 14px;
+  gap: 8px;
+  padding: 40px 16px;
+  text-align: center;
+}
+
+.conc__pildoras {
+  display: flex;
+  gap: 8px;
   flex-wrap: wrap;
 }
 
-.conciliacion__archivo-info {
+.conc__cuerpo {
   display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-grow: 1;
+  gap: 18px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.conc__principal {
+  flex: 1 1 620px;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
-.conciliacion__archivo-icono {
-  width: 38px;
-  height: 38px;
-  border-radius: 9px;
-  background: #e3efec;
-  color: #0b4a47;
+.conc__archivo {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 16px 18px;
+}
+
+.conc__saldos {
   display: flex;
   align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+  gap: 20px;
+  flex-wrap: wrap;
 }
 
-.conciliacion__archivo-badge.conciliacion__archivo-badge {
-  padding: 5px 10px;
-}
-
-.conciliacion__sub {
+.conc__sub {
   font-size: 12px;
   color: var(--safic-texto-suave);
 }
 
-.conciliacion__cuerpo {
-  display: flex;
-  gap: 16px;
-  flex-grow: 1;
-  min-height: 0;
-}
-
-.conciliacion__movimientos {
-  flex-grow: 1;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-
-.conciliacion__pestanas {
+.conc__tabs {
   display: flex;
   gap: 4px;
-  padding: 0 16px;
-  border-bottom: 1px solid var(--safic-linea);
-  overflow-x: auto;
+  border-bottom: 1px solid var(--safic-borde);
 }
 
-.conciliacion__pestana {
-  height: 50px;
+.conc__tab {
+  height: 44px;
   padding: 0 14px;
   border: none;
   border-bottom: 3px solid transparent;
   background: transparent;
-  font-family: inherit;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font: inherit;
   font-size: 14px;
   font-weight: 600;
   color: var(--safic-texto-suave);
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  white-space: nowrap;
 }
 
-.conciliacion__pestana--activa {
+.conc__tab--activa {
   font-weight: 800;
   color: var(--q-primary);
   border-bottom-color: var(--q-primary);
 }
 
-.conciliacion__conteo {
+.conc__tab:focus-visible {
+  outline: 2px solid var(--q-primary);
+  outline-offset: 2px;
+}
+
+.conc__cuenta {
   min-width: 22px;
   height: 22px;
   padding: 0 6px;
-  box-sizing: border-box;
-  border-radius: 11px;
+  border-radius: 999px;
+  background: var(--safic-fondo);
   font-size: 12px;
-  font-weight: 800;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: #e3efec;
-  color: #0b4a47;
 }
 
-.conciliacion__conteo--pendiente {
-  background: #fff1dc;
-  color: #8a3f0a;
+.conc__lineas {
+  overflow: hidden;
 }
 
-.conciliacion__desplazable {
-  overflow-x: auto;
-}
-
-.conciliacion__fila {
+.conc__linea {
   display: grid;
-  grid-template-columns: 70px 1fr 100px 1fr 190px;
-  align-items: center;
+  grid-template-columns: 70px 1fr 120px auto;
   gap: 12px;
+  align-items: center;
   padding: 12px 18px;
-  border-bottom: 1px solid var(--safic-linea-2);
+  border-top: 1px solid var(--safic-borde);
   font-size: 14px;
-  background: #ffffff;
-  min-width: 720px;
 }
 
-.conciliacion__fila--pendiente {
-  background: #fffcf6;
+.conc__linea:first-child {
+  border-top: none;
 }
 
-.conciliacion__desc {
-  min-width: 0;
-}
-
-.conciliacion__mono {
-  font-weight: 700;
-  font-family: ui-monospace, Menlo, monospace;
-  font-size: 13px;
-}
-
-.conciliacion__monto {
+.conc__monto {
   text-align: right;
   font-weight: 800;
-  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
-.conciliacion__monto--ingreso {
+.conc__monto--entra {
   color: #0b4a47;
 }
 
-.conciliacion__monto--egreso {
-  color: #9b1c12;
-}
-
-.conciliacion__propuesta {
-  font-size: 13px;
-  color: var(--safic-texto-2);
-}
-
-.conciliacion__accion {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-}
-
-.conciliacion__confirmar.q-btn {
-  min-height: 38px;
-  padding: 0 14px;
-  border-radius: 9px;
-  font-size: 13px;
-  font-weight: 700;
-}
-
-.conciliacion__hecho {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  font-weight: 700;
-  color: #0b4a47;
+.conc__accion {
+  min-width: 120px;
   text-align: right;
 }
 
-.conciliacion__check {
-  font-variation-settings: 'wght' 700;
+.conc__vacio-lista {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 32px 16px;
+  text-align: center;
 }
 
-.conciliacion__nota {
-  padding: 12px 18px;
-  font-size: 13px;
+.conc__cuadre {
+  flex: 0 0 340px;
+  max-width: 100%;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.conc__h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.conc__valores {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px 10px;
+  margin: 0;
+  font-size: 14px;
+}
+
+.conc__valores dt {
   color: var(--safic-texto-suave);
 }
 
-.conciliacion__cuadre {
-  width: 380px;
-  flex-shrink: 0;
-  padding: 20px 22px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  font-size: 14px;
+.conc__valores dd {
+  margin: 0;
+  text-align: right;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
 }
 
-.conciliacion__cuadre h2 {
-  margin: 0 0 6px 0;
-  font-size: 16px;
-  line-height: 1.4;
+.conc__valores .conc__total {
+  padding-top: 8px;
+  border-top: 1px solid var(--safic-borde);
+  color: inherit;
   font-weight: 800;
 }
 
-.conciliacion__linea {
-  display: flex;
-  gap: 8px;
+.conc__dif--exito {
+  color: #0b4a47;
 }
 
-.conciliacion__linea span:first-child {
-  flex-grow: 1;
-  color: var(--safic-texto-2);
+.conc__dif--error {
+  color: #9b1c12;
 }
 
-.conciliacion__linea--total {
-  font-weight: 800;
+.conc__nota {
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
 }
 
-.conciliacion__linea--total span:first-child {
-  color: var(--safic-texto);
-}
-
-.conciliacion__linea--borde {
-  border-top: 1px solid var(--safic-linea);
-  padding-top: 10px;
-}
-
-.conciliacion__diferencia {
-  margin-top: 6px;
-  border-radius: 12px;
-  padding: 12px 14px;
-  background: #fff1dc;
-  color: #8a3f0a;
-}
-
-.conciliacion__diferencia--ok {
+.conc__nota--exito {
   background: #e3efec;
   color: #0b4a47;
 }
 
-.conciliacion__diferencia-etiqueta {
-  font-size: 12px;
-  font-weight: 700;
+.conc__nota--error {
+  background: #fde8e6;
+  color: #7f1810;
 }
 
-.conciliacion__diferencia-valor {
-  font-size: 26px;
-  line-height: 1.35;
-  font-weight: 800;
-}
-
-.conciliacion__diferencia-nota {
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.conciliacion__ajuste.q-btn {
-  min-height: 46px;
-  border-radius: 10px;
-  border: 1px solid var(--safic-borde-2);
-  background: #ffffff;
-  color: var(--safic-texto);
-  font-size: 14px;
-  font-weight: 700;
-}
-
-.conciliacion__cerrar.q-btn {
-  min-height: 48px;
-  border-radius: 10px;
-  font-size: 15px;
-  font-weight: 700;
-  background: var(--q-primary);
-  color: #ffffff;
-}
-
-.conciliacion__cerrar--bloqueado.q-btn {
-  background: var(--safic-borde);
-  color: var(--safic-texto-tenue);
-}
-
-.conciliacion__cerrar--bloqueado.q-btn.disabled {
-  opacity: 1 !important;
-}
-
-@media (max-width: 1023px) {
-  .conciliacion__cuerpo {
-    flex-direction: column;
-  }
-
-  .conciliacion__cuadre {
-    width: auto;
-  }
-}
-
-@media (max-width: 599px) {
-  .conciliacion.safic-main {
-    padding: 20px 16px;
-  }
-
-  .conciliacion__cuenta {
-    max-width: 100%;
-  }
+.conc__nota--info {
+  background: #f1efe8;
+  color: #3d3a33;
 }
 </style>

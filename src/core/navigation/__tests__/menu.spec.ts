@@ -35,8 +35,9 @@ describe('menú lateral', () => {
   it('las vistas previas solo aparecen si se piden', () => {
     const sin = filtrarMenu(MENU_BASE, []).map((i) => i.id);
     const con = filtrarMenu(MENU_BASE, [], { vistasPrevias: true }).map((i) => i.id);
-    expect(sin).not.toContain('finanzas');
-    expect(con).toContain('finanzas');
+    // Áreas comunes aún no tiene API: solo se ve en vista previa (Finanzas ya es real)
+    expect(sin).not.toContain('areas');
+    expect(con).toContain('areas');
   });
 
   it('no modifica el menú original', () => {
