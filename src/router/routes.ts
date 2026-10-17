@@ -226,12 +226,12 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/modules/garita/pages/BitacoraPage.vue'),
         meta: { permiso: 'garita.bitacora', titulo: 'Bitácora de garita' },
       },
-      previa(
-        'comunicacion/anuncios',
-        'comunicacion-anuncios',
-        'Anuncios',
-        () => import('@/modules/comunicacion/pages/AnunciosPage.vue'),
-      ),
+      {
+        path: 'comunicacion/anuncios',
+        name: 'comunicacion-anuncios',
+        component: () => import('@/modules/comunicacion/pages/AnunciosPage.vue'),
+        meta: { permiso: 'anuncios.publicar', titulo: 'Anuncios' },
+      },
       previa(
         'comunicacion/incidencias',
         'comunicacion-incidencias',
@@ -451,6 +451,12 @@ const routes: RouteRecordRaw[] = [
           sinPestanas: true,
           menuActivo: 'app-areas',
         },
+      },
+      {
+        path: 'avisos',
+        name: 'app-avisos',
+        component: () => import('@/modules/app-residente/pages/AvisosPage.vue'),
+        meta: { permiso: 'avisos.propios', titulo: 'Avisos' },
       },
       {
         path: 'visitas',

@@ -183,7 +183,6 @@ export const MENU_BASE: ItemMenu[] = [
         icono: ICONOS.anuncios,
         ruta: 'comunicacion-anuncios',
         permiso: 'anuncios.publicar',
-        vistaPrevia: true,
       },
       {
         id: 'comunicacion.incidencias',
@@ -357,6 +356,13 @@ export const MENU_APP_RESIDENTE: ItemMenu[] = [
     icono: ICONOS.reservasHoy,
     ruta: 'app-areas',
     permiso: 'reservas.propias',
+  },
+  {
+    id: 'app.avisos',
+    etiqueta: 'Avisos',
+    icono: ICONOS.avisos,
+    ruta: 'app-avisos',
+    permiso: 'avisos.propios',
   },
   {
     id: 'app.visitas',
