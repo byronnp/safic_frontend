@@ -62,6 +62,59 @@
         </div>
       </div>
 
+      <div class="reglas__subtitulo">MOROSIDAD</div>
+
+      <div class="reglas__fila">
+        <div class="safic-campo">
+          <label for="reglas-gracia" class="safic-campo__etiqueta">Días de gracia</label>
+          <q-input
+            v-model="f.diasGracia"
+            for="reglas-gracia"
+            class="safic-input"
+            outlined
+            inputmode="numeric"
+            hide-bottom-space
+            :error="!!errores.diasGracia"
+            :error-message="errores.diasGracia"
+          />
+        </div>
+        <div class="safic-campo">
+          <label for="reglas-meses" class="safic-campo__etiqueta"
+            >Meses de deuda para restringir</label
+          >
+          <q-input
+            v-model="f.mesesRestriccion"
+            for="reglas-meses"
+            class="safic-input"
+            outlined
+            inputmode="numeric"
+            hide-bottom-space
+            :error="!!errores.mesesRestriccion"
+            :error-message="errores.mesesRestriccion"
+          />
+        </div>
+        <div class="safic-campo">
+          <label for="reglas-aviso" class="safic-campo__etiqueta"
+            >Días de aviso antes de restringir</label
+          >
+          <q-input
+            v-model="f.diasAviso"
+            for="reglas-aviso"
+            class="safic-input"
+            outlined
+            inputmode="numeric"
+            hide-bottom-space
+            :error="!!errores.diasAviso"
+            :error-message="errores.diasAviso"
+          />
+        </div>
+      </div>
+      <div class="reglas__nota">
+        Pasados los días de gracia desde el vencimiento, la unidad está en mora. Al llegar a los
+        meses de deuda se notifica con el detalle y, vencido el aviso, se restringen las áreas
+        comunes (Decreto 462). Visitas, paquetes y seguridad nunca se restringen.
+      </div>
+
       <q-checkbox
         v-model="f.aprobadorPuedePagar"
         label="Quien aprobó una factura también puede pagarla"
@@ -105,7 +158,14 @@ const session = useSessionStore();
 const consulta = useReglasFinanzas();
 const mutacion = useGuardarReglasFinanzas();
 
-const f = reactive<FormularioReglas>({ umbral: '', aprobadorPuedePagar: false, tolerancia: '' });
+const f = reactive<FormularioReglas>({
+  umbral: '',
+  aprobadorPuedePagar: false,
+  tolerancia: '',
+  diasGracia: '',
+  mesesRestriccion: '',
+  diasAviso: '',
+});
 const errores = reactive<ErroresReglas>({});
 const errorGeneral = ref<string | null>(null);
 const guardado = ref(false);
@@ -136,6 +196,9 @@ async function guardar(): Promise<void> {
   guardado.value = false;
   errores.umbral = undefined;
   errores.tolerancia = undefined;
+  errores.diasGracia = undefined;
+  errores.mesesRestriccion = undefined;
+  errores.diasAviso = undefined;
 
   const problemas = validarReglas(f);
   if (Object.keys(problemas).length > 0) {
@@ -156,7 +219,10 @@ async function guardar(): Promise<void> {
     const apiError = aApiError(error);
     errores.umbral = apiError.campo('umbral_segunda_aprobacion');
     errores.tolerancia = apiError.campo('tolerancia_bancaria');
-    if (!errores.umbral && !errores.tolerancia) errorGeneral.value = apiError.mensaje;
+    errores.diasGracia = apiError.campo('dias_gracia');
+    errores.mesesRestriccion = apiError.campo('meses_restriccion');
+    errores.diasAviso = apiError.campo('dias_aviso_restriccion');
+    if (!Object.values(errores).some(Boolean)) errorGeneral.value = apiError.mensaje;
   }
 }
 </script>
@@ -189,6 +255,19 @@ async function guardar(): Promise<void> {
   flex-direction: column;
   gap: 16px;
   max-width: 560px;
+}
+
+.reglas__subtitulo {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  color: var(--safic-texto-suave);
+}
+
+.reglas__fila {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 14px;
 }
 
 .reglas__ok {

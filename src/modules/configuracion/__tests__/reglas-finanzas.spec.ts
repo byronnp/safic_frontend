@@ -17,6 +17,9 @@ const reglas: ReglasFinanzas = {
   umbral_segunda_aprobacion: '500.00',
   aprobador_puede_pagar: false,
   tolerancia_bancaria: '0.50',
+  dias_gracia: 5,
+  meses_restriccion: 3,
+  dias_aviso_restriccion: 5,
 };
 
 describe('reglas de dinero', () => {
@@ -44,8 +47,28 @@ describe('reglas de dinero', () => {
   it('envía solo lo que cambió', () => {
     expect(cambiosDeReglas(reglas, formularioDeReglas(reglas))).toEqual({});
     expect(
-      cambiosDeReglas(reglas, { umbral: '1200', aprobadorPuedePagar: true, tolerancia: '0,5' }),
+      cambiosDeReglas(reglas, {
+        ...formularioDeReglas(reglas),
+        umbral: '1200',
+        aprobadorPuedePagar: true,
+        tolerancia: '0,5',
+      }),
     ).toEqual({ umbral_segunda_aprobacion: '1200.00', aprobador_puede_pagar: true });
+  });
+
+  it('valida y envía las reglas de morosidad', () => {
+    const base = formularioDeReglas(reglas);
+    expect(base).toMatchObject({ diasGracia: '5', mesesRestriccion: '3', diasAviso: '5' });
+    expect(validarReglas({ ...base, diasGracia: '31' }).diasGracia).toBeDefined();
+    expect(validarReglas({ ...base, mesesRestriccion: '0' }).mesesRestriccion).toBeDefined();
+    expect(validarReglas({ ...base, diasAviso: 'x' }).diasAviso).toBeDefined();
+    expect(
+      validarReglas({ ...base, diasGracia: '0', mesesRestriccion: '12', diasAviso: '30' }),
+    ).toEqual({});
+    expect(cambiosDeReglas(reglas, { ...base, mesesRestriccion: '2', diasGracia: '0' })).toEqual({
+      meses_restriccion: 2,
+      dias_gracia: 0,
+    });
   });
 
   it('usa las rutas del contrato', async () => {

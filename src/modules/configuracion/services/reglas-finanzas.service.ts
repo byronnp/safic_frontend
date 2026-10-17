@@ -6,6 +6,12 @@ export interface ReglasFinanzas {
   umbral_segunda_aprobacion: string;
   aprobador_puede_pagar: boolean;
   tolerancia_bancaria: string;
+  /** Días después del vencimiento antes de considerar la mora. */
+  dias_gracia: number;
+  /** Meses de deuda vencida desde los que se restringen las áreas comunes (Decreto 462). */
+  meses_restriccion: number;
+  /** Días entre la notificación y la restricción. */
+  dias_aviso_restriccion: number;
 }
 
 export const reglasFinanzasService = {

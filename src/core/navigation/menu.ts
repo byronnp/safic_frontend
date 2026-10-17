@@ -94,6 +94,13 @@ export const MENU_BASE: ItemMenu[] = [
         permiso: 'finanzas.ver',
       },
       {
+        id: 'finanzas.morosidad',
+        etiqueta: 'Morosidad',
+        icono: ICONOS.morosidad,
+        ruta: 'finanzas-morosidad',
+        permiso: 'finanzas.ver',
+      },
+      {
         id: 'finanzas.cuentas',
         etiqueta: 'Cuentas por pagar',
         icono: ICONOS.cuentasPorPagar,
