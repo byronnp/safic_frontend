@@ -46,7 +46,18 @@
             <div v-if="r.estado === 'pendiente'" class="mis-reservas__nota">
               La administración responde en 48 horas.
             </div>
-            <div v-if="r.puede_cancelar" class="mis-reservas__acciones">
+            <div v-if="debeAlgo(r.por_pagar) && r.pagar_antes_de" class="mis-reservas__nota">
+              Paga {{ formatoMoneda(r.por_pagar) }} antes del {{ limiteDePago(r.pagar_antes_de) }} o
+              se cancela sola.
+            </div>
+            <div v-if="debeAlgo(r.por_pagar) || r.puede_cancelar" class="mis-reservas__acciones">
+              <router-link
+                v-if="debeAlgo(r.por_pagar)"
+                :to="{ name: 'app-mi-cuenta' }"
+                class="mis-reservas__pagar"
+              >
+                Pagar
+              </router-link>
               <button
                 type="button"
                 class="mis-reservas__cancelar"
@@ -70,6 +81,7 @@
               <div class="col-grow">
                 <div class="mis-reservas__area">{{ r.area }}</div>
                 <div class="mis-reservas__cuando">{{ cuando(r) }}</div>
+                <div v-if="r.motivo" class="mis-reservas__cuando">{{ r.motivo }}</div>
               </div>
               <EstadoBadge :tono="estadoDeReserva(r).tono">{{
                 estadoDeReserva(r).texto
@@ -90,9 +102,16 @@ import AppEncabezado from '@/components/app/AppEncabezado.vue';
 import EstadoBadge from '@/components/EstadoBadge.vue';
 import { aApiError } from '@/core/api/errors';
 import { useCancelarReserva, useMisReservas } from '@/modules/reservas/composables/useReservas';
-import { cuando, estadoDeReserva, separarReservas } from '@/modules/reservas/reservas.logica';
+import {
+  cuando,
+  debeAlgo,
+  estadoDeReserva,
+  limiteDePago,
+  separarReservas,
+} from '@/modules/reservas/reservas.logica';
 import type { MiReserva } from '@/modules/reservas/services/reservas.service';
 import { useSessionStore } from '@/stores/session';
+import { formatoMoneda } from '@/utils/formato';
 
 const $q = useQuasar();
 const session = useSessionStore();
@@ -204,6 +223,19 @@ function pedirCancelacion(r: MiReserva): void {
 .mis-reservas__acciones {
   display: flex;
   gap: 8px;
+}
+
+.mis-reservas__pagar {
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: 10px;
+  background: var(--q-primary);
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  text-decoration: none;
 }
 
 .mis-reservas__cancelar {

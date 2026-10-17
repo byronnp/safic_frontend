@@ -76,8 +76,18 @@ export const ETIQUETA_FRANJA: Record<Franja['estado'], string> = {
   cerrada: 'Cerrado',
 };
 
+export const debeAlgo = (porPagar: string | undefined): boolean => aCentavos(porPagar ?? '0') > 0;
+
+/** «vie 16 oct, 14:00» a partir de «2026-10-16T14:00». */
+export function limiteDePago(iso: string): string {
+  const [dia = '', hora = ''] = iso.split('T');
+  return `${fechaCorta(dia).toLowerCase()}, ${hora}`;
+}
+
 /** Estado que ve el residente: una confirmada que ya pasó es «Finalizada». */
-export function estadoDeReserva(r: Pick<MiReserva, 'estado' | 'proxima'>): {
+export function estadoDeReserva(
+  r: Pick<MiReserva, 'estado' | 'proxima'> & Partial<Pick<MiReserva, 'por_pagar'>>,
+): {
   texto: string;
   tono: Tono;
 } {
@@ -89,6 +99,9 @@ export function estadoDeReserva(r: Pick<MiReserva, 'estado' | 'proxima'>): {
     vencida: { texto: 'Vencida', tono: 'neutro' },
   };
   if (r.estado === 'confirmada' && !r.proxima) return { texto: 'Finalizada', tono: 'neutro' };
+  if (r.estado === 'confirmada' && debeAlgo(r.por_pagar)) {
+    return { texto: 'Confirmada · falta pagar', tono: 'alerta' };
+  }
   return mapa[r.estado];
 }
 
