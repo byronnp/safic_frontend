@@ -349,8 +349,8 @@ export const MENU_APP_RESIDENTE: ItemMenu[] = [
     id: 'app.reservas',
     etiqueta: 'Reservas',
     icono: ICONOS.reservasHoy,
-    ruta: 'app-reservar',
-    vistaPrevia: true,
+    ruta: 'app-areas',
+    permiso: 'reservas.propias',
   },
   {
     id: 'app.visitas',
