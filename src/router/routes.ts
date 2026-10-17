@@ -164,6 +164,12 @@ const routes: RouteRecordRaw[] = [
         meta: { permiso: 'finanzas.ver', titulo: 'Gastos recurrentes' },
       },
       {
+        path: 'finanzas/caja-chica',
+        name: 'finanzas-caja-chica',
+        component: () => import('@/modules/finanzas/pages/CajaChicaPage.vue'),
+        meta: { permiso: 'cajachica.registrar', titulo: 'Caja chica' },
+      },
+      {
         path: 'finanzas/cuentas-por-pagar',
         name: 'finanzas-cuentas-por-pagar',
         component: () => import('@/modules/finanzas/pages/CuentasPorPagarPage.vue'),
