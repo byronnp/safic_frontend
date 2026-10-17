@@ -48,6 +48,7 @@ export const ICONOS = {
   morosidad: 'sym_r_notifications_active',
   reportes: 'sym_r_bar_chart',
   recurrentes: 'sym_r_autorenew',
+  cajaChica: 'sym_r_savings',
   conciliacion: 'sym_r_account_balance',
   cuentasPorPagar: 'sym_r_payments',
   agenda: 'sym_r_calendar_month',

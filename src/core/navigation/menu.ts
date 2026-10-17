@@ -122,6 +122,13 @@ export const MENU_BASE: ItemMenu[] = [
         permiso: 'finanzas.ver',
       },
       {
+        id: 'finanzas.caja-chica',
+        etiqueta: 'Caja chica',
+        icono: ICONOS.cajaChica,
+        ruta: 'finanzas-caja-chica',
+        permiso: 'cajachica.registrar',
+      },
+      {
         id: 'finanzas.proveedores',
         etiqueta: 'Proveedores',
         icono: ICONOS.proveedores,
