@@ -163,7 +163,6 @@ export const MENU_BASE: ItemMenu[] = [
         icono: ICONOS.areasReglas,
         ruta: 'areas-reglas',
         permiso: 'reservas.gestionar',
-        vistaPrevia: true,
       },
     ],
   },
