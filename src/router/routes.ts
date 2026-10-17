@@ -205,12 +205,12 @@ const routes: RouteRecordRaw[] = [
         'Agenda de reservas',
         () => import('@/modules/reservas/pages/AgendaPage.vue'),
       ),
-      previa(
-        'areas-comunes/areas',
-        'areas-reglas',
-        'Configurar área',
-        () => import('@/modules/reservas/pages/AreasPage.vue'),
-      ),
+      {
+        path: 'areas-comunes/areas',
+        name: 'areas-reglas',
+        component: () => import('@/modules/reservas/pages/AreasPage.vue'),
+        meta: { permiso: 'reservas.gestionar', titulo: 'Áreas y reglas' },
+      },
 
       // Fase 4 · Seguridad y comunicación
       previa(
