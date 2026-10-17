@@ -82,6 +82,7 @@ Pantallas que pedían los documentos de arquitectura y no tenían mockup. Las ru
 | F1PlataformaRegistros.dc.html | Super admin · Registros del sistema | `/plataforma/registros` | modules/plataforma/pages/RegistrosSistemaPage.vue |
 | F1EditarCondominio.dc.html | Super admin · Editar condominio (datos, ubicación, plan y unidades, administrador, estado) | `/plataforma/condominios/:id/editar` | modules/plataforma/pages/EditarCondominioPage.vue |
 | F1PlataformaSolicitudes.dc.html | Super admin · Solicitudes de rol | `/plataforma/solicitudes-rol` | modules/plataforma/pages/SolicitudesRolPage.vue |
+| F1PlataformaBitacora.dc.html | Super admin · Bitácora (auditoría de cambios y eventos de seguridad) | `/plataforma/bitacora` | modules/plataforma/pages/BitacoraPage.vue |
 | F6Reportes.dc.html | Super admin y contador de plataforma · Reportes contables | `/plataforma/reportes` | modules/plataforma/pages/ReportesContablesPage.vue |
 | F3Areas.dc.html | Residente · Áreas comunes | `/app/areas` | modules/app-residente/pages/AreasPage.vue |
 | F3MisReservas.dc.html | Residente · Mis reservas | `/app/reservas` | modules/app-residente/pages/MisReservasPage.vue |
