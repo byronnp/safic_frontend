@@ -5,10 +5,12 @@ import { api } from '@/core/api/client';
 import { clavesReservas } from '../composables/useReservas';
 import {
   diaConLugar,
+  debeAlgo,
   diaDeTira,
   estadoDeReserva,
   fechaCorta,
   iconoDeArea,
+  limiteDePago,
   resumenAreaResidente,
   separarReservas,
   textoAprobacion,
@@ -44,6 +46,9 @@ const reserva = (extra: Partial<MiReserva> = {}): MiReserva => ({
   garantia: '100.00',
   proxima: true,
   puede_cancelar: true,
+  por_pagar: '0.00',
+  pagar_antes_de: null,
+  motivo: null,
   ...extra,
 });
 
@@ -104,6 +109,16 @@ describe('reservas del residente', () => {
     ]);
     expect(proximas.map((r) => r.id)).toEqual([1]);
     expect(historial.map((r) => r.id)).toEqual([2]);
+  });
+
+  it('avisa que falta pagar y hasta cuándo', () => {
+    const debe = reserva({ por_pagar: '150.00', pagar_antes_de: '2026-10-16T14:00' });
+    expect(estadoDeReserva(debe)).toEqual({ texto: 'Confirmada · falta pagar', tono: 'alerta' });
+    expect(debeAlgo(debe.por_pagar)).toBe(true);
+    expect(debeAlgo('0.00')).toBe(false);
+    expect(limiteDePago('2026-10-16T14:00')).toBe('vie 16 oct, 14:00');
+    // Si ya pasó, es «Finalizada» aunque deba algo
+    expect(estadoDeReserva({ ...debe, proxima: false }).texto).toBe('Finalizada');
   });
 
   it('el servicio usa las rutas del contrato', async () => {

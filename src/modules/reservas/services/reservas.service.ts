@@ -47,6 +47,12 @@ export interface MiReserva {
   garantia: string;
   proxima: boolean;
   puede_cancelar: boolean;
+  /** Lo que falta pagar del cobro de la reserva («0.00» si nada). */
+  por_pagar: string;
+  /** Límite para pagar, hora local «YYYY-MM-DDTHH:MM»; pasado, la reserva se cancela sola. */
+  pagar_antes_de: string | null;
+  /** Motivo del rechazo o de la cancelación. */
+  motivo: string | null;
 }
 
 export interface NuevaReserva {
