@@ -1,12 +1,12 @@
 <template>
-  <!-- Indicador de conexión de la garita: sin red, el QR se valida con la copia local. -->
+  <!-- Indicador de conexión de la garita. La validación sin red (copia local) llega más adelante: por ahora hace falta conexión. -->
   <span
     class="garita-conexion"
     :class="{ 'garita-conexion--sin-red': !enLinea }"
     role="status"
     aria-live="polite"
   >
-    {{ enLinea ? 'En línea' : 'Sin conexión · valida local' }}
+    {{ enLinea ? 'En línea' : 'Sin conexión · no se puede validar' }}
   </span>
 </template>
 

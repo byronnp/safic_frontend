@@ -220,6 +220,12 @@ const routes: RouteRecordRaw[] = [
       },
 
       // Fase 4 · Seguridad y comunicación
+      {
+        path: 'comunicacion/bitacora',
+        name: 'garita-bitacora',
+        component: () => import('@/modules/garita/pages/BitacoraPage.vue'),
+        meta: { permiso: 'garita.bitacora', titulo: 'Bitácora de garita' },
+      },
       previa(
         'comunicacion/anuncios',
         'comunicacion-anuncios',
@@ -479,12 +485,12 @@ const routes: RouteRecordRaw[] = [
     meta: { app: 'guardia' },
     children: [
       { path: '', redirect: { name: 'guardia-garita' } },
-      previa(
-        'garita',
-        'guardia-garita',
-        'Garita',
-        () => import('@/modules/app-guardia/pages/GaritaPage.vue'),
-      ),
+      {
+        path: 'garita',
+        name: 'guardia-garita',
+        component: () => import('@/modules/app-guardia/pages/GaritaPage.vue'),
+        meta: { permiso: 'garita.registrar', titulo: 'Garita' },
+      },
       {
         path: 'directorio',
         name: 'guardia-directorio',

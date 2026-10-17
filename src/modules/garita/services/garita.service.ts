@@ -1,0 +1,127 @@
+import { api } from '@/core/api/client';
+import type { ApiRespuesta } from '@/core/api/types';
+
+/** Tipos del contrato (safic_backend/docs/openapi.yaml · Garita). */
+export type TipoAcceso = 'visita' | 'proveedor' | 'delivery';
+export type AutorizadoPor = 'qr' | 'llamada' | 'app_residente' | 'administracion';
+
+export interface DentroGarita {
+  id: number;
+  nombre: string;
+  tipo: TipoAcceso;
+  unidad: string | null;
+  destino: string | null;
+  placa: string | null;
+  /** «13:40» */
+  desde: string;
+}
+
+export interface EsperadaGarita {
+  id: number;
+  nombre: string;
+  unidad: string | null;
+  placa: string | null;
+  hora_desde: string;
+  hora_hasta: string;
+}
+
+export interface PanelGarita {
+  dentro: DentroGarita[];
+  esperadas: EsperadaGarita[];
+}
+
+export interface ValidacionQr {
+  valido: boolean;
+  /** QR_REVOCADO, QR_YA_USADO, QR_VENCIDO, QR_AUN_NO_VIGENTE, QR_DIA_NO_HABILITADO, QR_FUERA_DE_HORARIO, QR_YA_DENTRO */
+  motivo: string | null;
+  mensaje: string | null;
+  visita: {
+    visitante: string;
+    placa: string | null;
+    unidad: string | null;
+    autorizo: string | null;
+    tipo: 'unica' | 'recurrente';
+    fecha_desde: string;
+    fecha_hasta: string;
+    hora_desde: string;
+    hora_hasta: string;
+    dias_semana: number[] | null;
+  };
+}
+
+export interface IngresoSinQr {
+  tipo: TipoAcceso;
+  nombre: string;
+  documento: string | null;
+  placa: string | null;
+  unidad_codigo: string | null;
+  destino: string | null;
+  autorizado_por: Exclude<AutorizadoPor, 'qr'>;
+}
+
+export interface AccesoBitacora {
+  id: number;
+  nombre: string;
+  tipo: TipoAcceso;
+  unidad: string | null;
+  destino: string | null;
+  autorizado_por: AutorizadoPor;
+  estado: 'dentro' | 'salio';
+  entrada_en: string;
+  salida_en: string | null;
+  registrado_por: string | null;
+}
+
+export interface BitacoraGarita {
+  desde: string;
+  hasta: string;
+  hay_mas: boolean;
+  indicadores: {
+    dentro_ahora: number;
+    proveedores_dentro: number;
+    ingresos_hoy: number;
+    con_qr_hoy: number;
+    sin_anunciar_hoy: number;
+    sin_conexion: number;
+  };
+  accesos: AccesoBitacora[];
+}
+
+export interface FiltrosBitacora {
+  desde: string;
+  hasta: string;
+  tipo: TipoAcceso | null;
+  q: string;
+}
+
+export const garitaService = {
+  async panel(): Promise<PanelGarita> {
+    const { data } = await api.get<ApiRespuesta<PanelGarita>>('/garita/panel');
+    return data.data;
+  },
+
+  async validarQr(token: string): Promise<ValidacionQr> {
+    const { data } = await api.post<ApiRespuesta<ValidacionQr>>('/garita/qr/validar', { token });
+    return data.data;
+  },
+
+  async ingresoConQr(token: string): Promise<void> {
+    await api.post('/garita/accesos', { token });
+  },
+
+  async ingresoSinQr(datos: IngresoSinQr): Promise<void> {
+    await api.post('/garita/accesos', datos);
+  },
+
+  async salida(id: number): Promise<void> {
+    await api.post(`/garita/accesos/${id}/salida`);
+  },
+
+  async bitacora(f: FiltrosBitacora): Promise<BitacoraGarita> {
+    const params: Record<string, string> = { desde: f.desde, hasta: f.hasta };
+    if (f.tipo !== null) params.tipo = f.tipo;
+    if (f.q.trim() !== '') params.q = f.q.trim();
+    const { data } = await api.get<ApiRespuesta<BitacoraGarita>>('/garita/bitacora', { params });
+    return data.data;
+  },
+};
