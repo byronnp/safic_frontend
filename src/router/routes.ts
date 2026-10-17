@@ -158,6 +158,12 @@ const routes: RouteRecordRaw[] = [
         meta: { permiso: 'finanzas.ver', titulo: 'Reportes' },
       },
       {
+        path: 'finanzas/recurrentes',
+        name: 'finanzas-recurrentes',
+        component: () => import('@/modules/finanzas/pages/RecurrentesPage.vue'),
+        meta: { permiso: 'finanzas.ver', titulo: 'Gastos recurrentes' },
+      },
+      {
         path: 'finanzas/cuentas-por-pagar',
         name: 'finanzas-cuentas-por-pagar',
         component: () => import('@/modules/finanzas/pages/CuentasPorPagarPage.vue'),
