@@ -64,6 +64,29 @@
         </div>
       </template>
 
+      <template v-if="paquetesEnGarita.length > 0">
+        <h2 class="mis-visitas__titulo">Paquetes en garita</h2>
+        <div class="app-tarjeta">
+          <div
+            v-for="p in paquetesEnGarita"
+            :key="p.id"
+            class="mis-visitas__fila mis-visitas__fila--ingreso"
+          >
+            <q-icon name="sym_r_inventory_2" size="22px" />
+            <div class="col-grow">
+              <div class="mis-visitas__area">{{ tituloMiPaquete(p) }}</div>
+              <div class="mis-visitas__cuando">
+                Llegó {{ diaDe(p.recibido_en, hoy).toLowerCase() }} {{ horaDe(p.recibido_en) }}
+                <template v-if="p.dias >= 7"> · {{ haceDias(p.dias) }}</template>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="mis-visitas__nota">
+          Retíralo tú, otro ocupante de tu unidad o una persona que autorices; se pide firma.
+        </div>
+      </template>
+
       <template v-if="ingresos.length > 0">
         <h2 class="mis-visitas__titulo">Ingresos a tu unidad</h2>
         <div class="app-tarjeta">
@@ -104,7 +127,9 @@ import AppEncabezado from '@/components/app/AppEncabezado.vue';
 import EstadoBadge from '@/components/EstadoBadge.vue';
 import { aApiError } from '@/core/api/errors';
 import VisitaQrDialog from '@/modules/garita/components/VisitaQrDialog.vue';
+import { useMisPaquetes } from '@/modules/garita/composables/usePaquetes';
 import { useMisVisitas, useRevocarVisita } from '@/modules/garita/composables/useVisitas';
+import { haceDias, tituloMiPaquete } from '@/modules/garita/paquetes.logica';
 import type { VisitaAutorizada } from '@/modules/garita/services/visitas.service';
 import { diaDe, ETIQUETA_AUTORIZO, horaDe } from '@/modules/garita/garita.logica';
 import { cuandoVisita } from '@/modules/garita/visitas.logica';
@@ -120,6 +145,8 @@ const hoy = hoyEcuador();
 const visitas = computed(() => consulta.data.value?.visitas ?? []);
 const unidades = computed(() => consulta.data.value?.unidades ?? []);
 const ingresos = computed(() => consulta.data.value?.ingresos ?? []);
+const paquetes = useMisPaquetes();
+const paquetesEnGarita = computed(() => paquetes.data.value?.en_garita ?? []);
 const antetitulo = computed(() =>
   [unidades.value.map((u) => u.codigo).join(', '), session.condominioActivo?.nombre]
     .filter(Boolean)
