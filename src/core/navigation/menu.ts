@@ -101,6 +101,13 @@ export const MENU_BASE: ItemMenu[] = [
         permiso: 'finanzas.ver',
       },
       {
+        id: 'finanzas.reportes',
+        etiqueta: 'Reportes',
+        icono: ICONOS.reportes,
+        ruta: 'finanzas-reportes',
+        permiso: 'finanzas.ver',
+      },
+      {
         id: 'finanzas.cuentas',
         etiqueta: 'Cuentas por pagar',
         icono: ICONOS.cuentasPorPagar,
