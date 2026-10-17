@@ -627,6 +627,15 @@
       "page": "f1",
       "title": "Super admin · Editar condominio",
       "is_interactive": true
+    },
+    "F1PlataformaBitacora.dc.html": {
+      "x": 13100,
+      "y": 1300,
+      "w": 1440,
+      "h": 900,
+      "page": "f1",
+      "title": "Super admin · Bitácora (auditoría y seguridad)",
+      "is_interactive": true
     }
   },
   "createdOnFiles": {
@@ -839,7 +848,8 @@
     "F5Poder.dc.html",
     "F5MisAsambleas.dc.html",
     "F6Reportes.dc.html",
-    "F1EditarCondominio.dc.html"
+    "F1EditarCondominio.dc.html",
+    "F1PlataformaBitacora.dc.html"
   ],
   "pages": [
     {
