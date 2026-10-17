@@ -473,12 +473,12 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/modules/app-guardia/pages/DirectorioPage.vue'),
         meta: { permiso: 'garita.directorio', titulo: 'Directorio' },
       },
-      previa(
-        'reservas-hoy',
-        'guardia-reservas-hoy',
-        'Reservas de hoy',
-        () => import('@/modules/app-guardia/pages/ReservasHoyPage.vue'),
-      ),
+      {
+        path: 'reservas-hoy',
+        name: 'guardia-reservas-hoy',
+        component: () => import('@/modules/app-guardia/pages/ReservasHoyPage.vue'),
+        meta: { permiso: 'reservas.garita', titulo: 'Reservas de hoy' },
+      },
     ],
   },
 

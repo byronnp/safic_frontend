@@ -20,7 +20,7 @@ export interface ReservaAgenda {
   fecha: string;
   inicio: string;
   fin: string;
-  estado: 'pendiente' | 'confirmada';
+  estado: 'pendiente' | 'confirmada' | 'en_uso';
 }
 
 export interface BloqueoAgenda {
@@ -51,6 +51,9 @@ export interface Solicitud {
   fin: string;
   costo: string;
   garantia: string;
+  /** La unidad no está en mora. */
+  unidad_al_dia: boolean;
+  unidad_restringida: boolean;
   solicitada_en: string;
   vence_en: string;
 }

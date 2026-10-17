@@ -94,6 +94,8 @@ export function estadoDeReserva(
   const mapa: Record<EstadoReserva, { texto: string; tono: Tono }> = {
     pendiente: { texto: 'Pendiente de aprobación', tono: 'alerta' },
     confirmada: { texto: 'Confirmada', tono: 'exito' },
+    en_uso: { texto: 'En uso', tono: 'info' },
+    finalizada: { texto: 'Finalizada', tono: 'neutro' },
     rechazada: { texto: 'Rechazada', tono: 'error' },
     cancelada: { texto: 'Cancelada', tono: 'neutro' },
     vencida: { texto: 'Vencida', tono: 'neutro' },

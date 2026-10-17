@@ -14,6 +14,13 @@
 
     <template v-if="!hecho">
       <div class="reservar-cuerpo">
+        <div v-if="restringida" class="reservar-mora" role="alert">
+          <strong>Reservas restringidas por cuotas vencidas.</strong> Paga o solicita un convenio y
+          se habilitan en máximo 24 horas.
+          <router-link :to="{ name: 'app-mi-cuenta' }" class="reservar-mora__enlace">
+            Ver mi cuenta
+          </router-link>
+        </div>
         <div v-if="errorGeneral" class="reservar-mora" role="alert">{{ errorGeneral }}</div>
 
         <div v-if="areasConsulta.isError.value" class="safic-alerta" role="alert">
@@ -295,20 +302,30 @@ const resumenCosto = computed(() => {
 });
 
 const reservando = useReservarArea();
+// Una unidad en mora no reserva áreas restringibles (Decreto 462); la API lo exige igual
+const restringida = computed(
+  () =>
+    (area.value?.restringible_por_mora ?? false) &&
+    (unidades.value.find((u) => u.unidad_id === unidadId.value)?.restringida ?? false),
+);
+
 const listo = computed(
   () =>
     area.value !== null &&
     unidadId.value !== null &&
     horarioIndice.value >= 0 &&
     acepta.value &&
+    !restringida.value &&
     !reservando.isPending.value,
 );
 const etiquetaBoton = computed(() =>
-  reservando.isPending.value
-    ? 'Reservando…'
-    : area.value?.requiere_aprobacion
-      ? 'Solicitar reserva'
-      : 'Reservar',
+  restringida.value
+    ? 'Reservas restringidas'
+    : reservando.isPending.value
+      ? 'Reservando…'
+      : area.value?.requiere_aprobacion
+        ? 'Solicitar reserva'
+        : 'Reservar',
 );
 
 const hecho = computed(() => hecha.value !== null);

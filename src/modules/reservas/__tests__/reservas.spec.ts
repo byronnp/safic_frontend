@@ -27,6 +27,7 @@ const salon: AreaReservable = {
   estado: 'disponible',
   mantenimiento_hasta: null,
   requiere_aprobacion: true,
+  restringible_por_mora: true,
   capacidad: 60,
   duracion_min_horas: 2,
   duracion_max_horas: 6,

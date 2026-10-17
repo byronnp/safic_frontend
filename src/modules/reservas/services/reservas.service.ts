@@ -9,6 +9,8 @@ export interface AreaReservable {
   estado: 'disponible' | 'mantenimiento';
   mantenimiento_hasta: string | null;
   requiere_aprobacion: boolean;
+  /** Si la unidad en mora no puede reservarla (Decreto 462). */
+  restringible_por_mora: boolean;
   capacidad: number | null;
   duracion_min_horas: number;
   duracion_max_horas: number;
@@ -18,7 +20,7 @@ export interface AreaReservable {
 }
 
 export interface AreasReservables {
-  unidades: { unidad_id: number; codigo: string }[];
+  unidades: { unidad_id: number; codigo: string; restringida: boolean }[];
   areas: AreaReservable[];
 }
 
@@ -33,7 +35,8 @@ export interface DiaDisponible {
   franjas: Franja[];
 }
 
-export type EstadoReserva = 'pendiente' | 'confirmada' | 'rechazada' | 'cancelada' | 'vencida';
+export type EstadoReserva =
+  'pendiente' | 'confirmada' | 'en_uso' | 'finalizada' | 'rechazada' | 'cancelada' | 'vencida';
 
 export interface MiReserva {
   id: number;

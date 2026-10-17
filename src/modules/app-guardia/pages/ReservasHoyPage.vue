@@ -2,27 +2,44 @@
   <div class="app-pagina">
     <AppEncabezado
       class="reservas-hoy-encabezado"
-      :antetitulo="`${RESERVAS_HOY_TURNO.garita} · ${RESERVAS_HOY_TURNO.turno}`"
+      :antetitulo="session.condominioActivo?.nombre ?? ''"
     >
       <template #titulo>
         <div class="reservas-hoy-titulo">
           <h1 class="reservas-hoy-titulo__texto">Reservas de hoy</h1>
-          <div class="reservas-hoy-titulo__fecha">{{ RESERVAS_HOY_TURNO.fecha }}</div>
+          <div v-if="consulta.data.value" class="reservas-hoy-titulo__fecha">
+            {{ fechaCorta(consulta.data.value.fecha) }}
+          </div>
         </div>
       </template>
     </AppEncabezado>
 
     <div class="app-cuerpo reservas-hoy-cuerpo">
-      <ReservasHoyTarjeta
-        v-for="reserva in reservas"
-        :key="reserva.id"
-        :reserva="reserva"
-        :abierta="abierta === reserva.id"
-        @ingreso="registrarIngreso(reserva.id)"
-        @abrir="abierta = reserva.id"
-        @entregar="(danos) => confirmarEntrega(reserva.id, danos !== null)"
-      />
-      <div v-if="!reservas.length" class="reservas-hoy-vacio">No hay reservas para hoy.</div>
+      <div v-if="mensaje" class="reservas-hoy-resultado" role="status">{{ mensaje }}</div>
+      <div v-if="errorAccion" class="safic-alerta" role="alert">{{ errorAccion }}</div>
+
+      <div v-if="consulta.isError.value" class="safic-alerta" role="alert">
+        {{ consulta.error.value?.mensaje }}
+        <q-btn flat no-caps dense label="Reintentar" @click="consulta.refetch()" />
+      </div>
+
+      <template v-else-if="consulta.isPending.value">
+        <q-skeleton v-for="i in 3" :key="i" type="rect" height="96px" aria-busy="true" />
+      </template>
+
+      <template v-else>
+        <ReservasHoyTarjeta
+          v-for="reserva in reservas"
+          :key="reserva.id"
+          :reserva="reserva"
+          :abierta="abierta === reserva.id"
+          :ocupado="ocupado"
+          @ingreso="registrarIngreso(reserva)"
+          @abrir="abierta = reserva.id"
+          @entregar="(danos) => confirmarEntrega(reserva, danos)"
+        />
+        <div v-if="!reservas.length" class="reservas-hoy-vacio">No hay reservas para hoy.</div>
+      </template>
       <div class="reservas-hoy-nota">
         El guardia no recibe pagos: solo aparecen reservas pagadas o gratuitas.
       </div>
@@ -31,45 +48,99 @@
 </template>
 
 <script setup lang="ts">
-import { useQuasar } from 'quasar';
-import { ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 import AppEncabezado from '@/components/app/AppEncabezado.vue';
-import ReservasHoyTarjeta from '@/modules/app-guardia/components/ReservasHoyTarjeta.vue';
-import type { ReservaHoy, ReservaHoyEstado } from '@/modules/app-guardia/demo/reservas-hoy';
-import {
-  RESERVAS_HOY,
-  RESERVAS_HOY_ABIERTA,
-  RESERVAS_HOY_TURNO,
-} from '@/modules/app-guardia/demo/reservas-hoy';
+import { aApiError } from '@/core/api/errors';
+import { fechaCorta } from '@/modules/reservas/reservas.logica';
+import { useSessionStore } from '@/stores/session';
 
-const $q = useQuasar();
+import ReservasHoyTarjeta from '../components/ReservasHoyTarjeta.vue';
+import { useRecibirArea, useRegistrarIngreso, useReservasHoy } from '../composables/useReservasHoy';
+import type { ReservaHoy } from '../services/reservas-hoy.service';
 
-const reservas = ref<ReservaHoy[]>(RESERVAS_HOY.map((r) => ({ ...r })));
-const abierta = ref<string>(RESERVAS_HOY_ABIERTA);
+const CONFLICTOS = [
+  'RESERVA_NO_CONFIRMADA',
+  'RESERVA_NO_EN_USO',
+  'RESERVA_SIN_PAGAR',
+  'RESERVA_NO_ES_DE_HOY',
+  'UNIDAD_RESTRINGIDA',
+];
 
-function cambiarEstado(id: string, estado: ReservaHoyEstado): void {
-  reservas.value = reservas.value.map((r) => (r.id === id ? { ...r, estado } : r));
+const session = useSessionStore();
+const consulta = useReservasHoy();
+const ingreso = useRegistrarIngreso();
+const entrega = useRecibirArea();
+
+const reservas = computed(() => consulta.data.value?.reservas ?? []);
+const abierta = ref<number | null>(null);
+const mensaje = ref<string | null>(null);
+const errorAccion = ref<string | null>(null);
+const ocupado = computed(() => ingreso.isPending.value || entrega.isPending.value);
+
+// Otro condominio: nada de lo abierto ni avisado queda
+watch(
+  () => session.condominioId,
+  () => {
+    abierta.value = null;
+    mensaje.value = null;
+    errorAccion.value = null;
+  },
+);
+
+function fallar(error: unknown): void {
+  mensaje.value = null;
+  const apiError = aApiError(error);
+  // Un conflicto de estado (otra persona ya lo cambió, quedó restringida, falta pago): se cierra el panel y se vuelve a leer la lista
+  if (CONFLICTOS.includes(apiError.codigo)) {
+    abierta.value = null;
+    void consulta.refetch();
+  }
+  // Sin respuesta o 5xx el cambio pudo hacerse: se avisa para no repetirlo a ciegas
+  errorAccion.value =
+    apiError.estado === 0 || apiError.estado >= 500
+      ? `${apiError.mensaje} Revisa la lista antes de reintentar: el cambio pudo hacerse.`
+      : apiError.mensaje;
 }
 
-function registrarIngreso(id: string): void {
-  cambiarEstado(id, 'en_uso');
-  $q.notify({ type: 'positive', message: 'Ingreso registrado.' });
-}
-
-function confirmarEntrega(id: string, conDanos: boolean): void {
-  cambiarEstado(id, 'finalizada');
-  abierta.value = '';
-  $q.notify({
-    type: 'positive',
-    message: conDanos
-      ? 'Área recibida. Se envió el reporte de daños a la administración.'
-      : 'Área recibida sin novedades.',
+function registrarIngreso(r: ReservaHoy): void {
+  if (ocupado.value) return;
+  errorAccion.value = null;
+  ingreso.mutate(r.id, {
+    onSuccess: () => (mensaje.value = `Ingreso registrado: ${r.area}, ${r.unidad}.`),
+    onError: fallar,
   });
+}
+
+function confirmarEntrega(r: ReservaHoy, danos: string | null): void {
+  if (ocupado.value) return;
+  errorAccion.value = null;
+  entrega.mutate(
+    { id: r.id, danos },
+    {
+      onSuccess: () => {
+        abierta.value = null;
+        mensaje.value =
+          danos === null
+            ? 'Área recibida sin novedades.'
+            : 'Área recibida. Se envió el reporte de daños a la administración.';
+      },
+      onError: fallar,
+    },
+  );
 }
 </script>
 
 <style scoped>
+.reservas-hoy-resultado {
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: #e3efec;
+  color: #0b4a47;
+  font-weight: 700;
+  font-size: 14px;
+}
+
 .app-encabezado.reservas-hoy-encabezado {
   padding: 22px 16px 18px;
 }

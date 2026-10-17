@@ -105,6 +105,13 @@
             <strong>{{ fechaCorta(p.fecha) }}</strong> · {{ p.inicio }}–{{ p.fin }}
           </div>
           <div class="agenda__sol-texto">{{ p.unidad }} · {{ p.solicitante ?? 'Sin nombre' }}</div>
+          <div v-if="p.unidad_restringida" class="agenda__sol-mora" role="alert">
+            Unidad restringida por mora: no se puede aprobar
+          </div>
+          <div v-else-if="!p.unidad_al_dia" class="agenda__sol-mora">Unidad en mora</div>
+          <div v-else class="agenda__sol-ok">
+            <q-icon name="sym_r_check" size="16px" class="agenda__sol-ok-icono" />Unidad al día
+          </div>
           <div v-if="resumenCobro(p)" class="agenda__sol-nota">
             Al aprobar se generan los cargos: {{ resumenCobro(p) }}
           </div>
@@ -112,7 +119,12 @@
             <button type="button" class="agenda__rechazar" :disabled="ocupado" @click="rechazar(p)">
               Rechazar
             </button>
-            <button type="button" class="agenda__aprobar" :disabled="ocupado" @click="aprobar(p)">
+            <button
+              type="button"
+              class="agenda__aprobar"
+              :disabled="ocupado || p.unidad_restringida"
+              @click="aprobar(p)"
+            >
               Aprobar
             </button>
           </div>
@@ -319,6 +331,12 @@ button.agenda__item {
   text-align: left;
   font-family: inherit;
   cursor: pointer;
+}
+
+.agenda__sol-mora {
+  font-size: 12px;
+  font-weight: 700;
+  color: #b3261e;
 }
 
 .agenda__error {
