@@ -154,8 +154,7 @@ export const MENU_BASE: ItemMenu[] = [
         etiqueta: 'Agenda',
         icono: ICONOS.agenda,
         ruta: 'areas-agenda',
-        permiso: 'reservas.ver',
-        vistaPrevia: true,
+        permiso: 'reservas.gestionar',
       },
       {
         id: 'areas.reglas',

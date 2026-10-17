@@ -1,45 +1,76 @@
 <template>
   <q-page class="safic-main agenda">
-    <PaginaEncabezado miga="Áreas comunes / Agenda" :titulo="SEMANA_AGENDA">
+    <PaginaEncabezado miga="Áreas comunes / Agenda" :titulo="titulo">
       <template #acciones>
-        <button type="button" class="agenda__nav" aria-label="Semana anterior">
+        <button type="button" class="agenda__nav" aria-label="Semana anterior" @click="mover(-7)">
           <q-icon name="sym_r_chevron_left" size="20px" />
         </button>
-        <button type="button" class="agenda__boton">Hoy</button>
-        <button type="button" class="agenda__nav" aria-label="Semana siguiente">
+        <button type="button" class="agenda__boton" @click="irAHoy">Hoy</button>
+        <button type="button" class="agenda__nav" aria-label="Semana siguiente" @click="mover(7)">
           <q-icon name="sym_r_chevron_right" size="20px" />
         </button>
-        <button type="button" class="agenda__boton agenda__boton--primario" @click="bloquear">
+        <button
+          v-if="puedeGestionar"
+          type="button"
+          class="agenda__boton agenda__boton--primario"
+          :disabled="areas.length === 0"
+          @click="bloquear"
+        >
           Bloquear área
         </button>
       </template>
     </PaginaEncabezado>
 
+    <div v-if="resultado" class="agenda__resultado" role="status">{{ resultado }}</div>
+    <div v-if="errorAccion" class="safic-alerta agenda__error" role="alert">{{ errorAccion }}</div>
+
+    <div v-if="consulta.isError.value" class="safic-alerta" role="alert">
+      {{ consulta.error.value?.mensaje }}
+      <q-btn flat no-caps dense label="Reintentar" @click="consulta.refetch()" />
+    </div>
+
     <div class="agenda__cuerpo">
-      <section class="agenda__calendario" aria-label="Calendario de la semana">
+      <section
+        class="agenda__calendario"
+        aria-label="Calendario de la semana"
+        :aria-busy="consulta.isPending.value"
+      >
         <div class="agenda__scroll">
           <div class="agenda__grilla agenda__grilla--cabecera">
             <div class="agenda__cab-area">ÁREA</div>
-            <div v-for="d in DIAS_AGENDA" :key="d.dow" class="agenda__cab-dia">
+            <div v-for="d in dias" :key="d.fecha" class="agenda__cab-dia">
               <div class="agenda__dow">{{ d.dow }}</div>
               <div class="agenda__num">{{ d.num }}</div>
             </div>
           </div>
-          <div v-for="fila in grilla" :key="fila.area" class="agenda__grilla agenda__fila">
+
+          <div v-if="consulta.isPending.value" class="q-pa-md">
+            <q-skeleton v-for="i in 4" :key="i" type="rect" height="64px" class="q-mb-sm" />
+          </div>
+          <div v-else-if="areas.length === 0" class="agenda__vacio">
+            Aún no hay áreas reservables. Márcalas como reservables en Configuración › Amenidades y
+            fija sus reglas en Áreas y reglas.
+          </div>
+          <div v-for="fila in grilla" :key="fila.area.id" class="agenda__grilla agenda__fila">
             <div class="agenda__area">
-              <div class="agenda__area-nombre">{{ fila.area }}</div>
-              <div class="agenda__area-meta">{{ fila.meta }}</div>
+              <div class="agenda__area-nombre">{{ fila.area.nombre }}</div>
+              <div class="agenda__area-meta">
+                {{ fila.area.en_mantenimiento ? 'En mantenimiento' : metaDeArea(fila.area) }}
+              </div>
             </div>
             <div v-for="(celda, i) in fila.celdas" :key="i" class="agenda__celda">
-              <div
-                v-for="(it, j) in celda"
-                :key="j"
+              <button
+                v-for="it in celda"
+                :key="it.clave"
+                type="button"
                 class="agenda__item"
-                :class="`agenda__item--${it.k}`"
+                :class="`agenda__item--${it.tipo}`"
+                :disabled="!puedeGestionar"
+                @click="abrirItem(fila.area, it)"
               >
                 <div class="agenda__item-hora">{{ it.hora }}</div>
-                <div>{{ it.txt }}</div>
-              </div>
+                <div>{{ it.texto }}</div>
+              </button>
             </div>
           </div>
         </div>
@@ -53,40 +84,42 @@
           <span class="agenda__ley"
             ><span class="agenda__muestra agenda__muestra--blk" />Bloqueo</span
           >
-          <span class="agenda__ley-nota"
-            >Piscina y gimnasio: acceso libre con aforo, sin reserva</span
-          >
         </div>
       </section>
 
       <aside class="agenda__lateral">
         <h2 class="agenda__lateral-titulo">Por aprobar ({{ pendientes.length }})</h2>
+
+        <div v-if="solicitudes.isError.value" class="safic-alerta" role="alert">
+          {{ solicitudes.error.value?.mensaje }}
+          <q-btn flat no-caps dense label="Reintentar" @click="solicitudes.refetch()" />
+        </div>
+        <q-skeleton v-else-if="solicitudes.isPending.value" type="rect" height="140px" />
+
         <div v-for="p in pendientes" :key="p.id" class="agenda__solicitud">
           <div class="agenda__sol-cab">
             <div class="agenda__sol-area">{{ p.area }}</div>
-            <span class="agenda__vence">{{ p.vence }}</span>
+            <span class="agenda__vence">{{ venceEn(p.vence_en, ahora) }}</span>
           </div>
           <div class="agenda__sol-texto">
-            <strong>{{ p.fecha }}</strong> · {{ p.hora }}
+            <strong>{{ fechaCorta(p.fecha) }}</strong> · {{ p.inicio }}–{{ p.fin }}
           </div>
-          <div class="agenda__sol-texto">{{ p.unidad }} · {{ p.persona }} · {{ p.invitados }}</div>
-          <div class="agenda__sol-ok">
-            <q-icon name="sym_r_check" size="16px" class="agenda__sol-ok-icono" />Unidad al día ·
-            reglas cumplidas
+          <div class="agenda__sol-texto">{{ p.unidad }} · {{ p.solicitante ?? 'Sin nombre' }}</div>
+          <div v-if="resumenCobro(p)" class="agenda__sol-nota">
+            Al aprobar se generan los cargos: {{ resumenCobro(p) }}
           </div>
-          <div class="agenda__sol-nota">
-            Al aprobar se generan los cargos: uso $ 50,00 y garantía $ 100,00
-          </div>
-          <div class="agenda__sol-acciones">
-            <button type="button" class="agenda__rechazar" @click="responder(p, 'rej')">
+          <div v-if="puedeGestionar" class="agenda__sol-acciones">
+            <button type="button" class="agenda__rechazar" :disabled="ocupado" @click="rechazar(p)">
               Rechazar
             </button>
-            <button type="button" class="agenda__aprobar" @click="responder(p, 'ok')">
+            <button type="button" class="agenda__aprobar" :disabled="ocupado" @click="aprobar(p)">
               Aprobar
             </button>
           </div>
         </div>
-        <div v-if="pendientes.length === 0" class="agenda__vacio">No hay reservas por aprobar.</div>
+        <div v-if="solicitudes.data.value && pendientes.length === 0" class="agenda__vacio">
+          No hay reservas por aprobar.
+        </div>
         <div class="agenda__pie">
           Las solicitudes sin respuesta en 48 horas vencen solas y liberan el horario.
         </div>
@@ -96,64 +129,216 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
 import { useQuasar } from 'quasar';
+import { computed, onBeforeUnmount, ref, watch } from 'vue';
 
 import PaginaEncabezado from '@/components/PaginaEncabezado.vue';
-import {
-  AREAS_AGENDA,
-  DIAS_AGENDA,
-  RESERVAS_AGENDA,
-  SEMANA_AGENDA,
-  SOLICITUDES_AGENDA,
-} from '@/modules/reservas/demo/agenda';
-import type { ReservaAgenda, SolicitudAgenda } from '@/modules/reservas/demo/agenda';
+import { aApiError } from '@/core/api/errors';
+import { useSessionStore } from '@/stores/session';
+import { hoyEcuador, sumarDias } from '@/utils/fecha';
 
-type Respuesta = 'ok' | 'rej';
+import {
+  armarGrilla,
+  diasDeSemana,
+  lunesDe,
+  metaDeArea,
+  resumenCobro,
+  tituloSemana,
+  venceEn,
+  type ItemAgenda,
+} from '../agenda.logica';
+import BloquearAreaDialog from '../components/BloquearAreaDialog.vue';
+import {
+  useAgenda,
+  useAprobarReserva,
+  useCancelarReservaAdmin,
+  useQuitarBloqueo,
+  useRechazarReserva,
+  useSolicitudes,
+} from '../composables/useAgenda';
+import { fechaCorta } from '../reservas.logica';
+import type { AreaAgenda, Solicitud } from '../services/agenda.service';
 
 const $q = useQuasar();
-const respuestas = ref<Record<string, Respuesta>>({});
+const session = useSessionStore();
 
-const reservas = computed<ReservaAgenda[]>(() => {
-  const lista = [...RESERVAS_AGENDA];
-  for (const p of SOLICITUDES_AGENDA) {
-    const r = respuestas.value[p.id];
-    if (r === 'rej') continue;
-    lista.push({
-      row: p.row,
-      day: p.day,
-      hora: p.hora,
-      txt: p.unidad + (r === 'ok' ? '' : ' · por aprobar'),
-      k: r === 'ok' ? 'ok' : 'pend',
-    });
-  }
-  return lista;
-});
+// Mostrar los botones es comodidad; la API exige reservas.gestionar igual.
+const puedeGestionar = computed(() => session.tienePermiso('reservas.gestionar'));
 
+const desde = ref(lunesDe(hoyEcuador()));
+const consulta = useAgenda(desde);
+const solicitudes = useSolicitudes();
+
+const dias = computed(() => diasDeSemana(desde.value));
+const titulo = computed(() => tituloSemana(desde.value));
+const areas = computed(() => consulta.data.value?.areas ?? []);
 const grilla = computed(() =>
-  AREAS_AGENDA.map((a, r) => ({
-    area: a.area,
-    meta: a.meta,
-    celdas: DIAS_AGENDA.map((_d, di) => reservas.value.filter((f) => f.row === r && f.day === di)),
-  })),
+  consulta.data.value ? armarGrilla(consulta.data.value, dias.value) : [],
+);
+const pendientes = computed(() => solicitudes.data.value ?? []);
+
+// Para «Vence en 20 h»: se refresca cada minuto sin pedir nada al servidor
+const ahora = ref(Date.now());
+const reloj = setInterval(() => (ahora.value = Date.now()), 60_000);
+onBeforeUnmount(() => clearInterval(reloj));
+
+// El cuadro abierto (motivo, quitar bloqueo): se cierra si cambia el condominio
+let dialogoAbierto: { hide: () => void } | null = null;
+const resultado = ref<string | null>(null);
+const errorAccion = ref<string | null>(null);
+
+const aprobando = useAprobarReserva();
+const rechazando = useRechazarReserva();
+const cancelando = useCancelarReservaAdmin();
+const quitando = useQuitarBloqueo();
+const ocupado = computed(
+  () =>
+    aprobando.isPending.value ||
+    rechazando.isPending.value ||
+    cancelando.isPending.value ||
+    quitando.isPending.value,
 );
 
-const pendientes = computed(() => SOLICITUDES_AGENDA.filter((p) => !respuestas.value[p.id]));
+// Otro condominio: nada de lo mostrado ni de lo avisado queda
+watch(
+  () => session.condominioId,
+  () => {
+    dialogoAbierto?.hide();
+    resultado.value = null;
+    errorAccion.value = null;
+    desde.value = lunesDe(hoyEcuador());
+  },
+);
 
-function responder(p: SolicitudAgenda, r: Respuesta): void {
-  respuestas.value = { ...respuestas.value, [p.id]: r };
-  $q.notify({
-    type: 'positive',
-    message: r === 'ok' ? `Reserva de ${p.unidad} aprobada` : `Reserva de ${p.unidad} rechazada`,
+function mover(dias: number): void {
+  desde.value = sumarDias(desde.value, dias);
+}
+
+function irAHoy(): void {
+  desde.value = lunesDe(hoyEcuador());
+}
+
+function avisar(mensaje: string): void {
+  errorAccion.value = null;
+  resultado.value = mensaje;
+}
+
+function fallar(error: unknown): void {
+  resultado.value = null;
+  const apiError = aApiError(error);
+  // Sin respuesta o 5xx el cambio pudo hacerse: se avisa para no repetirlo a ciegas
+  errorAccion.value =
+    apiError.estado === 0 || apiError.estado >= 500
+      ? `${apiError.mensaje} Revisa la agenda antes de reintentar: el cambio pudo hacerse.`
+      : apiError.mensaje;
+}
+
+function aprobar(p: Solicitud): void {
+  if (ocupado.value) return;
+  aprobando.mutate(p.id, {
+    onSuccess: () =>
+      avisar(`Reserva de ${p.unidad} aprobada. Se generaron los cargos en su cuenta.`),
+    onError: fallar,
   });
 }
 
+/** Pide el motivo con un cuadro de texto; con menos de 3 letras no deja continuar. */
+function pedirMotivo(
+  titulo: string,
+  mensaje: string,
+  etiqueta: string,
+  alAceptar: (m: string) => void,
+): void {
+  dialogoAbierto = $q
+    .dialog({
+      title: titulo,
+      message: mensaje,
+      prompt: {
+        model: '',
+        type: 'text',
+        isValid: (v: string) => v.trim().length >= 3,
+        outlined: true,
+      },
+      cancel: { label: 'Volver', flat: true, noCaps: true },
+      ok: { label: etiqueta, unelevated: true, noCaps: true, color: 'negative' },
+      persistent: true,
+    })
+    .onOk((motivo: string) => alAceptar(motivo.trim()));
+}
+
+function rechazar(p: Solicitud): void {
+  if (ocupado.value) return;
+  pedirMotivo(
+    'Rechazar solicitud',
+    `El motivo lo verá ${p.solicitante ?? 'el residente'} de ${p.unidad}.`,
+    'Rechazar',
+    (motivo) =>
+      rechazando.mutate(
+        { id: p.id, motivo },
+        { onSuccess: () => avisar(`Solicitud de ${p.unidad} rechazada.`), onError: fallar },
+      ),
+  );
+}
+
+function abrirItem(area: AreaAgenda, it: ItemAgenda): void {
+  if (ocupado.value || !puedeGestionar.value) return;
+  if (it.tipo === 'blk') {
+    dialogoAbierto = $q
+      .dialog({
+        title: 'Quitar bloqueo',
+        message: `${area.nombre} · ${it.hora}: ${it.texto}. Volverá a poder reservarse.`,
+        cancel: { label: 'Volver', flat: true, noCaps: true },
+        ok: { label: 'Quitar bloqueo', unelevated: true, noCaps: true, color: 'primary' },
+        persistent: true,
+      })
+      .onOk(() =>
+        quitando.mutate(it.id, { onSuccess: () => avisar('Bloqueo quitado.'), onError: fallar }),
+      );
+    return;
+  }
+  pedirMotivo(
+    'Cancelar reserva',
+    `${area.nombre} · ${it.hora} · ${it.texto.replace(' · por aprobar', '')}. El motivo lo verá el residente y se le avisa por correo.`,
+    'Cancelar reserva',
+    (motivo) =>
+      cancelando.mutate(
+        { id: it.id, motivo },
+        { onSuccess: () => avisar('Reserva cancelada. Se avisó al residente.'), onError: fallar },
+      ),
+  );
+}
+
 function bloquear(): void {
-  $q.notify({ type: 'info', message: 'Elige el área y el horario que quieres bloquear' });
+  $q.dialog({ component: BloquearAreaDialog, componentProps: { areas: areas.value } }).onOk(avisar);
 }
 </script>
 
 <style scoped>
+button.agenda__item {
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.agenda__error {
+  margin: 0;
+}
+
+.agenda__resultado {
+  padding: 12px 16px;
+  border-radius: 10px;
+  background: #e3efec;
+  color: #0b4a47;
+  font-weight: 700;
+}
+
+.agenda__aprobar:disabled,
+.agenda__rechazar:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .agenda.safic-main {
   padding: 24px 32px;
   gap: 16px;
