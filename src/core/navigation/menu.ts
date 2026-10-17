@@ -388,7 +388,7 @@ export const MENU_APP_GUARDIA: ItemMenu[] = [
     etiqueta: 'Reservas hoy',
     icono: ICONOS.reservasHoy,
     ruta: 'guardia-reservas-hoy',
-    vistaPrevia: true,
+    permiso: 'reservas.garita',
   },
 ];
 

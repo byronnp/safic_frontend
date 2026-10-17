@@ -24,6 +24,13 @@
       </div>
 
       <template v-else>
+        <div v-if="hayRestringida" class="areas-res__mora" role="alert">
+          <strong>Reservas restringidas por cuotas vencidas.</strong> Paga o solicita un convenio y
+          se habilitan en máximo 24 horas.
+          <router-link :to="{ name: 'app-mi-cuenta' }" class="areas-res__mora-enlace">
+            Ver mi cuenta
+          </router-link>
+        </div>
         <div v-for="a in areas" :key="a.id" class="app-tarjeta areas-res__area">
           <div class="areas-res__icono" aria-hidden="true">
             <q-icon :name="iconoDeArea(a.nombre)" size="26px" />
@@ -79,6 +86,12 @@ import {
 const session = useSessionStore();
 const consulta = useAreasReservables();
 const areas = computed(() => consulta.data.value?.areas ?? []);
+// El aviso solo importa si alguna área puede restringirse por mora
+const hayRestringida = computed(
+  () =>
+    areas.value.some((a) => a.restringible_por_mora) &&
+    (consulta.data.value?.unidades ?? []).some((u) => u.restringida),
+);
 </script>
 
 <style scoped>
@@ -150,6 +163,21 @@ const areas = computed(() => consulta.data.value?.areas ?? []);
   flex-direction: column;
   align-items: center;
   gap: 8px;
+}
+
+.areas-res__mora {
+  background: #fde8e6;
+  border: 1px solid #f3b8b2;
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 13px;
+  color: #7f1810;
+  line-height: 1.45;
+}
+
+.areas-res__mora-enlace {
+  color: #7f1810;
+  font-weight: 800;
 }
 
 .areas-res__nota {
