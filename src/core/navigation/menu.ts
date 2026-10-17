@@ -384,6 +384,13 @@ export const MENU_APP_GUARDIA: ItemMenu[] = [
     permiso: 'garita.registrar',
   },
   {
+    id: 'guardia.paquetes',
+    etiqueta: 'Paquetes',
+    icono: ICONOS.paquetes,
+    ruta: 'guardia-paquetes',
+    permiso: 'paquetes.gestionar',
+  },
+  {
     id: 'guardia.directorio',
     etiqueta: 'Directorio',
     icono: ICONOS.directorio,
