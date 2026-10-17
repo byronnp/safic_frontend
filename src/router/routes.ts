@@ -416,12 +416,29 @@ const routes: RouteRecordRaw[] = [
           menuActivo: 'app-mi-cuenta',
         },
       },
-      previa(
-        'reservar',
-        'app-reservar',
-        'Reservar',
-        () => import('@/modules/app-residente/pages/ReservarPage.vue'),
-      ),
+      {
+        path: 'areas',
+        name: 'app-areas',
+        component: () => import('@/modules/app-residente/pages/AreasPage.vue'),
+        meta: { permiso: 'reservas.propias', titulo: 'Áreas comunes' },
+      },
+      {
+        path: 'reservas',
+        name: 'app-mis-reservas',
+        component: () => import('@/modules/app-residente/pages/MisReservasPage.vue'),
+        meta: { permiso: 'reservas.propias', titulo: 'Mis reservas', menuActivo: 'app-areas' },
+      },
+      {
+        path: 'reservar',
+        name: 'app-reservar',
+        component: () => import('@/modules/app-residente/pages/ReservarPage.vue'),
+        meta: {
+          permiso: 'reservas.propias',
+          titulo: 'Reservar',
+          sinPestanas: true,
+          menuActivo: 'app-areas',
+        },
+      },
       previa(
         'visitas/nueva',
         'app-nueva-visita',
