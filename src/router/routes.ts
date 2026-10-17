@@ -199,12 +199,12 @@ const routes: RouteRecordRaw[] = [
       },
 
       // Fase 3 · Áreas comunes
-      previa(
-        'areas-comunes/agenda',
-        'areas-agenda',
-        'Agenda de reservas',
-        () => import('@/modules/reservas/pages/AgendaPage.vue'),
-      ),
+      {
+        path: 'areas-comunes/agenda',
+        name: 'areas-agenda',
+        component: () => import('@/modules/reservas/pages/AgendaPage.vue'),
+        meta: { permiso: 'reservas.gestionar', titulo: 'Agenda de reservas' },
+      },
       {
         path: 'areas-comunes/areas',
         name: 'areas-reglas',
