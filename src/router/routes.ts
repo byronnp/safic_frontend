@@ -61,6 +61,13 @@ const routes: RouteRecordRaw[] = [
         meta: { publica: true, titulo: 'Crear contraseña' },
       },
       {
+        // Página pública del QR de una visita: la abre el visitante desde el enlace que le comparte el residente
+        path: 'visita/:token',
+        name: 'visita-publica',
+        component: () => import('@/modules/garita/pages/VisitaQrPage.vue'),
+        meta: { publica: true, titulo: 'Tu visita' },
+      },
+      {
         path: 'condominios',
         name: 'seleccionar-condominio',
         component: () => import('@/modules/auth/pages/SeleccionarCondominioPage.vue'),
@@ -439,12 +446,23 @@ const routes: RouteRecordRaw[] = [
           menuActivo: 'app-areas',
         },
       },
-      previa(
-        'visitas/nueva',
-        'app-nueva-visita',
-        'Nueva visita',
-        () => import('@/modules/app-residente/pages/NuevaVisitaPage.vue'),
-      ),
+      {
+        path: 'visitas',
+        name: 'app-mis-visitas',
+        component: () => import('@/modules/app-residente/pages/MisVisitasPage.vue'),
+        meta: { permiso: 'visitas.propias', titulo: 'Mis visitas' },
+      },
+      {
+        path: 'visitas/nueva',
+        name: 'app-nueva-visita',
+        component: () => import('@/modules/app-residente/pages/NuevaVisitaPage.vue'),
+        meta: {
+          permiso: 'visitas.propias',
+          titulo: 'Nueva visita',
+          sinPestanas: true,
+          menuActivo: 'app-mis-visitas',
+        },
+      },
       previa(
         'asamblea',
         'app-asamblea',

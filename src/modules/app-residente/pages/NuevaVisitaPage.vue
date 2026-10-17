@@ -3,65 +3,114 @@
     <!-- El mockup usa una barra blanca con "volver" en lugar del encabezado de color. -->
     <header class="nueva-visita-barra">
       <router-link
-        :to="{ name: 'app-mi-hogar' }"
+        :to="{ name: 'app-mis-visitas' }"
         class="nueva-visita-barra__volver"
         aria-label="Volver"
       >
         <q-icon name="sym_r_chevron_left" size="26px" />
       </router-link>
       <h1 class="nueva-visita-barra__titulo">
-        {{ paso === 'formulario' ? 'Nueva visita' : 'Visita creada' }}
+        {{ creada ? 'Visita creada' : 'Nueva visita' }}
       </h1>
     </header>
 
-    <form v-if="paso === 'formulario'" class="nueva-visita-cuerpo" @submit.prevent="crear">
+    <form v-if="!creada" class="nueva-visita-cuerpo" novalidate @submit.prevent="crear">
+      <div v-if="consulta.isError.value" class="safic-alerta nueva-visita-alerta" role="alert">
+        {{ consulta.error.value?.mensaje }}
+        <q-btn flat no-caps dense label="Reintentar" @click="consulta.refetch()" />
+      </div>
+      <div v-if="errorGeneral" class="safic-alerta nueva-visita-alerta" role="alert">
+        {{ errorGeneral }}
+      </div>
+
       <div class="nueva-visita-segmento" role="group" aria-label="Tipo de visita">
         <button
           type="button"
           class="nueva-visita-segmento__opcion"
-          :class="{ 'nueva-visita-segmento__opcion--activa': tipo === 'unica' }"
-          :aria-pressed="tipo === 'unica'"
-          @click="tipo = 'unica'"
+          :class="{ 'nueva-visita-segmento__opcion--activa': f.tipo === 'unica' }"
+          :aria-pressed="f.tipo === 'unica'"
+          @click="f.tipo = 'unica'"
         >
           Una vez
         </button>
         <button
           type="button"
           class="nueva-visita-segmento__opcion"
-          :class="{ 'nueva-visita-segmento__opcion--activa': tipo === 'recurrente' }"
-          :aria-pressed="tipo === 'recurrente'"
-          @click="tipo = 'recurrente'"
+          :class="{ 'nueva-visita-segmento__opcion--activa': f.tipo === 'recurrente' }"
+          :aria-pressed="f.tipo === 'recurrente'"
+          @click="f.tipo = 'recurrente'"
         >
           Recurrente
         </button>
       </div>
 
+      <label v-if="unidades.length > 1" class="nueva-visita-campo">
+        Unidad
+        <select v-model="f.unidadId" class="nueva-visita-input">
+          <option v-for="u in unidades" :key="u.unidad_id" :value="u.unidad_id">
+            {{ u.codigo }}
+          </option>
+        </select>
+        <span v-if="errores.unidadId" class="nueva-visita-error" role="alert">{{
+          errores.unidadId
+        }}</span>
+      </label>
+
       <label class="nueva-visita-campo">
         Nombre del visitante
-        <input v-model="formulario.nombre" class="nueva-visita-input" autocomplete="off" />
+        <input v-model="f.nombre" class="nueva-visita-input" autocomplete="off" maxlength="120" />
+        <span v-if="errores.nombre" class="nueva-visita-error" role="alert">{{
+          errores.nombre
+        }}</span>
       </label>
       <label class="nueva-visita-campo">
         Cédula (opcional)
         <input
-          v-model="formulario.cedula"
+          v-model="f.cedula"
           class="nueva-visita-input"
-          inputmode="numeric"
+          autocomplete="off"
+          maxlength="20"
           placeholder="Solo si el condominio la exige"
         />
+        <span v-if="errores.cedula" class="nueva-visita-error" role="alert">{{
+          errores.cedula
+        }}</span>
       </label>
 
-      <div v-if="tipo === 'unica'" class="nueva-visita-horario">
+      <div v-if="f.tipo === 'unica'" class="nueva-visita-horario">
         <label class="nueva-visita-campo">
           Fecha
-          <input v-model="formulario.fecha" class="nueva-visita-input nueva-visita-input--corto" />
+          <input
+            v-model="f.fecha"
+            type="date"
+            :min="hoy"
+            class="nueva-visita-input nueva-visita-input--corto"
+          />
+          <span v-if="errores.fecha" class="nueva-visita-error" role="alert">{{
+            errores.fecha
+          }}</span>
         </label>
         <label class="nueva-visita-campo">
           Desde
-          <input v-model="formulario.desde" class="nueva-visita-input nueva-visita-input--corto" />
+          <input
+            v-model="f.desde"
+            type="time"
+            class="nueva-visita-input nueva-visita-input--corto"
+          />
+          <span v-if="errores.desde" class="nueva-visita-error" role="alert">{{
+            errores.desde
+          }}</span>
         </label>
         <label class="nueva-visita-campo">
           Hasta
-          <input v-model="formulario.hasta" class="nueva-visita-input nueva-visita-input--corto" />
+          <input
+            v-model="f.hasta"
+            type="time"
+            class="nueva-visita-input nueva-visita-input--corto"
+          />
+          <span v-if="errores.hasta" class="nueva-visita-error" role="alert">{{
+            errores.hasta
+          }}</span>
         </label>
       </div>
 
@@ -69,46 +118,91 @@
         <div id="nueva-visita-dias" class="nueva-visita-campo">Días</div>
         <div class="nueva-visita-dias" role="group" aria-labelledby="nueva-visita-dias">
           <button
-            v-for="dia in dias"
+            v-for="dia in DIAS_VISITA"
             :key="dia.id"
             type="button"
             class="nueva-visita-dia"
-            :class="{ 'nueva-visita-dia--activo': diasElegidos.includes(dia.id) }"
-            :aria-pressed="diasElegidos.includes(dia.id)"
+            :class="{ 'nueva-visita-dia--activo': f.dias.includes(dia.id) }"
+            :aria-pressed="f.dias.includes(dia.id)"
             :aria-label="dia.nombre"
             @click="alternarDia(dia.id)"
           >
             {{ dia.letra }}
           </button>
         </div>
-        <div class="nueva-visita-nota">{{ horarioRecurrente }}</div>
+        <span v-if="errores.dias" class="nueva-visita-error" role="alert">{{ errores.dias }}</span>
+        <div class="nueva-visita-horario">
+          <label class="nueva-visita-campo">
+            Desde
+            <input
+              v-model="f.desde"
+              type="time"
+              class="nueva-visita-input nueva-visita-input--corto"
+            />
+          </label>
+          <label class="nueva-visita-campo">
+            Hasta
+            <input
+              v-model="f.hasta"
+              type="time"
+              class="nueva-visita-input nueva-visita-input--corto"
+            />
+            <span v-if="errores.hasta" class="nueva-visita-error" role="alert">{{
+              errores.hasta
+            }}</span>
+          </label>
+          <label class="nueva-visita-campo">
+            Vale hasta
+            <input
+              v-model="f.vigenteHasta"
+              type="date"
+              :min="f.fecha"
+              class="nueva-visita-input nueva-visita-input--corto"
+            />
+            <span v-if="errores.vigenteHasta" class="nueva-visita-error" role="alert">{{
+              errores.vigenteHasta
+            }}</span>
+          </label>
+        </div>
       </div>
 
       <label class="nueva-visita-campo">
         Placa del vehículo (opcional)
         <input
-          v-model="formulario.placa"
+          v-model="f.placa"
           class="nueva-visita-input nueva-visita-input--placa"
           autocapitalize="characters"
+          maxlength="8"
         />
+        <span v-if="errores.placa" class="nueva-visita-error" role="alert">{{
+          errores.placa
+        }}</span>
       </label>
 
       <div class="nueva-visita-espacio" />
 
-      <button type="submit" class="nueva-visita-principal">Crear y compartir QR</button>
+      <button type="submit" class="nueva-visita-principal" :disabled="autorizando.isPending.value">
+        {{ autorizando.isPending.value ? 'Creando…' : 'Crear y compartir QR' }}
+      </button>
     </form>
 
-    <div v-else class="nueva-visita-cuerpo nueva-visita-cuerpo--qr">
+    <div v-else-if="creada" class="nueva-visita-cuerpo nueva-visita-cuerpo--qr">
+      <div v-if="errorGeneral" class="safic-alerta nueva-visita-alerta" role="alert">
+        {{ errorGeneral }}
+      </div>
       <div class="app-tarjeta nueva-visita-pase">
-        <NuevaVisitaQr />
-        <div class="nueva-visita-pase__nombre">{{ formulario.nombre }}</div>
-        <div class="nueva-visita-pase__vigencia">{{ vigencia }}</div>
+        <QrToken :token="creada.token" />
+        <div class="nueva-visita-pase__nombre">{{ creada.visitante }}</div>
+        <div class="nueva-visita-pase__vigencia">{{ vigenciaVisita(creada) }}</div>
       </div>
 
       <div class="nueva-visita-titulo-mensaje">Así le llega por WhatsApp</div>
       <div class="nueva-visita-mensaje">
-        Hola {{ primerNombre }}, te espero en {{ condominio }}, {{ unidad }}. Muestra este QR en la
-        garita.<br /><span class="nueva-visita-mensaje__enlace">Ver mi QR</span>
+        Hola {{ primerNombre(creada.visitante) }}, te espero en {{ condominio }},
+        {{ creada.unidad }}. Muestra este QR en la garita.<br /><span
+          class="nueva-visita-mensaje__enlace"
+          >Ver mi QR</span
+        >
         ·
         <span class="nueva-visita-mensaje__enlace">Cómo llegar (Google Maps / Waze)</span>
       </div>
@@ -122,65 +216,188 @@
       <button type="button" class="nueva-visita-principal" @click="compartir">
         Compartir por WhatsApp
       </button>
-      <button type="button" class="nueva-visita-revocar" @click="paso = 'formulario'">
+      <button
+        type="button"
+        class="nueva-visita-revocar"
+        :disabled="revocando.isPending.value"
+        @click="revocar"
+      >
         Revocar autorización
       </button>
+      <router-link :to="{ name: 'app-mis-visitas' }" class="nueva-visita-revocar">
+        Ver mis visitas
+      </router-link>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { useQuasar } from 'quasar';
-import { computed, reactive, ref } from 'vue';
+import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue';
+import { useRouter } from 'vue-router';
 
-import NuevaVisitaQr from '../components/NuevaVisitaQr.vue';
+import { aApiError } from '@/core/api/errors';
+import QrToken from '@/modules/garita/components/QrToken.vue';
 import {
-  NUEVA_VISITA_CONDOMINIO,
-  NUEVA_VISITA_DIAS,
-  NUEVA_VISITA_DIAS_INICIALES,
-  NUEVA_VISITA_FORMULARIO,
-  NUEVA_VISITA_RECURRENTE_HORARIO,
-  NUEVA_VISITA_UNIDAD,
-  NUEVA_VISITA_VIGENCIA,
-} from '../demo/nuevaVisita';
-
-type TipoVisita = 'unica' | 'recurrente';
+  useAutorizarVisita,
+  useMisVisitas,
+  useRevocarVisita,
+} from '@/modules/garita/composables/useVisitas';
+import type { VisitaAutorizada } from '@/modules/garita/services/visitas.service';
+import {
+  DIAS_VISITA,
+  mensajeParaVisitante,
+  peticionVisita,
+  primerNombre,
+  validarVisita,
+  vigenciaVisita,
+  visitaVacia,
+  type ErroresVisita,
+} from '@/modules/garita/visitas.logica';
+import { useSessionStore } from '@/stores/session';
+import { hoyEcuador } from '@/utils/fecha';
 
 const $q = useQuasar();
+const router = useRouter();
+const session = useSessionStore();
 
-const dias = NUEVA_VISITA_DIAS;
-const horarioRecurrente = NUEVA_VISITA_RECURRENTE_HORARIO;
-const condominio = NUEVA_VISITA_CONDOMINIO;
-const unidad = NUEVA_VISITA_UNIDAD;
+const hoy = hoyEcuador();
+const consulta = useMisVisitas();
+const autorizando = useAutorizarVisita();
+const revocando = useRevocarVisita();
+const unidades = computed(() => consulta.data.value?.unidades ?? []);
+const condominio = computed(() => session.condominioActivo?.nombre ?? 'el condominio');
 
-const paso = ref<'formulario' | 'qr'>('formulario');
-const tipo = ref<TipoVisita>('unica');
-const formulario = reactive({ ...NUEVA_VISITA_FORMULARIO });
-const diasElegidos = ref<string[]>([...NUEVA_VISITA_DIAS_INICIALES]);
+// Al salir no queda en memoria el nombre, la cédula ni el QR del visitante
+onBeforeUnmount(() => {
+  Object.assign(f, visitaVacia(hoy));
+  creada.value = null;
+  autorizando.reset();
+});
 
-const vigencia = computed(() => NUEVA_VISITA_VIGENCIA[tipo.value]);
-const primerNombre = computed(() => formulario.nombre.trim().split(/\s+/)[0] ?? '');
+const f = reactive(visitaVacia(hoy));
+const errores = reactive<ErroresVisita>({});
+const errorGeneral = ref<string | null>(null);
+const creada = ref<VisitaAutorizada | null>(null);
 
-function alternarDia(id: string): void {
-  diasElegidos.value = diasElegidos.value.includes(id)
-    ? diasElegidos.value.filter((d) => d !== id)
-    : [...diasElegidos.value, id];
+// Con una sola unidad no se pregunta; si hay varias, se parte de la primera
+watch(
+  unidades,
+  (lista) => {
+    if (!lista.some((u) => u.unidad_id === f.unidadId)) f.unidadId = lista[0]?.unidad_id ?? null;
+  },
+  { immediate: true },
+);
+
+// Otro condominio: nada de lo escrito ni del QR queda
+watch(
+  () => session.condominioId,
+  () => {
+    Object.assign(f, visitaVacia(hoy));
+    creada.value = null;
+    errorGeneral.value = null;
+  },
+);
+
+function alternarDia(id: number): void {
+  f.dias = f.dias.includes(id) ? f.dias.filter((d) => d !== id) : [...f.dias, id];
 }
 
-function crear(): void {
-  if (!formulario.nombre.trim()) {
-    $q.notify({ type: 'warning', message: 'Escribe el nombre del visitante.' });
+async function crear(): Promise<void> {
+  // Enter dentro de un campo también envía el formulario: no se crea dos veces
+  if (autorizando.isPending.value) return;
+  errorGeneral.value = null;
+  for (const k of Object.keys(errores) as (keyof ErroresVisita)[]) errores[k] = undefined;
+
+  const ahora = new Date().toLocaleTimeString('en-GB', {
+    timeZone: 'America/Guayaquil',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+  const problemas = validarVisita(f, hoy, ahora);
+  if (Object.keys(problemas).length > 0) {
+    Object.assign(errores, problemas);
     return;
   }
-  paso.value = 'qr';
+
+  try {
+    creada.value = await autorizando.mutateAsync(peticionVisita(f));
+  } catch (error) {
+    const apiError = aApiError(error);
+    errores.nombre = apiError.campo('visitante');
+    errores.cedula = apiError.campo('documento');
+    errores.placa = apiError.campo('placa');
+    errores.fecha = apiError.campo('fecha_desde');
+    errores.desde = apiError.campo('hora_desde');
+    errores.hasta = apiError.campo('hora_hasta');
+    errores.dias = apiError.campo('dias_semana');
+    if (!Object.values(errores).some(Boolean)) {
+      // Sin respuesta o 5xx la visita pudo crearse: se avisa para no duplicarla
+      errorGeneral.value =
+        apiError.estado === 0 || apiError.estado >= 500
+          ? `${apiError.mensaje} Revisa Mis visitas antes de reintentar: pudo crearse.`
+          : apiError.mensaje;
+    }
+  }
 }
 
-function compartir(): void {
-  $q.notify({ type: 'positive', message: 'Invitación lista para compartir por WhatsApp.' });
+async function compartir(): Promise<void> {
+  const v = creada.value;
+  if (!v) return;
+  const texto = mensajeParaVisitante(v, condominio.value, window.location.origin);
+  // En el celular se abre el menú de compartir (WhatsApp entre otros); si no existe, se abre WhatsApp con el texto
+  if (typeof navigator.share === 'function') {
+    try {
+      await navigator.share({ text: texto });
+    } catch {
+      // La persona cerró el menú: no es un error
+    }
+    return;
+  }
+  window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, '_blank', 'noopener,noreferrer');
+}
+
+function revocar(): void {
+  const v = creada.value;
+  if (!v || revocando.isPending.value) return;
+  $q.dialog({
+    title: 'Revocar autorización',
+    message: `El QR de ${v.visitante} dejará de servir en la garita.`,
+    cancel: { label: 'Mantenerla', flat: true, noCaps: true },
+    ok: { label: 'Revocar', unelevated: true, noCaps: true, color: 'negative' },
+    persistent: true,
+  }).onOk(() => {
+    // Dos toques rápidos abren dos cuadros: se vuelve a mirar al confirmar
+    if (revocando.isPending.value) return;
+    revocando.mutate(v.id, {
+      onSuccess: () => {
+        $q.notify({ type: 'positive', message: 'Autorización revocada.' });
+        void router.push({ name: 'app-mis-visitas' });
+      },
+      onError: (error) => {
+        errorGeneral.value = aApiError(error).mensaje;
+      },
+    });
+  });
 }
 </script>
 
 <style scoped>
+.nueva-visita-error {
+  font-size: 12px;
+  font-weight: 600;
+  color: #b3261e;
+}
+
+.nueva-visita-alerta {
+  margin: 0;
+}
+
+.nueva-visita-principal:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 /* Los mockups usan el interlineado normal del navegador. */
 .nueva-visita {
   line-height: normal;

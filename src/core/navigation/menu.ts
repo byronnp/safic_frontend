@@ -355,8 +355,8 @@ export const MENU_APP_RESIDENTE: ItemMenu[] = [
     id: 'app.visitas',
     etiqueta: 'Visitas',
     icono: ICONOS.visitas,
-    ruta: 'app-nueva-visita',
-    vistaPrevia: true,
+    ruta: 'app-mis-visitas',
+    permiso: 'visitas.propias',
   },
   {
     id: 'app.asamblea',
