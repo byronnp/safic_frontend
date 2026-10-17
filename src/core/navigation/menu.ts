@@ -115,6 +115,13 @@ export const MENU_BASE: ItemMenu[] = [
         permiso: 'finanzas.ver',
       },
       {
+        id: 'finanzas.recurrentes',
+        etiqueta: 'Gastos recurrentes',
+        icono: ICONOS.recurrentes,
+        ruta: 'finanzas-recurrentes',
+        permiso: 'finanzas.ver',
+      },
+      {
         id: 'finanzas.proveedores',
         etiqueta: 'Proveedores',
         icono: ICONOS.proveedores,
