@@ -62,10 +62,36 @@
             </button>
           </div>
         </div>
-        <div class="mis-visitas__nota">
-          El QR no lleva datos personales. Ves nombre y hora; la cédula solo la ve la garita.
+      </template>
+
+      <template v-if="ingresos.length > 0">
+        <h2 class="mis-visitas__titulo">Ingresos a tu unidad</h2>
+        <div class="app-tarjeta">
+          <div
+            v-for="i in ingresos"
+            :key="i.id"
+            class="mis-visitas__fila mis-visitas__fila--ingreso"
+          >
+            <q-icon :name="i.estado === 'dentro' ? 'sym_r_login' : 'sym_r_logout'" size="22px" />
+            <div class="col-grow">
+              <div class="mis-visitas__area">
+                {{ i.nombre }} {{ i.estado === 'dentro' ? 'ingresó' : 'salió' }}
+              </div>
+              <div class="mis-visitas__cuando">
+                {{
+                  diaDe(i.estado === 'dentro' ? i.entrada_en : (i.salida_en ?? i.entrada_en), hoy)
+                }}
+                {{ horaDe(i.estado === 'dentro' ? i.entrada_en : i.salida_en) }} ·
+                {{ ETIQUETA_AUTORIZO[i.autorizado_por] }}
+              </div>
+            </div>
+          </div>
         </div>
       </template>
+
+      <div v-if="!consulta.isPending.value && !consulta.isError.value" class="mis-visitas__nota">
+        El QR no lleva datos personales. Ves nombre y hora; la cédula solo la ve la garita.
+      </div>
     </div>
   </div>
 </template>
@@ -80,6 +106,7 @@ import { aApiError } from '@/core/api/errors';
 import VisitaQrDialog from '@/modules/garita/components/VisitaQrDialog.vue';
 import { useMisVisitas, useRevocarVisita } from '@/modules/garita/composables/useVisitas';
 import type { VisitaAutorizada } from '@/modules/garita/services/visitas.service';
+import { diaDe, ETIQUETA_AUTORIZO, horaDe } from '@/modules/garita/garita.logica';
 import { cuandoVisita } from '@/modules/garita/visitas.logica';
 import { useSessionStore } from '@/stores/session';
 import { hoyEcuador } from '@/utils/fecha';
@@ -92,6 +119,7 @@ const revocando = useRevocarVisita();
 const hoy = hoyEcuador();
 const visitas = computed(() => consulta.data.value?.visitas ?? []);
 const unidades = computed(() => consulta.data.value?.unidades ?? []);
+const ingresos = computed(() => consulta.data.value?.ingresos ?? []);
 const antetitulo = computed(() =>
   [unidades.value.map((u) => u.codigo).join(', '), session.condominioActivo?.nombre]
     .filter(Boolean)
@@ -201,6 +229,15 @@ function pedirRevocar(v: VisitaAutorizada): void {
 .mis-visitas__cuando {
   font-size: 13px;
   color: var(--safic-texto-suave);
+}
+
+.mis-visitas__fila--ingreso {
+  padding: 12px 14px;
+  border-top: 1px solid var(--safic-borde);
+}
+
+.mis-visitas__fila--ingreso:first-child {
+  border-top: none;
 }
 
 .mis-visitas__acciones {

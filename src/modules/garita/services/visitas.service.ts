@@ -1,6 +1,8 @@
 import { api } from '@/core/api/client';
 import type { ApiRespuesta } from '@/core/api/types';
 
+import type { AutorizadoPor } from './garita.service';
+
 /** Tipos del contrato (safic_backend/docs/openapi.yaml · Garita · visitas). */
 export type TipoVisita = 'unica' | 'recurrente';
 
@@ -20,9 +22,21 @@ export interface VisitaAutorizada {
   token: string;
 }
 
+export interface IngresoMiUnidad {
+  id: number;
+  nombre: string;
+  tipo: 'visita' | 'proveedor' | 'delivery';
+  autorizado_por: AutorizadoPor;
+  estado: 'dentro' | 'salio';
+  entrada_en: string;
+  salida_en: string | null;
+}
+
 export interface MisVisitas {
   unidades: { unidad_id: number; codigo: string }[];
   visitas: VisitaAutorizada[];
+  /** Los últimos ingresos a mis unidades que registró la garita. */
+  ingresos: IngresoMiUnidad[];
 }
 
 export interface NuevaVisita {

@@ -171,6 +171,13 @@ export const MENU_BASE: ItemMenu[] = [
     icono: ICONOS.garita,
     hijos: [
       {
+        id: 'comunicacion.bitacora',
+        etiqueta: 'Bitácora de garita',
+        icono: ICONOS.garitaApp,
+        ruta: 'garita-bitacora',
+        permiso: 'garita.bitacora',
+      },
+      {
         id: 'comunicacion.anuncios',
         etiqueta: 'Anuncios',
         icono: ICONOS.anuncios,
@@ -374,7 +381,7 @@ export const MENU_APP_GUARDIA: ItemMenu[] = [
     etiqueta: 'Garita',
     icono: ICONOS.garitaApp,
     ruta: 'guardia-garita',
-    vistaPrevia: true,
+    permiso: 'garita.registrar',
   },
   {
     id: 'guardia.directorio',

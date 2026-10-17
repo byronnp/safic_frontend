@@ -2,208 +2,243 @@
   <div class="app-pagina">
     <AppEncabezado
       class="garita-encabezado"
-      :antetitulo="`${GARITA_TURNO.garita} · ${GARITA_TURNO.turno} · ${GARITA_TURNO.guardia}`"
+      :antetitulo="
+        [session.condominioActivo?.nombre, session.usuario?.nombre].filter(Boolean).join(' · ')
+      "
       titulo="Garita"
     >
       <template #derecha>
         <GaritaIndicadorConexion />
       </template>
-      <div role="tablist" aria-label="Registro de garita" class="garita-pestanas">
-        <button
-          id="garita-pestana-visitas"
-          type="button"
-          role="tab"
-          class="garita-pestana"
-          :class="{ 'garita-pestana--activa': pestana === 'visitas' }"
-          :aria-selected="pestana === 'visitas'"
-          aria-controls="garita-panel"
-          @click="pestana = 'visitas'"
-        >
-          Visitas
-        </button>
-        <button
-          id="garita-pestana-paquetes"
-          type="button"
-          role="tab"
-          class="garita-pestana"
-          :class="{ 'garita-pestana--activa': pestana === 'paquetes' }"
-          :aria-selected="pestana === 'paquetes'"
-          aria-controls="garita-panel"
-          @click="pestana = 'paquetes'"
-        >
-          Paquetes · {{ paquetes.length }}
-        </button>
-      </div>
     </AppEncabezado>
 
-    <!-- Visitas -->
-    <div
-      v-if="pestana === 'visitas'"
-      id="garita-panel"
-      role="tabpanel"
-      aria-labelledby="garita-pestana-visitas"
-      class="app-cuerpo garita-cuerpo"
-    >
-      <div v-if="!qrLeido" class="garita-acciones">
-        <button type="button" class="garita-escanear" @click="escanear">
+    <div class="app-cuerpo garita-cuerpo">
+      <div v-if="mensaje" class="garita-resultado" role="status">{{ mensaje }}</div>
+      <div v-if="errorAccion" class="safic-alerta" role="alert">{{ errorAccion }}</div>
+
+      <div v-if="!lectura" class="garita-acciones">
+        <button type="button" class="garita-escanear" :disabled="ocupado" @click="escanear">
           <q-icon name="sym_r_qr_code_scanner" size="26px" />Escanear QR
         </button>
-        <button type="button" class="garita-sin-qr" @click="visitaSinQr">Visita sin QR</button>
+        <button type="button" class="garita-sin-qr" :disabled="ocupado" @click="ingresoSinQr">
+          Ingreso sin QR
+        </button>
       </div>
 
-      <div v-else class="garita-qr" role="region" aria-label="Resultado del QR">
+      <div
+        v-else
+        class="garita-qr"
+        :class="{ 'garita-qr--invalido': !lectura.valido }"
+        role="region"
+        aria-label="Resultado del QR"
+      >
         <div class="garita-qr__estado">
-          <q-icon name="sym_r_check" size="20px" class="garita-qr__check" />QR válido
+          <q-icon
+            :name="lectura.valido ? 'sym_r_check' : 'sym_r_block'"
+            size="20px"
+            class="garita-qr__check"
+          />{{ lectura.valido ? 'QR válido' : 'QR no válido' }}
         </div>
-        <div class="garita-qr__nombre">{{ GARITA_QR_LEIDO.nombre }}</div>
+        <div class="garita-qr__nombre">{{ lectura.visita.visitante }}</div>
         <div class="garita-qr__detalle">
-          Visita a <strong>{{ GARITA_QR_LEIDO.unidad }}</strong> · autorizó
-          {{ GARITA_QR_LEIDO.autorizo }}<br />{{ GARITA_QR_LEIDO.vigencia }} · Placa
-          <strong>{{ GARITA_QR_LEIDO.placa }}</strong>
+          Visita a <strong>{{ lectura.visita.unidad ?? '—' }}</strong
+          ><template v-if="lectura.visita.autorizo">
+            · autorizó {{ lectura.visita.autorizo }}</template
+          ><br />{{ vigenciaVisita(lectura.visita)
+          }}<template v-if="lectura.visita.placa">
+            · Placa <strong>{{ lectura.visita.placa }}</strong></template
+          >
         </div>
-        <div class="garita-qr__nota">Confirma que la persona y la placa coinciden.</div>
+        <div v-if="!lectura.valido" class="garita-qr__nota" role="alert">
+          {{ lectura.mensaje }}
+        </div>
+        <div v-else class="garita-qr__nota">Confirma que la persona y la placa coinciden.</div>
         <div class="garita-qr__botones">
-          <button type="button" class="garita-qr__no" @click="noCoincide">No coincide</button>
-          <button type="button" class="garita-qr__si" @click="registrarIngreso">
+          <button type="button" class="garita-qr__no" @click="descartar">
+            {{ lectura.valido ? 'No coincide' : 'Cerrar' }}
+          </button>
+          <button
+            v-if="lectura.valido"
+            type="button"
+            class="garita-qr__si"
+            :disabled="ocupado"
+            @click="registrarIngreso"
+          >
             Registrar ingreso
           </button>
         </div>
       </div>
 
-      <GaritaListaVisitas
-        titulo="Dentro ahora"
-        :visitas="dentro"
-        accion="Salida"
-        vacio="No hay visitas dentro."
-        @accion="registrarSalida"
-      />
-      <GaritaListaVisitas
-        titulo="Esperadas hoy"
-        :visitas="GARITA_ESPERADAS"
-        vacio="No hay visitas esperadas hoy."
-      />
-    </div>
-
-    <!-- Paquetes -->
-    <div
-      v-else
-      id="garita-panel"
-      role="tabpanel"
-      aria-labelledby="garita-pestana-paquetes"
-      class="app-cuerpo garita-cuerpo"
-    >
-      <button type="button" class="garita-recibir" @click="recibirPaquete">
-        <q-icon name="sym_r_photo_camera" size="24px" />Recibir paquete (foto + unidad)
-      </button>
-      <h2 class="garita-subtitulo">En garita</h2>
-      <div v-for="paquete in paquetes" :key="paquete.id" class="garita-paquete">
-        <div class="garita-paquete__icono">
-          <q-icon name="sym_r_package_2" size="24px" />
-        </div>
-        <div class="garita-paquete__textos">
-          <div class="garita-paquete__titulo">{{ paquete.unidad }} · {{ paquete.empresa }}</div>
-          <div
-            class="garita-paquete__recibido"
-            :class="{ 'garita-paquete__recibido--atrasado': paquete.atrasado }"
-          >
-            {{ paquete.recibido }}
-          </div>
-        </div>
-        <button
-          type="button"
-          class="garita-paquete__entregar"
-          :aria-label="`Entregar paquete de ${paquete.unidad}`"
-          @click="entregar(paquete.id)"
-        >
-          Entregar
-        </button>
+      <div v-if="panel.isError.value" class="safic-alerta" role="alert">
+        {{ panel.error.value?.mensaje }}
+        <q-btn flat no-caps dense label="Reintentar" @click="panel.refetch()" />
       </div>
-      <div v-if="!paquetes.length" class="garita-paquete garita-paquete--vacio">
-        No hay paquetes en garita.
-      </div>
-      <div class="garita-nota">
-        Al entregar, firma quien retira: ocupante vigente o persona autorizada por el residente.
-      </div>
+      <template v-else-if="panel.isPending.value">
+        <q-skeleton v-for="i in 2" :key="i" type="rect" height="96px" aria-busy="true" />
+      </template>
+      <template v-else>
+        <GaritaListaVisitas
+          titulo="Dentro ahora"
+          :visitas="dentro"
+          accion="Salida"
+          vacio="No hay visitas dentro."
+          @accion="registrarSalida"
+        />
+        <GaritaListaVisitas
+          titulo="Esperadas hoy"
+          :visitas="esperadas"
+          vacio="No hay visitas esperadas hoy."
+        />
+      </template>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { useQuasar } from 'quasar';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 import AppEncabezado from '@/components/app/AppEncabezado.vue';
-import GaritaIndicadorConexion from '@/modules/app-guardia/components/GaritaIndicadorConexion.vue';
-import GaritaListaVisitas from '@/modules/app-guardia/components/GaritaListaVisitas.vue';
-import type { GaritaVisitaDentro } from '@/modules/app-guardia/demo/garita';
+import { aApiError } from '@/core/api/errors';
+import EscanerQrDialog from '@/modules/garita/components/EscanerQrDialog.vue';
+import IngresoSinQrDialog from '@/modules/garita/components/IngresoSinQrDialog.vue';
 import {
-  GARITA_DENTRO,
-  GARITA_ESPERADAS,
-  GARITA_PAQUETES,
-  GARITA_QR_LEIDO,
-  GARITA_TURNO,
-} from '@/modules/app-guardia/demo/garita';
+  useIngresoConQr,
+  usePanelGarita,
+  useRegistrarSalida,
+  useValidarQr,
+} from '@/modules/garita/composables/useGarita';
+import { detalleDentro, detalleEsperada } from '@/modules/garita/garita.logica';
+import type { ValidacionQr } from '@/modules/garita/services/garita.service';
+import { vigenciaVisita } from '@/modules/garita/visitas.logica';
+import { useSessionStore } from '@/stores/session';
+
+import GaritaIndicadorConexion from '../components/GaritaIndicadorConexion.vue';
+import GaritaListaVisitas from '../components/GaritaListaVisitas.vue';
 
 const $q = useQuasar();
+const session = useSessionStore();
 
-const pestana = ref<'visitas' | 'paquetes'>('visitas');
-const qrLeido = ref(false);
-const ingresoRegistrado = ref(false);
-const salidas = ref<Set<string>>(new Set());
-const paquetes = ref([...GARITA_PAQUETES]);
+const panel = usePanelGarita();
+const validando = useValidarQr();
+const ingresando = useIngresoConQr();
+const saliendo = useRegistrarSalida();
+const ocupado = computed(
+  () => validando.isPending.value || ingresando.isPending.value || saliendo.isPending.value,
+);
 
-const dentro = computed<GaritaVisitaDentro[]>(() => {
-  const lista: GaritaVisitaDentro[] = [...GARITA_DENTRO];
-  if (ingresoRegistrado.value) {
-    const qr = GARITA_QR_LEIDO;
-    lista.unshift({
-      id: qr.id,
-      nombre: qr.nombre,
-      detalle: `${qr.unidad} · visita · ${qr.placa} · ahora`,
-    });
-  }
-  return lista.filter((v) => !salidas.value.has(v.id));
-});
+const lectura = ref<ValidacionQr | null>(null);
+const token = ref<string | null>(null);
+const mensaje = ref<string | null>(null);
+const errorAccion = ref<string | null>(null);
 
-function escanear(): void {
-  // En el mockup solo hay un QR de ejemplo: una vez registrado no se vuelve a leer.
-  if (ingresoRegistrado.value) {
-    $q.notify({ type: 'info', message: 'Este QR ya se usó para registrar el ingreso.' });
-    return;
-  }
-  qrLeido.value = true;
+const dentro = computed(() =>
+  (panel.data.value?.dentro ?? []).map((d) => ({
+    id: String(d.id),
+    nombre: d.nombre,
+    detalle: detalleDentro(d),
+  })),
+);
+const esperadas = computed(() =>
+  (panel.data.value?.esperadas ?? []).map((e) => ({
+    id: String(e.id),
+    nombre: e.nombre,
+    detalle: detalleEsperada(e),
+  })),
+);
+
+// Otro condominio: nada de lo leído ni avisado queda
+watch(
+  () => session.condominioId,
+  () => {
+    lectura.value = null;
+    token.value = null;
+    mensaje.value = null;
+    errorAccion.value = null;
+  },
+);
+
+function fallar(error: unknown): void {
+  mensaje.value = null;
+  const apiError = aApiError(error);
+  // Un QR que dejó de servir (otro guardia lo usó antes) o un conflicto de estado: se vuelve a leer el panel
+  if (apiError.codigo.startsWith('QR_') || apiError.estado === 409) void panel.refetch();
+  // Sin respuesta o 5xx el cambio pudo hacerse: se avisa para no repetirlo a ciegas
+  errorAccion.value =
+    apiError.estado === 0 || apiError.estado >= 500
+      ? `${apiError.mensaje} Revisa «Dentro ahora» antes de reintentar: el cambio pudo hacerse.`
+      : apiError.mensaje;
 }
 
-function noCoincide(): void {
-  qrLeido.value = false;
+function escanear(): void {
+  mensaje.value = null;
+  errorAccion.value = null;
+  $q.dialog({ component: EscanerQrDialog }).onOk((leido: string) => {
+    validando.mutate(leido, {
+      onSuccess: (r) => {
+        token.value = leido;
+        lectura.value = r;
+      },
+      onError: fallar,
+    });
+  });
+}
+
+function descartar(): void {
+  lectura.value = null;
+  token.value = null;
 }
 
 function registrarIngreso(): void {
-  qrLeido.value = false;
-  ingresoRegistrado.value = true;
-  $q.notify({ type: 'positive', message: 'Ingreso registrado.' });
+  const t = token.value;
+  if (!t || ocupado.value) return;
+  errorAccion.value = null;
+  ingresando.mutate(t, {
+    onSuccess: () => {
+      mensaje.value = `Ingreso de ${lectura.value?.visita.visitante ?? 'la visita'} registrado.`;
+      descartar();
+    },
+    onError: (error) => {
+      descartar();
+      fallar(error);
+    },
+  });
+}
+
+function ingresoSinQr(): void {
+  mensaje.value = null;
+  errorAccion.value = null;
+  $q.dialog({ component: IngresoSinQrDialog }).onOk((m: string) => (mensaje.value = m));
 }
 
 function registrarSalida(id: string): void {
-  salidas.value = new Set(salidas.value).add(id);
-  $q.notify({ type: 'positive', message: 'Salida registrada.' });
-}
-
-function visitaSinQr(): void {
-  $q.notify({ type: 'info', message: 'El registro de visitas sin QR estará disponible pronto.' });
-}
-
-function recibirPaquete(): void {
-  $q.notify({ type: 'info', message: 'La recepción de paquetes estará disponible pronto.' });
-}
-
-function entregar(id: string): void {
-  paquetes.value = paquetes.value.filter((p) => p.id !== id);
-  $q.notify({ type: 'positive', message: 'Paquete entregado.' });
+  if (ocupado.value) return;
+  errorAccion.value = null;
+  saliendo.mutate(Number(id), {
+    onSuccess: () => (mensaje.value = 'Salida registrada.'),
+    onError: fallar,
+  });
 }
 </script>
 
 <style scoped>
+.garita-qr--invalido {
+  border-color: #b3261e;
+}
+
+.garita-qr--invalido .garita-qr__estado {
+  color: #b3261e;
+}
+
+.garita-resultado {
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: #e3efec;
+  color: #0b4a47;
+  font-weight: 700;
+  font-size: 14px;
+}
+
 .app-encabezado.garita-encabezado {
   padding: 20px 16px 0;
 }
