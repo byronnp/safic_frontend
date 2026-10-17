@@ -45,6 +45,7 @@ export const ICONOS = {
   resumen: 'sym_r_dashboard',
   pagosPorAprobar: 'sym_r_fact_check',
   aprobaciones: 'sym_r_approval',
+  morosidad: 'sym_r_notifications_active',
   conciliacion: 'sym_r_account_balance',
   cuentasPorPagar: 'sym_r_payments',
   agenda: 'sym_r_calendar_month',

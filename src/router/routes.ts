@@ -146,6 +146,12 @@ const routes: RouteRecordRaw[] = [
         meta: { permiso: 'finanzas.ver', titulo: 'Conciliación bancaria' },
       },
       {
+        path: 'finanzas/morosidad',
+        name: 'finanzas-morosidad',
+        component: () => import('@/modules/finanzas/pages/MorosidadPage.vue'),
+        meta: { permiso: 'finanzas.ver', titulo: 'Morosidad' },
+      },
+      {
         path: 'finanzas/cuentas-por-pagar',
         name: 'finanzas-cuentas-por-pagar',
         component: () => import('@/modules/finanzas/pages/CuentasPorPagarPage.vue'),
