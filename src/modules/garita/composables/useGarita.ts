@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query';
 import { computed, type Ref } from 'vue';
 
 import type { ApiError } from '@/core/api/errors';
+import { intervaloConRespaldo } from '@/core/realtime/tiempo-real';
 import { useSessionStore } from '@/stores/session';
 
 import {
@@ -30,9 +31,13 @@ export function usePanelGarita() {
     queryFn: () => garitaService.panel(),
     enabled: computed(() => session.condominioId !== null),
     // La garita queda abierta todo el turno: se refresca sola
-    // Con una pregunta abierta al residente se mira cada pocos segundos; si no, cada 30
+    // Con tiempo real las respuestas del residente llegan al instante y esto es solo respaldo; sin él, con una pregunta abierta
+    // se mira cada pocos segundos y si no, cada 30
     refetchInterval: (consulta) =>
-      (consulta.state.data?.solicitudes.length ?? 0) > 0 ? 5_000 : 30_000,
+      intervaloConRespaldo(
+        (consulta.state.data?.solicitudes.length ?? 0) > 0 ? 5_000 : 30_000,
+        120_000,
+      ),
     refetchOnWindowFocus: true,
     gcTime: 0,
   });

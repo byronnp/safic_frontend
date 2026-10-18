@@ -6,10 +6,14 @@ import { defineConfig } from '#q-app';
  * archivo como import.meta.env.*; una variable de entorno real (por ejemplo la
  * que pasa docker compose) tiene prioridad.
  */
-function variable(nombre: 'API_PROXY_TARGET' | 'SAFIC_WATCH_POLLING'): string | undefined {
+function variable(
+  nombre: 'API_PROXY_TARGET' | 'SAFIC_WATCH_POLLING' | 'REVERB_PROXY_TARGET' | 'REVERB_APP_KEY',
+): string | undefined {
   const desdeArchivo: Record<string, unknown> = {
     API_PROXY_TARGET: import.meta.env.API_PROXY_TARGET,
     SAFIC_WATCH_POLLING: import.meta.env.SAFIC_WATCH_POLLING,
+    REVERB_PROXY_TARGET: import.meta.env.REVERB_PROXY_TARGET,
+    REVERB_APP_KEY: import.meta.env.REVERB_APP_KEY,
   };
   const valor = process.env[nombre] ?? desdeArchivo[nombre];
   return valor === undefined ? undefined : String(valor);
@@ -20,11 +24,15 @@ function variable(nombre: 'API_PROXY_TARGET' | 'SAFIC_WATCH_POLLING'): string | 
 //  - dentro de Docker (red "safic"): http://api:8080
 //  - sin Docker: http://localhost:8000
 const apiProxyTarget = variable('API_PROXY_TARGET') ?? 'http://localhost:8000';
+// Tiempo real (Reverb): el navegador se conecta al mismo origen en /app y Vite lo reenvía por WebSocket
+//  - dentro de Docker (red "safic"): http://reverb:8080
+//  - sin Docker: http://localhost:8080
+const reverbProxyTarget = variable('REVERB_PROXY_TARGET') ?? 'http://localhost:8080';
 const sondearCambios = variable('SAFIC_WATCH_POLLING') === 'true';
 
 export default defineConfig((ctx) => {
   return {
-    boot: ['i18n', 'vue-query', 'api'],
+    boot: ['i18n', 'vue-query', 'api', 'tiempo-real'],
 
     css: ['app.css'],
 
@@ -47,6 +55,11 @@ export default defineConfig((ctx) => {
       // En Docker con el código montado desde Windows los cambios no llegan por
       // eventos del sistema de archivos: se detectan revisando cada cierto tiempo.
       extendViteConf(viteConf) {
+        // Clave pública de la aplicación Reverb (no es secreta). Sin ella no hay tiempo real y todo sigue por consulta periódica.
+        viteConf.define = {
+          ...viteConf.define,
+          __REVERB_APP_KEY__: JSON.stringify(variable('REVERB_APP_KEY') ?? ''),
+        };
         if (sondearCambios) {
           viteConf.server = {
             ...viteConf.server,
@@ -85,6 +98,10 @@ export default defineConfig((ctx) => {
         '/api': {
           target: apiProxyTarget,
           changeOrigin: true,
+        },
+        '/app': {
+          target: reverbProxyTarget,
+          ws: true,
         },
       },
     },

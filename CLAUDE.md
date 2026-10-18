@@ -21,10 +21,11 @@ La arquitectura completa está en `docs/arquitectura.md`.
 src/core/api/         Cliente HTTP (token, X-Condominio-Id, refresh single-flight), ApiError, tipos del contrato
 src/core/auth/        auth.service (login, refresh, logout, me, contexto)
 src/core/navigation/  icons.ts (catálogo de íconos) · menu.ts (MENU_BASE + filtrarMenu)
+src/core/realtime/    Tiempo real (pusher-js contra Reverb) y avisos → consultas
 src/core/theme/       Colores del condominio con contraste WCAG 4.5:1
 src/stores/session.ts Sesión: token en memoria, condominio activo, roles y permisos
 src/router/           routes.ts (meta.permiso) · guards.ts (sesión → condominio → permiso)
-src/boot/             i18n, vue-query, api (conecta el cliente con la sesión)
+src/boot/             i18n, vue-query, api (conecta el cliente con la sesión) · tiempo-real (Reverb)
 src/layouts/          AuthLayout (login, selector) · MainLayout (menú lateral, cambio de condominio)
 src/modules/<m>/      pages · components · composables (vue-query) · services (llamadas a la API)
 ```
@@ -33,6 +34,7 @@ src/modules/<m>/      pages · components · composables (vue-query) · services
 
 - **Token**: el access token vive solo en memoria. Nunca en localStorage/sessionStorage. El refresh es una cookie HttpOnly que JavaScript no toca.
 - **Garita sin conexión**: la copia de QR de hoy y mañana y la cola de ingresos/salidas viven en IndexedDB (`core/offline/almacen.ts`), con clave `garita:<usuario>:<condominio>`. Al cerrar sesión o expirar se borra la copia (`:copia`), pero NO la cola: es el único rastro de quién entró y se envía al volver a entrar. Nunca en localStorage.
+- **Tiempo real** (Reverb, `core/realtime/`): el servidor solo avisa «este recurso cambió» (sin datos); el aviso invalida consultas de Vue Query y los datos se piden por la API de siempre. Cada módulo declara su mapa recurso → consultas (`modules/<m>/realtime.ts`) y `boot/tiempo-real.ts` los junta. La conexión se abre con sesión y condominio activo y se cierra al cambiar de condominio o cerrar sesión; la autorización de canales pasa por el cliente HTTP. Es de mejor esfuerzo: toda pantalla conserva su consulta periódica y usa `intervaloConRespaldo(corto, largo)` para espaciarla mientras hay conexión. Un recurso nuevo se declara también en el backend (`routes/channels.php`, `EnVivo`).
 - **Condominio**: el cliente HTTP agrega `X-Condominio-Id`. Las claves de Vue Query **incluyen el condominio** (`['bloques', condominioId]`) y la caché se vacía (`queryClient.clear()`) al cambiar de condominio o cerrar sesión.
 - **Excepción a la clave con condominio**: los catálogos globales (`['catalogo', 'ubicaciones']`) y los datos del panel de plataforma (`['plataforma', ...]`) no dependen de un condominio; igual se vacían con `queryClient.clear()` al cerrar sesión.
 - **Permisos**: cada ruta declara `meta.permiso`; los botones se ocultan con `session.tienePermiso()`. Ocultar no es seguridad: la API también lo exige.
