@@ -195,9 +195,11 @@ async function cambiarCondominio(id: number): Promise<void> {
     // Primero se sale de la pantalla actual: un detalle (ej. una unidad) no debe
     // volver a pedirse con el condominio nuevo, donde no existe.
     await router.replace({ name: 'inicio' });
-    await session.seleccionarCondominio(id);
-    // Nada de la caché del condominio anterior puede mostrarse en el nuevo.
-    queryClient.clear();
+    // Nada de la caché del condominio anterior puede mostrarse en el nuevo: se vacía justo antes de cambiar, nunca después
+    // (después borraría las consultas nuevas que ya arrancaron y el menú quedaría vacío).
+    await session.seleccionarCondominio(id, () => {
+      queryClient.clear();
+    });
   } catch (error) {
     $q.notify({ type: 'negative', message: aApiError(error).mensaje });
   }

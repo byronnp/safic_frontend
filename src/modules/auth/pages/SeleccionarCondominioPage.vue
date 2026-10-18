@@ -94,8 +94,9 @@ const grupos = computed(() => [
 async function elegir(id: number): Promise<void> {
   cargandoId.value = id;
   try {
-    await session.seleccionarCondominio(id);
-    queryClient.clear();
+    await session.seleccionarCondominio(id, () => {
+      queryClient.clear();
+    });
     await router.replace(redireccionSegura(route.query.redirect) ?? { name: 'inicio' });
   } catch (error) {
     $q.notify({ type: 'negative', message: aApiError(error).mensaje });
