@@ -125,6 +125,34 @@ describe('sesión', () => {
     expect(session.condominioId).toBe(5);
   });
 
+  it('vacía la caché justo antes de cambiar de condominio, nunca después', async () => {
+    vi.spyOn(authService, 'login').mockResolvedValue(token([5, 9]));
+    const session = useSessionStore();
+    await session.iniciarSesion('maria@jardinesdelvalle.ec', 'secreto');
+
+    let condominioAlVaciar: number | null = -1;
+    await session.seleccionarCondominio(9, () => {
+      condominioAlVaciar = session.condominioId;
+    });
+
+    // Al vaciar todavía era el condominio anterior: las consultas del nuevo nacen después y no se borran
+    expect(condominioAlVaciar).toBe(5);
+    expect(session.condominioId).toBe(9);
+  });
+
+  it('si el contexto falla no vacía la caché ni cambia de condominio', async () => {
+    vi.spyOn(authService, 'login').mockResolvedValue(token([5, 9]));
+    const session = useSessionStore();
+    await session.iniciarSesion('maria@jardinesdelvalle.ec', 'secreto');
+    vi.spyOn(authService, 'contexto').mockRejectedValue(new Error('sin red'));
+    const vaciar = vi.fn();
+
+    await expect(session.seleccionarCondominio(9, vaciar)).rejects.toThrow();
+
+    expect(vaciar).not.toHaveBeenCalled();
+    expect(session.condominioId).toBe(5);
+  });
+
   it('el access token nunca se guarda en localStorage', async () => {
     vi.spyOn(authService, 'login').mockResolvedValue(token([5]));
     await useSessionStore().iniciarSesion('maria@jardinesdelvalle.ec', 'secreto');

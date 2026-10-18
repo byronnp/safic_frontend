@@ -79,12 +79,19 @@ export const useSessionStore = defineStore('session', () => {
     usuario.value = respuesta.usuario;
   }
 
-  /** Elige el condominio y carga roles y permisos en él. */
-  async function seleccionarCondominio(id: number): Promise<void> {
+  /**
+   * Elige el condominio y carga roles y permisos en él.
+   *
+   * `antesDeAplicar` corre justo antes de cambiar el condominio, en el mismo instante: ahí se vacía la caché del condominio
+   * anterior. Hacerlo después borraría las consultas del condominio nuevo que ya arrancaron (el menú, por ejemplo, se quedaría
+   * vacío hasta recargar la página).
+   */
+  async function seleccionarCondominio(id: number, antesDeAplicar?: () => void): Promise<void> {
     if (!condominios.value.some((c) => c.id === id)) {
       throw new Error('El condominio no está entre tus condominios activos.');
     }
     const contexto = await authService.contexto(id);
+    antesDeAplicar?.();
     condominioId.value = id;
     roles.value = contexto.roles;
     permisos.value = contexto.permisos;
