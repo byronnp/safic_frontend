@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query';
 import { computed, type Ref } from 'vue';
 
 import type { ApiError } from '@/core/api/errors';
+import { intervaloConRespaldo } from '@/core/realtime/tiempo-real';
 import { useSessionStore } from '@/stores/session';
 
 import {
@@ -34,8 +35,8 @@ export function useMisVisitas() {
 }
 
 /**
- * Quién espera en la garita por mi unidad. Se consulta cada 8 segundos mientras la app está abierta (el aviso instantáneo llegará con
- * las notificaciones push; por ahora esto es lo que hay). Sin guardarlo en caché: son nombres de personas en la puerta.
+ * Quién espera en la garita por mi unidad. El aviso llega al instante por tiempo real (Reverb); sin él se consulta cada 8 segundos
+ * mientras la app está abierta, y con él solo cada 2 minutos como respaldo. Sin guardarlo en caché: son nombres de personas en la puerta.
  */
 export function useSolicitudesDeIngreso(activo: Ref<boolean>) {
   const session = useSessionStore();
@@ -44,7 +45,7 @@ export function useSolicitudesDeIngreso(activo: Ref<boolean>) {
     queryKey: computed(() => clavesVisitas.solicitudes(session.condominioId)),
     queryFn: () => visitasService.solicitudes(),
     enabled: computed(() => session.condominioId !== null && activo.value),
-    refetchInterval: 8_000,
+    refetchInterval: () => intervaloConRespaldo(8_000, 120_000),
     refetchOnWindowFocus: true,
     gcTime: 0,
   });

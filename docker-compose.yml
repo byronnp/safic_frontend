@@ -11,6 +11,9 @@ services:
     environment:
       API_PROXY_TARGET: ${API_PROXY_TARGET:-http://api:8080}
       SAFIC_WATCH_POLLING: ${SAFIC_WATCH_POLLING:-true}
+      # Tiempo real: la clave pública debe coincidir con REVERB_APP_KEY del backend
+      REVERB_PROXY_TARGET: ${REVERB_PROXY_TARGET:-http://reverb:8080}
+      REVERB_APP_KEY: ${REVERB_APP_KEY:-safic-local-key}
     volumes:
       - .:/app
       - node_modules:/app/node_modules

@@ -62,7 +62,7 @@ npm run dev
 El navegador siempre llama a `/api/v1` en el mismo dominio del frontend:
 
 - **Desarrollo**: el servidor de Vite reenvía `/api` a `API_PROXY_TARGET` (`http://api:8080` en Docker).
-- **Producción**: nginx sirve la SPA y reenvía `/api` a `API_UPSTREAM`. Probar localmente: `docker compose --profile prod up --build web-prod` → http://localhost:8081
+- **Producción**: nginx sirve la SPA y reenvía `/api` a `API_UPSTREAM` y `/app` (WebSocket de Reverb) a `REVERB_UPSTREAM`. Probar localmente: `docker compose --profile prod up --build web-prod` → http://localhost:8081
 
 Así la cookie del refresh token (`SameSite=Strict`, ruta `/api/v1/auth`) funciona sin configurar CORS.
 

@@ -21,12 +21,17 @@ COPY package.json package-lock.json ./
 COPY quasar.config.ts tsconfig.json index.html env.d.ts postcss.config.js eslint.config.js ./
 COPY public ./public
 COPY src ./src
+# Clave pública de Reverb (tiempo real); vacía = sin tiempo real, todo sigue por consulta periódica.
+ARG REVERB_APP_KEY=
+ENV REVERB_APP_KEY=$REVERB_APP_KEY
 RUN npm ci --no-audit --no-fund && npm run build
 
 # ---------- Producción ----------
 FROM nginx:1.29-alpine AS prod
 # Backend al que se reenvía /api (en ECS se cambia por la URL interna del servicio).
 ENV API_UPSTREAM=http://api:8080
+# Servidor Reverb (WebSocket) al que se reenvía /app.
+ENV REVERB_UPSTREAM=http://reverb:8080
 COPY docker/nginx/default.conf.template /etc/nginx/templates/default.conf.template
 COPY --from=build /app/dist/spa /usr/share/nginx/html
 EXPOSE 8080
