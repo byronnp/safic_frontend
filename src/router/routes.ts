@@ -232,12 +232,12 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/modules/comunicacion/pages/AnunciosPage.vue'),
         meta: { permiso: 'anuncios.publicar', titulo: 'Anuncios' },
       },
-      previa(
-        'comunicacion/incidencias',
-        'comunicacion-incidencias',
-        'Incidencias',
-        () => import('@/modules/comunicacion/pages/IncidenciasPage.vue'),
-      ),
+      {
+        path: 'comunicacion/incidencias',
+        name: 'comunicacion-incidencias',
+        component: () => import('@/modules/comunicacion/pages/IncidenciasPage.vue'),
+        meta: { permiso: 'incidencias.gestionar', titulo: 'Incidencias' },
+      },
 
       // Fase 5 · Asambleas
       previa(
@@ -451,6 +451,12 @@ const routes: RouteRecordRaw[] = [
           sinPestanas: true,
           menuActivo: 'app-areas',
         },
+      },
+      {
+        path: 'incidencias',
+        name: 'app-incidencias',
+        component: () => import('@/modules/app-residente/pages/MisIncidenciasPage.vue'),
+        meta: { permiso: 'incidencias.reportar', titulo: 'Incidencias' },
       },
       {
         path: 'avisos',

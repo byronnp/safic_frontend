@@ -3,14 +3,27 @@
     <PaginaEncabezado miga="Seguridad y comunicación / Incidencias" titulo="Incidencias">
       <template #acciones>
         <div class="incidencias__promedio">
-          Tiempo promedio de respuesta: <strong>{{ TIEMPO_PROMEDIO_RESPUESTA }}</strong>
+          Tiempo promedio de respuesta:
+          <strong>{{
+            textoTiempoPromedio(tablero.data.value?.tiempo_promedio_horas ?? null)
+          }}</strong>
         </div>
       </template>
     </PaginaEncabezado>
 
+    <div v-if="resultado" class="incidencias__resultado" role="status">{{ resultado }}</div>
+    <div v-if="errorAccion" class="safic-alerta" role="alert">{{ errorAccion }}</div>
+    <div v-if="tablero.isError.value" class="safic-alerta" role="alert">
+      {{ tablero.error.value?.mensaje }}
+      <q-btn flat no-caps dense label="Reintentar" @click="tablero.refetch()" />
+    </div>
+
     <div class="incidencias__cuerpo">
-      <div class="incidencias__tablero">
-        <div v-for="col in columnas" :key="col.nombre" class="incidencias__columna">
+      <div class="incidencias__tablero" :aria-busy="tablero.isPending.value">
+        <template v-if="tablero.isPending.value">
+          <q-skeleton v-for="i in 4" :key="i" type="rect" height="220px" />
+        </template>
+        <div v-for="col in columnas" v-else :key="col.estado" class="incidencias__columna">
           <div class="incidencias__col-cab">
             <div class="incidencias__col-nombre">{{ col.nombre }}</div>
             <div class="incidencias__col-n">{{ col.items.length }}</div>
@@ -22,129 +35,321 @@
             class="incidencias__tarjeta"
             :class="{ 'incidencias__tarjeta--activa': t.id === seleccionId }"
             :aria-pressed="t.id === seleccionId"
-            @click="seleccionId = t.id"
+            @click="elegir(t.id)"
           >
             <span class="incidencias__tarjeta-meta">
-              <IncidenciasPrioridad :prio="t.prio" />
-              <span class="incidencias__cat">{{ t.cat }}</span>
+              <IncidenciasPrioridad :prio="t.prioridad" />
+              <span class="incidencias__cat">{{ etiquetaCategoria(t.categoria) }}</span>
             </span>
             <span class="incidencias__tarjeta-titulo">{{ t.titulo }}</span>
-            <span class="incidencias__tarjeta-pie">{{ t.unidad }} · {{ t.hace }}</span>
+            <span class="incidencias__tarjeta-pie"
+              >{{ t.unidad ?? 'Áreas comunes' }} · {{ hace(t.creada_en, ahora) }}</span
+            >
           </button>
+        </div>
+        <div
+          v-if="tablero.data.value && tablero.data.value.incidencias.length === 0"
+          class="incidencias__vacio"
+        >
+          <q-icon name="sym_r_support_agent" size="40px" class="text-suave" />
+          <div class="text-weight-bold">No hay incidencias</div>
+          <div>Cuando un residente o el guardia reporte un problema, aparecerá aquí.</div>
         </div>
       </div>
 
       <aside class="incidencias__detalle" aria-label="Detalle de la incidencia">
-        <div class="incidencias__det-meta">
-          <IncidenciasPrioridad :prio="sel.prio" />
-          <span class="incidencias__det-cat">{{ sel.cat }} · #{{ sel.num }}</span>
+        <div v-if="seleccionId === null" class="incidencias__vacio">
+          Elige una incidencia para verla.
         </div>
-        <h2 class="incidencias__det-titulo">{{ sel.titulo }}</h2>
-        <div class="incidencias__det-autor">
-          Reportado por {{ sel.autor }} · {{ sel.unidad }} · {{ sel.hace }}
+        <q-skeleton v-else-if="detalle.isPending.value" type="rect" height="320px" />
+        <div v-else-if="detalle.isError.value" class="safic-alerta" role="alert">
+          {{ detalle.error.value?.mensaje }}
+          <q-btn flat no-caps dense label="Reintentar" @click="detalle.refetch()" />
         </div>
-        <div class="incidencias__det-desc">{{ sel.desc }}</div>
-        <div class="incidencias__fotos">
-          <div class="incidencias__foto">Foto 1</div>
-          <div class="incidencias__foto">Foto 2</div>
-        </div>
-        <div class="incidencias__seccion">COMENTARIOS</div>
-        <div
-          v-for="(c, i) in comentarios"
-          :key="i"
-          class="incidencias__comentario"
-          :class="{ 'incidencias__comentario--interna': c.interna }"
-        >
-          <strong>{{ c.autor }}</strong> · {{ c.texto }}
-        </div>
-        <div class="incidencias__espacio" />
-        <textarea
-          v-model="texto"
-          rows="2"
-          class="incidencias__texto"
-          aria-label="Escribe un comentario"
-          placeholder="Escribe un comentario para el residente"
-        />
-        <div class="incidencias__acciones">
-          <button type="button" class="incidencias__nota" @click="agregarNota">Nota interna</button>
-          <button
-            type="button"
-            class="incidencias__avanzar"
-            :class="{ 'incidencias__avanzar--off': sel.estado >= 2 }"
-            :disabled="sel.estado >= 2"
-            @click="avanzar"
+        <template v-else-if="sel">
+          <div class="incidencias__det-meta">
+            <IncidenciasPrioridad :prio="sel.prioridad" />
+            <span class="incidencias__det-cat"
+              >{{ etiquetaCategoria(sel.categoria) }} · #{{ sel.numero }}</span
+            >
+          </div>
+          <h2 class="incidencias__det-titulo">{{ sel.titulo }}</h2>
+          <div class="incidencias__det-autor">
+            Reportado por {{ sel.autor ?? '—' }} · {{ sel.unidad ?? 'Áreas comunes' }} ·
+            {{ hace(sel.creada_en, ahora) }}
+          </div>
+          <div class="incidencias__ajustes">
+            <select
+              class="incidencias__select"
+              aria-label="Prioridad"
+              :value="sel.prioridad"
+              :disabled="ocupado || sel.estado === 'cerrado'"
+              @change="
+                cambiarPrioridad(($event.target as HTMLSelectElement).value as PrioridadIncidencia)
+              "
+            >
+              <option v-for="p in PRIORIDADES" :key="p.id" :value="p.id">
+                Prioridad {{ p.etiqueta.toLowerCase() }}
+              </option>
+            </select>
+          </div>
+          <div class="incidencias__det-desc">{{ sel.descripcion }}</div>
+          <div v-if="sel.fotos.length" class="incidencias__fotos">
+            <div v-for="(f, i) in sel.fotos" :key="f.id" class="incidencias__foto">
+              <img v-if="f.url" :src="f.url" :alt="`Foto ${i + 1}`" referrerpolicy="no-referrer" />
+              <span v-else>Foto {{ i + 1 }}</span>
+            </div>
+          </div>
+          <div class="incidencias__seccion">COMENTARIOS</div>
+          <div
+            v-for="c in sel.comentarios"
+            :key="c.id"
+            class="incidencias__comentario"
+            :class="{ 'incidencias__comentario--interna': c.interna }"
           >
-            {{ ACCION_AVANZAR_INCIDENCIA[sel.estado] }}
-          </button>
-        </div>
+            <strong>{{ c.interna ? 'Nota interna' : c.autor }}</strong> · {{ c.texto }}
+          </div>
+          <div v-if="sel.comentarios.length === 0" class="incidencias__vacio">
+            Sin comentarios todavía.
+          </div>
+          <div class="incidencias__espacio" />
+          <textarea
+            v-model="texto"
+            rows="2"
+            maxlength="1000"
+            class="incidencias__texto"
+            aria-label="Escribe un comentario"
+            placeholder="Escribe un comentario para el residente"
+            :disabled="sel.estado === 'cerrado'"
+          />
+          <div v-if="errorTexto" class="incidencias__error" role="alert">{{ errorTexto }}</div>
+          <div class="incidencias__acciones">
+            <button
+              type="button"
+              class="incidencias__nota"
+              :disabled="ocupado || sel.estado === 'cerrado'"
+              @click="comentar(true)"
+            >
+              Nota interna
+            </button>
+            <button
+              type="button"
+              class="incidencias__nota"
+              :disabled="ocupado || sel.estado === 'cerrado'"
+              @click="comentar(false)"
+            >
+              Enviar al residente
+            </button>
+            <button
+              type="button"
+              class="incidencias__avanzar"
+              :class="{ 'incidencias__avanzar--off': !avance.siguiente }"
+              :disabled="!avance.siguiente || ocupado"
+              @click="avanzar"
+            >
+              {{ avance.texto }}
+            </button>
+          </div>
+        </template>
       </aside>
     </div>
   </q-page>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
-import { useQuasar } from 'quasar';
+import { computed, onBeforeUnmount, ref, watch } from 'vue';
 
 import PaginaEncabezado from '@/components/PaginaEncabezado.vue';
-import IncidenciasPrioridad from '@/modules/comunicacion/components/IncidenciasPrioridad.vue';
+import { aApiError } from '@/core/api/errors';
+import { useSessionStore } from '@/stores/session';
+
+import IncidenciasPrioridad from '../components/IncidenciasPrioridad.vue';
 import {
-  ACCION_AVANZAR_INCIDENCIA,
-  COLUMNAS_INCIDENCIAS,
-  COMENTARIOS_INCIDENCIA,
-  INCIDENCIAS,
-  TIEMPO_PROMEDIO_RESPUESTA,
-} from '@/modules/comunicacion/demo/incidencias';
-import type {
-  ComentarioIncidencia,
-  EstadoIncidencia,
-  Incidencia,
-} from '@/modules/comunicacion/demo/incidencias';
+  useAjustarIncidencia,
+  useCambiarEstadoIncidencia,
+  useComentarIncidencia,
+  useDetalleIncidencia,
+  useTableroIncidencias,
+} from '../composables/useIncidencias';
+import {
+  accionAvanzar,
+  armarTablero,
+  etiquetaCategoria,
+  etiquetaEstado,
+  hace,
+  PRIORIDADES,
+  textoTiempoPromedio,
+} from '../incidencias.logica';
+import type { PrioridadIncidencia } from '../services/incidencias.service';
 
-const $q = useQuasar();
+const session = useSessionStore();
 
-const incidencias = ref<Incidencia[]>(INCIDENCIAS.map((t) => ({ ...t })));
-const seleccionId = ref(INCIDENCIAS[0]!.id);
-const comentarios = ref<ComentarioIncidencia[]>([...COMENTARIOS_INCIDENCIA]);
+const tablero = useTableroIncidencias();
+const seleccionId = ref<number | null>(null);
+const detalle = useDetalleIncidencia(seleccionId);
+const comentando = useComentarIncidencia();
+const cambiando = useCambiarEstadoIncidencia();
+const ajustando = useAjustarIncidencia();
+const ocupado = computed(
+  () => comentando.isPending.value || cambiando.isPending.value || ajustando.isPending.value,
+);
+
+const columnas = computed(() => armarTablero(tablero.data.value?.incidencias ?? []));
+const sel = computed(() => detalle.data.value ?? null);
+const avance = computed(() => accionAvanzar(sel.value?.estado ?? 'cerrado'));
+
+// Para «hace 2 h»: se refresca cada minuto sin pedir nada al servidor
+const ahora = ref(Date.now());
+const reloj = setInterval(() => (ahora.value = Date.now()), 60_000);
+onBeforeUnmount(() => clearInterval(reloj));
+
 const texto = ref('');
+const errorTexto = ref<string | null>(null);
+const resultado = ref<string | null>(null);
+const errorAccion = ref<string | null>(null);
 
-const columnas = computed(() =>
-  COLUMNAS_INCIDENCIAS.map((nombre, ci) => ({
-    nombre,
-    items: incidencias.value.filter((t) => t.estado === ci),
-  })),
+// Al llegar el tablero se elige la primera tarjeta; si la elegida ya no está, otra
+watch(
+  () => tablero.data.value,
+  (t) => {
+    const filas = t?.incidencias ?? [];
+    if (!filas.some((f) => f.id === seleccionId.value)) seleccionId.value = filas[0]?.id ?? null;
+  },
 );
 
-const sel = computed<Incidencia>(
-  () => incidencias.value.find((t) => t.id === seleccionId.value) ?? incidencias.value[0]!,
+// Otro condominio: nada de lo abierto ni escrito queda
+watch(
+  () => session.condominioId,
+  () => {
+    seleccionId.value = null;
+    texto.value = '';
+    errorTexto.value = null;
+    resultado.value = null;
+    errorAccion.value = null;
+  },
 );
 
-function avanzar(): void {
-  const actual = sel.value;
-  if (actual.estado >= 2) return;
-  const siguiente = (actual.estado + 1) as EstadoIncidencia;
-  incidencias.value = incidencias.value.map((t) =>
-    t.id === actual.id ? { ...t, estado: siguiente } : t,
-  );
-  $q.notify({
-    type: 'positive',
-    message: `Incidencia #${actual.num} movida a ${COLUMNAS_INCIDENCIAS[siguiente]}`,
-  });
+function elegir(id: number): void {
+  seleccionId.value = id;
+  texto.value = '';
+  errorTexto.value = null;
 }
 
-function agregarNota(): void {
-  const nota = texto.value.trim();
-  if (!nota) {
-    $q.notify({ type: 'warning', message: 'Escribe la nota antes de guardarla' });
+function fallar(error: unknown): void {
+  resultado.value = null;
+  const apiError = aApiError(error);
+  // Otra persona ya cambió el estado: se vuelve a leer todo
+  if (apiError.codigo === 'TRANSICION_NO_PERMITIDA') {
+    void tablero.refetch();
+    void detalle.refetch();
+  }
+  // Sin respuesta o 5xx el cambio pudo hacerse: se avisa para no repetirlo a ciegas
+  errorAccion.value =
+    apiError.estado === 0 || apiError.estado >= 500
+      ? `${apiError.mensaje} Revisa la incidencia antes de reintentar: el cambio pudo hacerse.`
+      : apiError.mensaje;
+}
+
+function comentar(interna: boolean): void {
+  const id = seleccionId.value;
+  if (id === null || ocupado.value) return;
+  errorTexto.value = null;
+  errorAccion.value = null;
+  const t = texto.value.trim();
+  if (t === '') {
+    errorTexto.value = interna
+      ? 'Escribe la nota antes de guardarla.'
+      : 'Escribe el comentario antes de enviarlo.';
     return;
   }
-  comentarios.value = [...comentarios.value, { autor: 'Nota interna', texto: nota, interna: true }];
-  texto.value = '';
-  $q.notify({ type: 'positive', message: 'Nota interna guardada' });
+  comentando.mutate(
+    { id, texto: t, interna },
+    {
+      onSuccess: () => {
+        texto.value = '';
+        resultado.value = interna ? 'Nota interna guardada.' : 'Comentario enviado al residente.';
+      },
+      onError: fallar,
+    },
+  );
+}
+
+function avanzar(): void {
+  const id = seleccionId.value;
+  const siguiente = avance.value.siguiente;
+  if (id === null || siguiente === null || ocupado.value) return;
+  errorAccion.value = null;
+  cambiando.mutate(
+    { id, estado: siguiente },
+    {
+      onSuccess: () => (resultado.value = `Incidencia movida a ${etiquetaEstado(siguiente)}.`),
+      onError: fallar,
+    },
+  );
+}
+
+function cambiarPrioridad(prioridad: PrioridadIncidencia): void {
+  const id = seleccionId.value;
+  if (id === null || ocupado.value) return;
+  errorAccion.value = null;
+  ajustando.mutate({ id, cambios: { prioridad } }, { onError: fallar });
 }
 </script>
 
 <style scoped>
+.incidencias__error {
+  font-size: 12px;
+  font-weight: 600;
+  color: #b3261e;
+}
+
+.incidencias__resultado {
+  padding: 12px 16px;
+  border-radius: 10px;
+  background: #e3efec;
+  color: #0b4a47;
+  font-weight: 700;
+}
+
+.incidencias__vacio {
+  padding: 24px 12px;
+  text-align: center;
+  color: var(--safic-texto-suave);
+}
+
+.incidencias__det-desc,
+.incidencias__comentario {
+  white-space: pre-line;
+}
+
+.incidencias__ajustes {
+  display: flex;
+  gap: 8px;
+}
+
+.incidencias__select {
+  height: 40px;
+  border-radius: 9px;
+  border: 1px solid var(--safic-borde-campo);
+  padding: 0 8px;
+  font-family: inherit;
+  font-size: 13px;
+  background: #ffffff;
+}
+
+.incidencias__foto img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+}
+
+.incidencias__avanzar:disabled,
+.incidencias__nota:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .incidencias.safic-main {
   padding: 24px 32px;
   gap: 16px;

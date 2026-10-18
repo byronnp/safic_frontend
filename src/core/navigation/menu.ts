@@ -190,7 +190,6 @@ export const MENU_BASE: ItemMenu[] = [
         icono: ICONOS.incidencias,
         ruta: 'comunicacion-incidencias',
         permiso: 'incidencias.gestionar',
-        vistaPrevia: true,
       },
     ],
   },
@@ -363,6 +362,13 @@ export const MENU_APP_RESIDENTE: ItemMenu[] = [
     icono: ICONOS.avisos,
     ruta: 'app-avisos',
     permiso: 'avisos.propios',
+  },
+  {
+    id: 'app.incidencias',
+    etiqueta: 'Incidencias',
+    icono: ICONOS.incidenciasApp,
+    ruta: 'app-incidencias',
+    permiso: 'incidencias.reportar',
   },
   {
     id: 'app.visitas',

@@ -73,6 +73,7 @@ export const ICONOS = {
   garitaApp: 'sym_r_badge',
   paquetes: 'sym_r_inventory_2',
   avisos: 'sym_r_notifications',
+  incidenciasApp: 'sym_r_support_agent',
   reservasHoy: 'sym_r_event',
   pagosApp: 'sym_r_payments',
   vistaPrevia: 'sym_r_visibility',

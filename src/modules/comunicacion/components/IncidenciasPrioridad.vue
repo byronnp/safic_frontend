@@ -1,9 +1,10 @@
 <template>
-  <span class="prioridad" :class="`prioridad--${prio.toLowerCase()}`">{{ prio }}</span>
+  <span class="prioridad" :class="`prioridad--${prio}`">{{ etiquetaPrioridad(prio) }}</span>
 </template>
 
 <script setup lang="ts">
-import type { PrioridadIncidencia } from '@/modules/comunicacion/demo/incidencias';
+import { etiquetaPrioridad } from '../incidencias.logica';
+import type { PrioridadIncidencia } from '../services/incidencias.service';
 
 defineProps<{ prio: PrioridadIncidencia }>();
 </script>
