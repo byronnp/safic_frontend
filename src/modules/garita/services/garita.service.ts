@@ -1,4 +1,5 @@
 import { api } from '@/core/api/client';
+import { pedirArchivo } from '@/core/api/descarga';
 import type { ApiRespuesta } from '@/core/api/types';
 
 /** Tipos del contrato (safic_backend/docs/openapi.yaml · Garita). */
@@ -222,6 +223,14 @@ export const garitaService = {
 
   async salida(id: number): Promise<void> {
     await api.post(`/garita/accesos/${id}/salida`);
+  },
+
+  /** Excel de la bitácora con los mismos filtros de la pantalla. */
+  async exportarBitacora(f: FiltrosBitacora): Promise<Blob> {
+    const params = new URLSearchParams({ desde: f.desde, hasta: f.hasta });
+    if (f.tipo !== null) params.set('tipo', f.tipo);
+    if (f.q.trim() !== '') params.set('q', f.q.trim());
+    return pedirArchivo(`/garita/bitacora/exportar?${params.toString()}`);
   },
 
   async bitacora(f: FiltrosBitacora): Promise<BitacoraGarita> {

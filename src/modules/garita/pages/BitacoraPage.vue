@@ -4,7 +4,22 @@
       miga="Seguridad y comunicación / Bitácora de garita"
       titulo="Bitácora de garita"
       subtitulo="Ingresos y salidas de visitas, proveedores y delivery."
-    />
+    >
+      <template #acciones>
+        <q-btn
+          outline
+          no-caps
+          color="primary"
+          class="safic-btn"
+          icon="sym_r_download"
+          label="Exportar"
+          :loading="exportando"
+          :disable="exportando"
+          @click="exportar"
+        />
+      </template>
+    </PaginaEncabezado>
+    <div v-if="errorExportar" class="safic-alerta" role="alert">{{ errorExportar }}</div>
 
     <div v-if="consulta.isError.value" class="safic-alerta" role="alert">
       {{ consulta.error.value?.mensaje }}
@@ -81,7 +96,18 @@
             {{ horaDe(a.entrada_en) }}
           </div>
           <div>{{ horaDe(a.salida_en) }}</div>
-          <div class="text-weight-bold">{{ a.nombre }}</div>
+          <div class="text-weight-bold">
+            {{ a.nombre
+            }}<q-icon
+              v-if="a.sin_conexion"
+              name="sym_r_cloud_off"
+              size="16px"
+              class="q-ml-xs"
+              aria-label="Registrado sin conexión"
+            >
+              <q-tooltip>Registrado sin conexión{{ a.nota ? ` · ${a.nota}` : '' }}</q-tooltip>
+            </q-icon>
+          </div>
           <div>{{ singularDeTipo(a.tipo) }}</div>
           <div>{{ a.unidad ?? a.destino ?? '—' }}</div>
           <div>{{ ETIQUETA_AUTORIZO[a.autorizado_por] }}</div>
@@ -114,6 +140,8 @@ import { computed, ref, watch } from 'vue';
 
 import EstadoBadge from '@/components/EstadoBadge.vue';
 import PaginaEncabezado from '@/components/PaginaEncabezado.vue';
+import { aApiError } from '@/core/api/errors';
+import { guardarArchivo } from '@/core/api/descarga';
 import { useSessionStore } from '@/stores/session';
 import { refDebounced } from '@/utils/debounce';
 import { hoyEcuador } from '@/utils/fecha';
@@ -128,7 +156,7 @@ import {
   TIPOS_ACCESO,
   type RangoBitacora,
 } from '../garita.logica';
-import type { TipoAcceso } from '../services/garita.service';
+import { garitaService, type TipoAcceso } from '../services/garita.service';
 
 const session = useSessionStore();
 const hoy = hoyEcuador();
@@ -153,6 +181,30 @@ watch(
   },
 );
 
+const ultimaSync = (iso: string | null): string =>
+  iso === null ? 'Sincronizados hoy' : `Sincronizados hoy · última ${horaDe(iso)}`;
+
+const exportando = ref(false);
+const errorExportar = ref<string | null>(null);
+
+async function exportar(): Promise<void> {
+  if (exportando.value) return;
+  exportando.value = true;
+  errorExportar.value = null;
+  const condominio = session.condominioId;
+  const f = filtros.value;
+  try {
+    const archivo = await garitaService.exportarBitacora(f);
+    // Si cambió de condominio mientras se generaba, no se entrega un archivo de otro
+    if (condominio === session.condominioId)
+      guardarArchivo(archivo, `bitacora-garita-${f.desde}-${f.hasta}.xlsx`);
+  } catch (error) {
+    errorExportar.value = aApiError(error).mensaje;
+  } finally {
+    exportando.value = false;
+  }
+}
+
 const kpis = computed(() => {
   const i = consulta.data.value?.indicadores;
   if (!i) return null;
@@ -160,7 +212,11 @@ const kpis = computed(() => {
     { titulo: 'Dentro ahora', valor: i.dentro_ahora, sub: `${i.proveedores_dentro} proveedores` },
     { titulo: 'Ingresos hoy', valor: i.ingresos_hoy, sub: `${i.con_qr_hoy} con QR` },
     { titulo: 'Sin anunciar hoy', valor: i.sin_anunciar_hoy, sub: 'Visitas sin QR' },
-    { titulo: 'Accesos sin conexión', valor: i.sin_conexion, sub: 'Pendientes de sincronizar' },
+    {
+      titulo: 'Accesos sin conexión',
+      valor: i.sin_conexion,
+      sub: ultimaSync(consulta.data.value?.ultima_sincronizacion ?? null),
+    },
   ];
 });
 </script>
