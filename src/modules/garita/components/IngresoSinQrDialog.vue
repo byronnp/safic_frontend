@@ -121,6 +121,17 @@
               @click="onDialogCancel"
             />
             <q-btn
+              v-if="f.unidad.trim() !== ''"
+              outline
+              no-caps
+              color="primary"
+              class="safic-btn"
+              label="Preguntar al residente"
+              :loading="preguntando.isPending.value"
+              :disable="registrando.isPending.value"
+              @click="preguntar"
+            />
+            <q-btn
               type="submit"
               color="primary"
               unelevated
@@ -128,6 +139,7 @@
               class="safic-btn"
               label="Registrar ingreso"
               :loading="registrando.isPending.value"
+              :disable="preguntando.isPending.value"
             />
           </div>
         </div>
@@ -143,7 +155,7 @@ import { reactive, ref, watch } from 'vue';
 import { aApiError } from '@/core/api/errors';
 import { useSessionStore } from '@/stores/session';
 
-import { useIngresoSinQr } from '../composables/useGarita';
+import { useIngresoSinQr, usePedirPermiso } from '../composables/useGarita';
 import {
   peticionSinQr,
   sinQrVacio,
@@ -167,6 +179,50 @@ const f = reactive(sinQrVacio());
 const errores = reactive<ErroresSinQr>({});
 const errorGeneral = ref<string | null>(null);
 const registrando = useIngresoSinQr();
+const preguntando = usePedirPermiso();
+
+/** En vez de llamar por teléfono: el residente decide desde su app y el guardia ve la respuesta en la lista. */
+async function preguntar(): Promise<void> {
+  if (preguntando.isPending.value || registrando.isPending.value) return;
+  errorGeneral.value = null;
+  for (const k of Object.keys(errores) as (keyof ErroresSinQr)[]) errores[k] = undefined;
+
+  const problemas = validarSinQr(f);
+  if (Object.keys(problemas).length > 0) {
+    Object.assign(errores, problemas);
+    return;
+  }
+
+  try {
+    await preguntando.mutateAsync({
+      unidad_codigo: f.unidad.trim(),
+      nombre: f.nombre.trim(),
+      tipo: f.tipo,
+      placa: f.placa.trim() === '' ? null : f.placa.trim().toUpperCase(),
+    });
+    onDialogOK(
+      `Se le preguntó a ${f.unidad.trim().toUpperCase()} por ${f.nombre.trim()}. Tiene 3 minutos para responder.`,
+    );
+  } catch (error) {
+    const apiError = aApiError(error);
+    errores.nombre = apiError.campo('nombre');
+    errores.placa = apiError.campo('placa');
+    if (apiError.codigo === 'UNIDAD_NO_ENCONTRADA') errores.unidad = apiError.mensaje;
+    // Nadie de la unidad usa la app, o ya se le preguntó: el guardia sigue por teléfono / espera
+    if (apiError.codigo === 'SIN_RESIDENTES_CON_CUENTA') {
+      errorGeneral.value =
+        'Nadie de esa unidad usa la app. Llama por teléfono y usa «Registrar ingreso».';
+    } else if (apiError.codigo === 'SOLICITUD_ABIERTA') {
+      errorGeneral.value =
+        'Ya le preguntaste a esa unidad por esta persona. Espera su respuesta en la lista.';
+    } else if (!Object.values(errores).some(Boolean)) {
+      errorGeneral.value =
+        apiError.estado === 0 || apiError.estado >= 500
+          ? `${apiError.mensaje} Revisa la lista de solicitudes antes de reintentar: la pregunta pudo enviarse.`
+          : apiError.mensaje;
+    }
+  }
+}
 
 async function guardar(): Promise<void> {
   // Enter dentro de un campo también envía el formulario: no se registra dos veces

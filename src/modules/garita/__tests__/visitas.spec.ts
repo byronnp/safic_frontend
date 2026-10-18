@@ -6,9 +6,12 @@ import { clavesVisitas } from '../composables/useVisitas';
 import { visitasService, type VisitaAutorizada } from '../services/visitas.service';
 import {
   cuandoVisita,
+  cuentaAtras,
   enlacesComoLlegar,
   mensajeParaVisitante,
   peticionVisita,
+  segundosRestantes,
+  textoTipoSolicitud,
   textoDias,
   urlPublicaVisita,
   validarVisita,
@@ -150,6 +153,32 @@ describe('visitas con QR', () => {
     expect(enlacesComoLlegar({ ...base, direccion: 'Av. Siempre Viva 123' })?.waze).toContain(
       'Av.%20Siempre%20Viva%20123',
     );
+  });
+
+  it('la cuenta atrás descuenta lo que pasó desde la consulta', () => {
+    expect(segundosRestantes(102, 1_000_000, 1_000_000)).toBe(102);
+    expect(segundosRestantes(102, 1_000_000, 1_042_000)).toBe(60);
+    expect(segundosRestantes(10, 1_000_000, 1_999_000)).toBe(0);
+    expect(cuentaAtras(102)).toBe('1:42');
+    expect(cuentaAtras(5)).toBe('0:05');
+    expect(cuentaAtras(-3)).toBe('0:00');
+    expect(textoTipoSolicitud('delivery')).toBe('Delivery');
+  });
+
+  it('las claves de las solicitudes de ingreso incluyen el condominio', () => {
+    expect(clavesVisitas.solicitudes(3)).toEqual(['visitas', 3, 'solicitudes']);
+    expect(clavesVisitas.solicitudes(3)).not.toEqual(clavesVisitas.solicitudes(4));
+  });
+
+  it('el servicio de solicitudes usa las rutas del contrato', async () => {
+    const get = vi.spyOn(api, 'get').mockResolvedValue({ data: { data: [] } });
+    const post = vi.spyOn(api, 'post').mockResolvedValue({ data: {} });
+    await visitasService.solicitudes();
+    expect(get).toHaveBeenCalledWith('/mis-solicitudes-ingreso');
+    await visitasService.responder(7, true);
+    expect(post).toHaveBeenCalledWith('/mis-solicitudes-ingreso/7/responder', { permitir: true });
+    await visitasService.responder(7, false);
+    expect(post).toHaveBeenCalledWith('/mis-solicitudes-ingreso/7/responder', { permitir: false });
   });
 
   it('el servicio usa las rutas del contrato', async () => {

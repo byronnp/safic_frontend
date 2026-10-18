@@ -110,6 +110,26 @@ describe('garita', () => {
     });
   });
 
+  it('el servicio de preguntas al residente usa las rutas del contrato', async () => {
+    const post = vi.spyOn(api, 'post').mockResolvedValue({ data: {} });
+    await garitaService.pedirPermiso({
+      unidad_codigo: 'A-102',
+      nombre: 'Carlos Andrade',
+      tipo: 'visita',
+      placa: null,
+    });
+    expect(post).toHaveBeenCalledWith('/garita/solicitudes', {
+      unidad_codigo: 'A-102',
+      nombre: 'Carlos Andrade',
+      tipo: 'visita',
+      placa: null,
+    });
+    await garitaService.ingresoDeSolicitud(5);
+    expect(post).toHaveBeenCalledWith('/garita/solicitudes/5/ingreso');
+    await garitaService.cancelarSolicitud(5);
+    expect(post).toHaveBeenCalledWith('/garita/solicitudes/5/cancelar');
+  });
+
   it('el servicio usa las rutas del contrato', async () => {
     const get = vi.spyOn(api, 'get').mockResolvedValue({ data: { data: {} } });
     const post = vi.spyOn(api, 'post').mockResolvedValue({ data: { data: {} } });

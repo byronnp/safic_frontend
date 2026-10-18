@@ -33,6 +33,9 @@
       </nav>
     </div>
 
+    <!-- «Alguien está en la garita»: se muestra sobre cualquier pantalla del residente -->
+    <AlertaVisita />
+
     <VistaPreviaAviso salir />
   </div>
 </template>
@@ -42,6 +45,7 @@ import { computed } from 'vue';
 import { useRoute } from 'vue-router';
 
 import VistaPreviaAviso from '@/components/VistaPreviaAviso.vue';
+import AlertaVisita from '@/modules/garita/components/AlertaVisita.vue';
 import { filtrarMenu, MENU_APP_GUARDIA, MENU_APP_RESIDENTE } from '@/core/navigation/menu';
 import { MOSTRAR_VISTAS_PREVIAS } from '@/core/vista-previa';
 import { useSessionStore } from '@/stores/session';

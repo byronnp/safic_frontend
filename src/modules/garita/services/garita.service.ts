@@ -25,9 +25,30 @@ export interface EsperadaGarita {
   hora_hasta: string;
 }
 
+/** Una pregunta del guardia al residente («¿lo dejo pasar?»). */
+export interface SolicitudGarita {
+  id: number;
+  nombre: string;
+  tipo: TipoAcceso;
+  unidad: string | null;
+  placa: string | null;
+  estado: 'pendiente' | 'permitida' | 'rechazada' | 'vencida';
+  segundos_restantes: number;
+  /** El residente la permitió y aún está vigente: se puede registrar el ingreso. */
+  puede_ingresar: boolean;
+}
+
 export interface PanelGarita {
   dentro: DentroGarita[];
   esperadas: EsperadaGarita[];
+  solicitudes: SolicitudGarita[];
+}
+
+export interface PedidoDePermiso {
+  unidad_codigo: string;
+  nombre: string;
+  tipo: TipoAcceso;
+  placa: string | null;
 }
 
 export interface ValidacionQr {
@@ -111,6 +132,18 @@ export const garitaService = {
 
   async ingresoSinQr(datos: IngresoSinQr): Promise<void> {
     await api.post('/garita/accesos', datos);
+  },
+
+  async pedirPermiso(d: PedidoDePermiso): Promise<void> {
+    await api.post('/garita/solicitudes', d);
+  },
+
+  async ingresoDeSolicitud(id: number): Promise<void> {
+    await api.post(`/garita/solicitudes/${id}/ingreso`);
+  },
+
+  async cancelarSolicitud(id: number): Promise<void> {
+    await api.post(`/garita/solicitudes/${id}/cancelar`);
   },
 
   async salida(id: number): Promise<void> {
