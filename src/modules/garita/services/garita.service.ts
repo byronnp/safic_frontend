@@ -70,6 +70,59 @@ export interface ValidacionQr {
   };
 }
 
+/** La copia de los QR del día para validar sin red (solo lo mínimo; nunca la cédula). */
+export interface QrDeCopia {
+  token: string;
+  visitante: string;
+  placa: string | null;
+  unidad: string | null;
+  autorizo: string | null;
+  tipo: 'unica' | 'recurrente';
+  fecha_desde: string;
+  fecha_hasta: string;
+  hora_desde: string;
+  hora_hasta: string;
+  dias_semana: number[] | null;
+  /** Ya estaba dentro cuando se bajó la copia. */
+  ya_dentro: boolean;
+}
+
+export interface CopiaQr {
+  generado_en: string;
+  zona: string;
+  qrs: QrDeCopia[];
+}
+
+/** Un ingreso registrado sin conexión, pendiente de enviar. `uuid` lo genera el teléfono para que reenviarlo no lo duplique. */
+export interface IngresoPendiente {
+  uuid: string;
+  token: string | null;
+  tipo: TipoAcceso;
+  nombre: string;
+  documento: string | null;
+  placa: string | null;
+  unidad_codigo: string | null;
+  destino: string | null;
+  autorizado_por: AutorizadoPor;
+  entrada_en: string;
+  salida_en: string | null;
+}
+
+export interface SalidaPendiente {
+  acceso_id: number;
+  salida_en: string;
+}
+
+export interface ResultadoSincronizacion {
+  ingresos: {
+    uuid: string;
+    resultado: 'ok' | 'duplicado' | 'conflicto' | 'rechazado';
+    motivo?: string;
+    acceso_id?: number;
+  }[];
+  salidas: { acceso_id: number; resultado: 'ok' | 'duplicado' | 'rechazado'; motivo?: string }[];
+}
+
 export interface IngresoSinQr {
   tipo: TipoAcceso;
   nombre: string;
@@ -88,6 +141,9 @@ export interface AccesoBitacora {
   destino: string | null;
   autorizado_por: AutorizadoPor;
   estado: 'dentro' | 'salio';
+  sin_conexion: boolean;
+  /** Si se registró sin conexión y al sincronizar había un conflicto. */
+  nota: string | null;
   entrada_en: string;
   salida_en: string | null;
   registrado_por: string | null;
@@ -97,6 +153,8 @@ export interface BitacoraGarita {
   desde: string;
   hasta: string;
   hay_mas: boolean;
+  /** Cuándo se sincronizó por última vez lo registrado sin conexión. */
+  ultima_sincronizacion: string | null;
   indicadores: {
     dentro_ahora: number;
     proveedores_dentro: number;
@@ -123,6 +181,22 @@ export const garitaService = {
 
   async validarQr(token: string): Promise<ValidacionQr> {
     const { data } = await api.post<ApiRespuesta<ValidacionQr>>('/garita/qr/validar', { token });
+    return data.data;
+  },
+
+  async copiaQr(): Promise<CopiaQr> {
+    const { data } = await api.get<ApiRespuesta<CopiaQr>>('/garita/qr/vigentes');
+    return data.data;
+  },
+
+  async sincronizar(
+    ingresos: IngresoPendiente[],
+    salidas: SalidaPendiente[],
+  ): Promise<ResultadoSincronizacion> {
+    const { data } = await api.post<ApiRespuesta<ResultadoSincronizacion>>(
+      '/garita/accesos/sincronizar',
+      { ingresos, salidas },
+    );
     return data.data;
   },
 

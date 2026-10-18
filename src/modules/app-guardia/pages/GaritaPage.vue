@@ -8,13 +8,35 @@
       titulo="Garita"
     >
       <template #derecha>
-        <GaritaIndicadorConexion />
+        <GaritaIndicadorConexion
+          :en-linea="offline.enLinea.value"
+          :pendientes="offline.pendientes.value"
+          :sincronizando="offline.sincronizando.value"
+          :copia="textoCopia(offline.copia.value)"
+          @sincronizar="offline.sincronizar()"
+        />
       </template>
     </AppEncabezado>
 
     <div class="app-cuerpo garita-cuerpo">
       <div v-if="mensaje" class="garita-resultado" role="status">{{ mensaje }}</div>
       <div v-if="errorAccion" class="safic-alerta" role="alert">{{ errorAccion }}</div>
+      <div v-if="offline.errorSincronizacion.value" class="safic-alerta" role="alert">
+        No se pudieron enviar los registros hechos sin conexión:
+        {{ offline.errorSincronizacion.value }}
+      </div>
+      <div v-if="offline.resumen.value" class="safic-alerta" role="status">
+        Se enviaron {{ offline.resumen.value.enviados }} registro(s) hechos sin conexión.
+        <template v-if="offline.resumen.value.conflictos.length > 0">
+          Con conflicto (quedaron anotados en la bitácora):
+          {{ offline.resumen.value.conflictos.map((c) => `${c.nombre} — ${c.motivo}`).join('; ') }}.
+        </template>
+        <template v-if="offline.resumen.value.rechazados.length > 0">
+          No se pudieron guardar:
+          {{ offline.resumen.value.rechazados.map((c) => `${c.nombre} — ${c.motivo}`).join('; ') }}.
+        </template>
+        <q-btn flat no-caps dense label="Entendido" @click="offline.cerrarResumen()" />
+      </div>
 
       <div v-if="!lectura" class="garita-acciones">
         <button type="button" class="garita-escanear" :disabled="ocupado" @click="escanear">
@@ -78,7 +100,7 @@
         <q-icon name="sym_r_report" size="20px" />Reportar un problema
       </button>
 
-      <div v-if="panel.isError.value" class="safic-alerta" role="alert">
+      <div v-if="panel.isError.value && !panel.data.value" class="safic-alerta" role="alert">
         {{ panel.error.value?.mensaje }}
         <q-btn flat no-caps dense label="Reintentar" @click="panel.refetch()" />
       </div>
@@ -172,7 +194,15 @@ import {
   useRegistrarSalida,
   useValidarQr,
 } from '@/modules/garita/composables/useGarita';
+import { useGaritaOffline, sinRed } from '@/modules/garita/composables/useGaritaOffline';
 import { detalleDentro, detalleEsperada } from '@/modules/garita/garita.logica';
+import {
+  dentroLocal,
+  ingresoConQrLocal,
+  MENSAJE_NO_EN_COPIA,
+  textoCopia,
+  validarLocal,
+} from '@/modules/garita/offline.logica';
 import {
   cuentaAtras,
   segundosRestantes,
@@ -213,18 +243,31 @@ function restante(s: SolicitudGarita): number {
   return segundosRestantes(s.segundos_restantes, panel.dataUpdatedAt.value, ahora.value);
 }
 
+const offline = useGaritaOffline();
+onBeforeUnmount(() => offline.liberar());
+
 const lectura = ref<ValidacionQr | null>(null);
+/** La lectura se hizo con la copia del teléfono (sin red). */
+const lecturaLocal = ref(false);
 const token = ref<string | null>(null);
 const mensaje = ref<string | null>(null);
 const errorAccion = ref<string | null>(null);
 
-const dentro = computed(() =>
-  (panel.data.value?.dentro ?? []).map((d) => ({
-    id: String(d.id),
-    nombre: d.nombre,
-    detalle: detalleDentro(d),
+const dentro = computed(() => [
+  ...(panel.data.value?.dentro ?? [])
+    .filter((d) => !offline.cola.value.salidas.some((x) => x.acceso_id === d.id))
+    .map((d) => ({
+      id: String(d.id),
+      nombre: d.nombre,
+      detalle: detalleDentro(d),
+    })),
+  // Lo registrado sin conexión que aún no llegó al servidor
+  ...dentroLocal(offline.cola.value).map((i) => ({
+    id: `L:${i.uuid}`,
+    nombre: i.nombre,
+    detalle: `${i.unidad_codigo ?? i.destino ?? 'Sin destino'} · pendiente de enviar`,
   })),
-);
+]);
 const esperadas = computed(() =>
   (panel.data.value?.esperadas ?? []).map((e) => ({
     id: String(e.id),
@@ -238,6 +281,7 @@ watch(
   () => session.condominioId,
   () => {
     lectura.value = null;
+    lecturaLocal.value = false;
     token.value = null;
     mensaje.value = null;
     errorAccion.value = null;
@@ -260,17 +304,48 @@ function escanear(): void {
   mensaje.value = null;
   errorAccion.value = null;
   $q.dialog({ component: EscanerQrDialog }).onOk((leido: string) => {
+    if (!navigator.onLine) {
+      leerConCopia(leido);
+      return;
+    }
     validando.mutate(leido, {
       onSuccess: (r) => {
         token.value = leido;
+        lecturaLocal.value = false;
         lectura.value = r;
       },
-      onError: fallar,
+      // La red se cayó justo ahora: se valida con la copia del teléfono
+      onError: (error) => (sinRed(error) ? leerConCopia(leido) : fallar(error)),
     });
   });
 }
 
+function leerConCopia(leido: string): void {
+  const r = validarLocal(leido, offline.copia.value, offline.cola.value, Date.now());
+  if (!r) {
+    errorAccion.value = MENSAJE_NO_EN_COPIA;
+    return;
+  }
+  token.value = leido;
+  lecturaLocal.value = true;
+  lectura.value = r;
+}
+
+/** Guarda el ingreso en el teléfono para enviarlo cuando vuelva la red. */
+async function registrarLocal(leido: string): Promise<void> {
+  const qr = offline.copia.value?.qrs.find((q) => q.token === leido);
+  if (!qr) return;
+  const guardado = await offline.registrarIngreso(ingresoConQrLocal(qr, Date.now()));
+  if (!guardado) {
+    errorAccion.value =
+      'No se pudo guardar en el teléfono (sin espacio o modo privado). Anota el ingreso a mano y no cierres esta pestaña.';
+    return;
+  }
+  mensaje.value = `Ingreso de ${qr.visitante} guardado sin conexión. Se enviará al volver la red.`;
+}
+
 function descartar(): void {
+  lecturaLocal.value = false;
   lectura.value = null;
   token.value = null;
 }
@@ -279,12 +354,23 @@ function registrarIngreso(): void {
   const t = token.value;
   if (!t || ocupado.value) return;
   errorAccion.value = null;
+  if (lecturaLocal.value || !navigator.onLine) {
+    void registrarLocal(t);
+    descartar();
+    return;
+  }
   ingresando.mutate(t, {
     onSuccess: () => {
       mensaje.value = `Ingreso de ${lectura.value?.visita.visitante ?? 'la visita'} registrado.`;
       descartar();
     },
     onError: (error) => {
+      // Se cayó la red entre validar y registrar: no se cortó la fila, se guarda sin conexión
+      if (sinRed(error)) {
+        void registrarLocal(t);
+        descartar();
+        return;
+      }
       descartar();
       fallar(error);
     },
@@ -321,12 +407,26 @@ function retirarSolicitud(s: SolicitudGarita): void {
   cancelandoSolicitud.mutate(s.id, { onError: fallar });
 }
 
+function salidaLocal(quien: { uuid: string } | { accesoId: number }): void {
+  void offline.registrarSalida(quien).then((guardado) => {
+    if (guardado) mensaje.value = 'Salida guardada sin conexión. Se enviará al volver la red.';
+    else errorAccion.value = 'No se pudo guardar la salida en el teléfono. Anótala a mano.';
+  });
+}
+
 function registrarSalida(id: string): void {
   if (ocupado.value) return;
   errorAccion.value = null;
+  if (id.startsWith('L:') || !navigator.onLine) {
+    salidaLocal(id.startsWith('L:') ? { uuid: id.slice(2) } : { accesoId: Number(id) });
+    return;
+  }
   saliendo.mutate(Number(id), {
     onSuccess: () => (mensaje.value = 'Salida registrada.'),
-    onError: fallar,
+    onError: (error) => {
+      if (!sinRed(error)) return fallar(error);
+      salidaLocal({ accesoId: Number(id) });
+    },
   });
 }
 </script>

@@ -121,7 +121,7 @@
               @click="onDialogCancel"
             />
             <q-btn
-              v-if="f.unidad.trim() !== ''"
+              v-if="f.unidad.trim() !== '' && offline.enLinea.value"
               outline
               no-caps
               color="primary"
@@ -150,12 +150,14 @@
 
 <script setup lang="ts">
 import { useDialogPluginComponent } from 'quasar';
-import { reactive, ref, watch } from 'vue';
+import { onBeforeUnmount, reactive, ref, watch } from 'vue';
 
 import { aApiError } from '@/core/api/errors';
 import { useSessionStore } from '@/stores/session';
 
 import { useIngresoSinQr, usePedirPermiso } from '../composables/useGarita';
+import { sinRed, useGaritaOffline } from '../composables/useGaritaOffline';
+import { ingresoLibreLocal } from '../offline.logica';
 import {
   peticionSinQr,
   sinQrVacio,
@@ -180,6 +182,25 @@ const errores = reactive<ErroresSinQr>({});
 const errorGeneral = ref<string | null>(null);
 const registrando = useIngresoSinQr();
 const preguntando = usePedirPermiso();
+const offline = useGaritaOffline();
+onBeforeUnmount(() => offline.liberar());
+
+/** Guarda el ingreso en el teléfono para enviarlo al volver la red. */
+async function guardarSinConexion(): Promise<void> {
+  const p = peticionSinQr(f);
+  const guardado = await offline.registrarIngreso(
+    ingresoLibreLocal(
+      { ...p, autorizado_por: p.autorizado_por as 'llamada' | 'administracion' },
+      Date.now(),
+    ),
+  );
+  if (!guardado) {
+    errorGeneral.value =
+      'No se pudo guardar en el teléfono (sin espacio o modo privado). Anota el ingreso a mano y no cierres esta pestaña.';
+    return;
+  }
+  onDialogOK(`Ingreso de ${p.nombre} guardado sin conexión. Se enviará al volver la red.`);
+}
 
 /** En vez de llamar por teléfono: el residente decide desde su app y el guardia ve la respuesta en la lista. */
 async function preguntar(): Promise<void> {
@@ -236,10 +257,20 @@ async function guardar(): Promise<void> {
     return;
   }
 
+  if (!navigator.onLine) {
+    await guardarSinConexion();
+    return;
+  }
+
   try {
     await registrando.mutateAsync(peticionSinQr(f));
     onDialogOK(`Ingreso de ${f.nombre.trim()} registrado.`);
   } catch (error) {
+    // Se cayó la red al enviar: el ingreso no se pierde, queda en el teléfono
+    if (sinRed(error)) {
+      await guardarSinConexion();
+      return;
+    }
     const apiError = aApiError(error);
     errores.nombre = apiError.campo('nombre');
     errores.cedula = apiError.campo('documento');
