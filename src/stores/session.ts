@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 
 import { authService } from '@/core/auth/auth.service';
+import { borrarClavesConSufijo } from '@/core/offline/almacen';
 import {
   esDesafioDobleFactor,
   type CondominioResumen,
@@ -160,6 +161,7 @@ export const useSessionStore = defineStore('session', () => {
       return accessToken.value;
     } catch {
       limpiar();
+      void borrarClavesConSufijo(':copia');
       return null;
     }
   }
@@ -186,6 +188,9 @@ export const useSessionStore = defineStore('session', () => {
     } finally {
       limpiar();
       recordarCondominio(null);
+      // Los QR no se quedan en un teléfono sin sesión. Los ingresos pendientes de enviar sí: son el único rastro
+      // de quién entró y se envían al volver a iniciar sesión (están guardados por usuario y condominio).
+      await borrarClavesConSufijo(':copia');
     }
   }
 

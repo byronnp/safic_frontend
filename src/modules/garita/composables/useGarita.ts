@@ -60,6 +60,8 @@ function useMutacionGarita<TDatos, TVariables>(
 
   return useMutation<TDatos, ApiError, TVariables, { condominioId: number | null }>({
     mutationFn: ejecutar,
+    // Sin red la petición falla enseguida (en vez de quedar en pausa) para que la garita pase a registrar sin conexión
+    networkMode: 'always',
     onMutate: () => ({ condominioId: session.condominioId }),
     onSettled: (_datos, _error, _variables, contexto) => {
       if (contexto?.condominioId != null) {
@@ -78,6 +80,7 @@ function useMutacionGarita<TDatos, TVariables>(
 export function useValidarQr() {
   return useMutation<ValidacionQr, ApiError, string>({
     mutationFn: (token) => garitaService.validarQr(token),
+    networkMode: 'always',
   });
 }
 

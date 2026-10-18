@@ -32,6 +32,7 @@ src/modules/<m>/      pages · components · composables (vue-query) · services
 ## Reglas
 
 - **Token**: el access token vive solo en memoria. Nunca en localStorage/sessionStorage. El refresh es una cookie HttpOnly que JavaScript no toca.
+- **Garita sin conexión**: la copia de QR de hoy y mañana y la cola de ingresos/salidas viven en IndexedDB (`core/offline/almacen.ts`), con clave `garita:<usuario>:<condominio>`. Al cerrar sesión o expirar se borra la copia (`:copia`), pero NO la cola: es el único rastro de quién entró y se envía al volver a entrar. Nunca en localStorage.
 - **Condominio**: el cliente HTTP agrega `X-Condominio-Id`. Las claves de Vue Query **incluyen el condominio** (`['bloques', condominioId]`) y la caché se vacía (`queryClient.clear()`) al cambiar de condominio o cerrar sesión.
 - **Excepción a la clave con condominio**: los catálogos globales (`['catalogo', 'ubicaciones']`) y los datos del panel de plataforma (`['plataforma', ...]`) no dependen de un condominio; igual se vacían con `queryClient.clear()` al cerrar sesión.
 - **Permisos**: cada ruta declara `meta.permiso`; los botones se ocultan con `session.tienePermiso()`. Ocultar no es seguridad: la API también lo exige.

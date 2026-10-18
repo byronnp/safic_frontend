@@ -1,33 +1,41 @@
 <template>
-  <!-- Indicador de conexión de la garita. La validación sin red (copia local) llega más adelante: por ahora hace falta conexión. -->
-  <span
+  <!-- Indicador de conexión de la garita: sin red se valida con la copia local y lo registrado queda pendiente. -->
+  <button
+    type="button"
     class="garita-conexion"
-    :class="{ 'garita-conexion--sin-red': !enLinea }"
+    :class="{ 'garita-conexion--sin-red': !enLinea || pendientes > 0 }"
+    :disabled="!enLinea || sincronizando || pendientes === 0"
+    :aria-label="texto"
     role="status"
     aria-live="polite"
+    @click="emit('sincronizar')"
   >
-    {{ enLinea ? 'En línea' : 'Sin conexión · no se puede validar' }}
-  </span>
+    {{ texto }}
+  </button>
 </template>
 
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed } from 'vue';
 
-const enLinea = ref(typeof navigator === 'undefined' ? true : navigator.onLine);
+const props = defineProps<{
+  enLinea: boolean;
+  pendientes: number;
+  sincronizando: boolean;
+  /** «Copia de 09:40» o «Sin copia local». */
+  copia: string;
+}>();
+const emit = defineEmits<{ sincronizar: [] }>();
 
-function actualizar(): void {
-  enLinea.value = navigator.onLine;
-}
-
-onMounted(() => {
-  actualizar();
-  window.addEventListener('online', actualizar);
-  window.addEventListener('offline', actualizar);
-});
-
-onBeforeUnmount(() => {
-  window.removeEventListener('online', actualizar);
-  window.removeEventListener('offline', actualizar);
+const texto = computed(() => {
+  if (props.sincronizando) return 'Sincronizando…';
+  if (!props.enLinea) {
+    return props.pendientes > 0
+      ? `Sin conexión · ${props.pendientes} pendiente${props.pendientes === 1 ? '' : 's'} · ${props.copia}`
+      : `Sin conexión · ${props.copia}`;
+  }
+  return props.pendientes > 0
+    ? `Enviar ${props.pendientes} pendiente${props.pendientes === 1 ? '' : 's'}`
+    : 'En línea';
 });
 </script>
 
@@ -41,6 +49,13 @@ onBeforeUnmount(() => {
   background: #1e4a48;
   color: #c6e3dd;
   white-space: nowrap;
+  border: none;
+  font-family: inherit;
+  min-height: 32px;
+}
+
+.garita-conexion:not(:disabled) {
+  cursor: pointer;
 }
 
 .garita-conexion--sin-red {
