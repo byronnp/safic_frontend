@@ -69,6 +69,15 @@
         </div>
       </div>
 
+      <button
+        v-if="!lectura && session.tienePermiso('incidencias.reportar')"
+        type="button"
+        class="garita-incidencia"
+        @click="reportarIncidencia"
+      >
+        <q-icon name="sym_r_report" size="20px" />Reportar un problema
+      </button>
+
       <div v-if="panel.isError.value" class="safic-alerta" role="alert">
         {{ panel.error.value?.mensaje }}
         <q-btn flat no-caps dense label="Reintentar" @click="panel.refetch()" />
@@ -101,6 +110,7 @@ import { computed, ref, watch } from 'vue';
 import AppEncabezado from '@/components/app/AppEncabezado.vue';
 import { aApiError } from '@/core/api/errors';
 import EscanerQrDialog from '@/modules/garita/components/EscanerQrDialog.vue';
+import ReportarIncidenciaDialog from '@/modules/comunicacion/components/ReportarIncidenciaDialog.vue';
 import IngresoSinQrDialog from '@/modules/garita/components/IngresoSinQrDialog.vue';
 import {
   useIngresoConQr,
@@ -211,6 +221,15 @@ function ingresoSinQr(): void {
   $q.dialog({ component: IngresoSinQrDialog }).onOk((m: string) => (mensaje.value = m));
 }
 
+function reportarIncidencia(): void {
+  mensaje.value = null;
+  errorAccion.value = null;
+  // El guardia reporta problemas de las áreas comunes: sin unidad
+  $q.dialog({ component: ReportarIncidenciaDialog, componentProps: { unidades: [] } }).onOk(
+    (m: string) => (mensaje.value = m),
+  );
+}
+
 function registrarSalida(id: string): void {
   if (ocupado.value) return;
   errorAccion.value = null;
@@ -222,6 +241,22 @@ function registrarSalida(id: string): void {
 </script>
 
 <style scoped>
+.garita-incidencia {
+  min-height: 44px;
+  border-radius: 12px;
+  border: 1px solid var(--safic-borde-2);
+  background: #ffffff;
+  color: var(--safic-texto);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
 .garita-qr--invalido {
   border-color: #b3261e;
 }

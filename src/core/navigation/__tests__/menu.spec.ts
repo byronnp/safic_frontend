@@ -35,9 +35,9 @@ describe('menú lateral', () => {
   it('las vistas previas solo aparecen si se piden', () => {
     const sin = filtrarMenu(MENU_BASE, []).map((i) => i.id);
     const con = filtrarMenu(MENU_BASE, [], { vistasPrevias: true }).map((i) => i.id);
-    // Seguridad y comunicación (Fase 4) aún no tiene API: solo se ve en vista previa
-    expect(sin).not.toContain('comunicacion');
-    expect(con).toContain('comunicacion');
+    // Asambleas (Fase 5) aún no tiene API: solo se ve en vista previa
+    expect(sin).not.toContain('asambleas');
+    expect(con).toContain('asambleas');
   });
 
   it('no modifica el menú original', () => {
