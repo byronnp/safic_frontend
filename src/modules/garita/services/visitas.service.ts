@@ -39,6 +39,17 @@ export interface MisVisitas {
   ingresos: IngresoMiUnidad[];
 }
 
+/** Alguien espera en la garita y el guardia pregunta si lo deja pasar. */
+export interface SolicitudDeIngreso {
+  id: number;
+  nombre: string;
+  tipo: 'visita' | 'delivery' | 'proveedor';
+  placa: string | null;
+  unidad: string;
+  creada_en: string;
+  segundos_restantes: number;
+}
+
 export interface NuevaVisita {
   unidad_id: number;
   visitante: string;
@@ -85,6 +96,15 @@ export const visitasService = {
 
   async revocar(id: number): Promise<void> {
     await api.post(`/mis-visitas/${id}/revocar`);
+  },
+
+  async solicitudes(): Promise<SolicitudDeIngreso[]> {
+    const { data } = await api.get<ApiRespuesta<SolicitudDeIngreso[]>>('/mis-solicitudes-ingreso');
+    return data.data;
+  },
+
+  async responder(id: number, permitir: boolean): Promise<void> {
+    await api.post(`/mis-solicitudes-ingreso/${id}/responder`, { permitir });
   },
 
   /** Página pública del QR: sin sesión. */

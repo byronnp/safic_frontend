@@ -204,3 +204,25 @@ export function enlacesComoLlegar(
   }
   return null;
 }
+
+/** «visita», «delivery», «proveedor» para el aviso de la puerta. */
+export const textoTipoSolicitud = (t: 'visita' | 'delivery' | 'proveedor'): string =>
+  t === 'visita' ? 'Visita' : t === 'delivery' ? 'Delivery' : 'Proveedor';
+
+/**
+ * Segundos que quedan para responder: los que dijo el servidor al consultar, menos lo que pasó desde entonces.
+ * `consultadoEn` y `ahora` en milisegundos.
+ */
+export function segundosRestantes(
+  segundosAlConsultar: number,
+  consultadoEn: number,
+  ahora: number,
+): number {
+  return Math.max(0, segundosAlConsultar - Math.floor((ahora - consultadoEn) / 1000));
+}
+
+/** 102 → «1:42». */
+export function cuentaAtras(segundos: number): string {
+  const s = Math.max(0, Math.floor(segundos));
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+}

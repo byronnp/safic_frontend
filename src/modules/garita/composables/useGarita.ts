@@ -9,6 +9,7 @@ import {
   type BitacoraGarita,
   type FiltrosBitacora,
   type IngresoSinQr,
+  type PedidoDePermiso,
   type PanelGarita,
   type ValidacionQr,
 } from '../services/garita.service';
@@ -29,7 +30,9 @@ export function usePanelGarita() {
     queryFn: () => garitaService.panel(),
     enabled: computed(() => session.condominioId !== null),
     // La garita queda abierta todo el turno: se refresca sola
-    refetchInterval: 30_000,
+    // Con una pregunta abierta al residente se mira cada pocos segundos; si no, cada 30
+    refetchInterval: (consulta) =>
+      (consulta.state.data?.solicitudes.length ?? 0) > 0 ? 5_000 : 30_000,
     refetchOnWindowFocus: true,
     gcTime: 0,
   });
@@ -84,6 +87,18 @@ export function useIngresoConQr() {
 
 export function useIngresoSinQr() {
   return useMutacionGarita<void, IngresoSinQr>((d) => garitaService.ingresoSinQr(d));
+}
+
+export function usePedirPermiso() {
+  return useMutacionGarita<void, PedidoDePermiso>((d) => garitaService.pedirPermiso(d));
+}
+
+export function useIngresoDeSolicitud() {
+  return useMutacionGarita<void, number>((id) => garitaService.ingresoDeSolicitud(id));
+}
+
+export function useCancelarSolicitud() {
+  return useMutacionGarita<void, number>((id) => garitaService.cancelarSolicitud(id));
 }
 
 export function useRegistrarSalida() {

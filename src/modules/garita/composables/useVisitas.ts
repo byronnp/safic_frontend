@@ -8,6 +8,7 @@ import {
   visitasService,
   type MisVisitas,
   type NuevaVisita,
+  type SolicitudDeIngreso,
   type VisitaAutorizada,
   type VisitaPublica,
 } from '../services/visitas.service';
@@ -16,6 +17,7 @@ import {
 export const clavesVisitas = {
   todas: (condominioId: number | null) => ['visitas', condominioId] as const,
   mias: (condominioId: number | null) => ['visitas', condominioId, 'mias'] as const,
+  solicitudes: (condominioId: number | null) => ['visitas', condominioId, 'solicitudes'] as const,
 };
 
 export function useMisVisitas() {
@@ -27,6 +29,23 @@ export function useMisVisitas() {
     enabled: computed(() => session.condominioId !== null),
     refetchOnWindowFocus: false,
     // Cada visita trae su token (el QR): no se deja en caché
+    gcTime: 0,
+  });
+}
+
+/**
+ * Quién espera en la garita por mi unidad. Se consulta cada 8 segundos mientras la app está abierta (el aviso instantáneo llegará con
+ * las notificaciones push; por ahora esto es lo que hay). Sin guardarlo en caché: son nombres de personas en la puerta.
+ */
+export function useSolicitudesDeIngreso(activo: Ref<boolean>) {
+  const session = useSessionStore();
+
+  return useQuery<SolicitudDeIngreso[], ApiError>({
+    queryKey: computed(() => clavesVisitas.solicitudes(session.condominioId)),
+    queryFn: () => visitasService.solicitudes(),
+    enabled: computed(() => session.condominioId !== null && activo.value),
+    refetchInterval: 8_000,
+    refetchOnWindowFocus: true,
     gcTime: 0,
   });
 }
@@ -69,6 +88,12 @@ function useMutacionVisitas<TDatos, TVariables>(
 
 export function useAutorizarVisita() {
   return useMutacionVisitas<VisitaAutorizada, NuevaVisita>((d) => visitasService.autorizar(d));
+}
+
+export function useResponderIngreso() {
+  return useMutacionVisitas<void, { id: number; permitir: boolean }>(({ id, permitir }) =>
+    visitasService.responder(id, permitir),
+  );
 }
 
 export function useRevocarVisita() {

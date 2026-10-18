@@ -86,6 +86,58 @@
         <q-skeleton v-for="i in 2" :key="i" type="rect" height="96px" aria-busy="true" />
       </template>
       <template v-else>
+        <section
+          v-if="solicitudes.length > 0"
+          class="garita-solicitudes"
+          aria-label="Esperando al residente"
+        >
+          <h2 class="garita-solicitudes__titulo">Esperando al residente</h2>
+          <article v-for="s in solicitudes" :key="s.id" class="garita-solicitud">
+            <div class="garita-solicitud__textos">
+              <div class="garita-solicitud__nombre">{{ s.nombre }}</div>
+              <div class="garita-solicitud__detalle">
+                {{ textoTipoSolicitud(s.tipo) }} para {{ s.unidad ?? '—'
+                }}<template v-if="s.placa"> · {{ s.placa }}</template>
+              </div>
+              <div
+                class="garita-solicitud__estado"
+                :class="`garita-solicitud__estado--${s.estado}`"
+                role="status"
+              >
+                <template v-if="s.estado === 'pendiente'"
+                  >Esperando respuesta ·
+                  <span aria-hidden="true">{{ cuentaAtras(restante(s)) }}</span></template
+                >
+                <template v-else-if="s.estado === 'permitida'"
+                  >El residente permitió el ingreso</template
+                >
+                <template v-else-if="s.estado === 'rechazada'"
+                  >El residente rechazó el ingreso</template
+                >
+                <template v-else>No respondió a tiempo · llama por teléfono</template>
+              </div>
+            </div>
+            <div class="garita-solicitud__acciones">
+              <button
+                v-if="s.estado === 'permitida' && s.puede_ingresar"
+                type="button"
+                class="garita-solicitud__ingreso"
+                :disabled="ocupado"
+                @click="ingresarSolicitud(s)"
+              >
+                Registrar ingreso
+              </button>
+              <button
+                type="button"
+                class="garita-solicitud__quitar"
+                :disabled="ocupado"
+                @click="retirarSolicitud(s)"
+              >
+                {{ s.estado === 'pendiente' ? 'Retirar' : 'Quitar' }}
+              </button>
+            </div>
+          </article>
+        </section>
         <GaritaListaVisitas
           titulo="Dentro ahora"
           :visitas="dentro"
@@ -105,7 +157,7 @@
 
 <script setup lang="ts">
 import { useQuasar } from 'quasar';
-import { computed, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, ref, watch } from 'vue';
 
 import AppEncabezado from '@/components/app/AppEncabezado.vue';
 import { aApiError } from '@/core/api/errors';
@@ -113,13 +165,20 @@ import EscanerQrDialog from '@/modules/garita/components/EscanerQrDialog.vue';
 import ReportarIncidenciaDialog from '@/modules/comunicacion/components/ReportarIncidenciaDialog.vue';
 import IngresoSinQrDialog from '@/modules/garita/components/IngresoSinQrDialog.vue';
 import {
+  useCancelarSolicitud,
   useIngresoConQr,
+  useIngresoDeSolicitud,
   usePanelGarita,
   useRegistrarSalida,
   useValidarQr,
 } from '@/modules/garita/composables/useGarita';
 import { detalleDentro, detalleEsperada } from '@/modules/garita/garita.logica';
-import type { ValidacionQr } from '@/modules/garita/services/garita.service';
+import {
+  cuentaAtras,
+  segundosRestantes,
+  textoTipoSolicitud,
+} from '@/modules/garita/visitas.logica';
+import type { SolicitudGarita, ValidacionQr } from '@/modules/garita/services/garita.service';
 import { vigenciaVisita } from '@/modules/garita/visitas.logica';
 import { useSessionStore } from '@/stores/session';
 
@@ -133,9 +192,26 @@ const panel = usePanelGarita();
 const validando = useValidarQr();
 const ingresando = useIngresoConQr();
 const saliendo = useRegistrarSalida();
+const ingresandoSolicitud = useIngresoDeSolicitud();
+const cancelandoSolicitud = useCancelarSolicitud();
 const ocupado = computed(
-  () => validando.isPending.value || ingresando.isPending.value || saliendo.isPending.value,
+  () =>
+    validando.isPending.value ||
+    ingresando.isPending.value ||
+    saliendo.isPending.value ||
+    ingresandoSolicitud.isPending.value ||
+    cancelandoSolicitud.isPending.value,
 );
+
+// Cuenta atrás de las preguntas al residente, sin pedir nada al servidor
+const ahora = ref(Date.now());
+const reloj = setInterval(() => (ahora.value = Date.now()), 1000);
+onBeforeUnmount(() => clearInterval(reloj));
+const solicitudes = computed(() => panel.data.value?.solicitudes ?? []);
+
+function restante(s: SolicitudGarita): number {
+  return segundosRestantes(s.segundos_restantes, panel.dataUpdatedAt.value, ahora.value);
+}
 
 const lectura = ref<ValidacionQr | null>(null);
 const token = ref<string | null>(null);
@@ -230,6 +306,21 @@ function reportarIncidencia(): void {
   );
 }
 
+function ingresarSolicitud(s: SolicitudGarita): void {
+  if (ocupado.value) return;
+  errorAccion.value = null;
+  ingresandoSolicitud.mutate(s.id, {
+    onSuccess: () => (mensaje.value = `Ingreso de ${s.nombre} registrado.`),
+    onError: fallar,
+  });
+}
+
+function retirarSolicitud(s: SolicitudGarita): void {
+  if (ocupado.value) return;
+  errorAccion.value = null;
+  cancelandoSolicitud.mutate(s.id, { onError: fallar });
+}
+
 function registrarSalida(id: string): void {
   if (ocupado.value) return;
   errorAccion.value = null;
@@ -241,6 +332,97 @@ function registrarSalida(id: string): void {
 </script>
 
 <style scoped>
+.garita-solicitudes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.garita-solicitudes__titulo {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.garita-solicitud {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: #ffffff;
+  border: 1px solid var(--safic-borde);
+}
+
+.garita-solicitud__textos {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.garita-solicitud__nombre {
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.garita-solicitud__detalle {
+  font-size: 13px;
+  color: var(--safic-texto-suave);
+}
+
+.garita-solicitud__estado {
+  margin-top: 2px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.garita-solicitud__estado--pendiente {
+  color: #8a3f0a;
+}
+
+.garita-solicitud__estado--permitida {
+  color: #0b4a47;
+}
+
+.garita-solicitud__estado--rechazada,
+.garita-solicitud__estado--vencida {
+  color: #b3261e;
+}
+
+.garita-solicitud__acciones {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.garita-solicitud__ingreso,
+.garita-solicitud__quitar {
+  min-height: 44px;
+  padding: 0 12px;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.garita-solicitud__ingreso {
+  border: none;
+  background: var(--q-primary);
+  color: #ffffff;
+}
+
+.garita-solicitud__quitar {
+  border: 1px solid var(--safic-borde-2);
+  background: #ffffff;
+  color: var(--safic-texto);
+}
+
+.garita-solicitud__ingreso:disabled,
+.garita-solicitud__quitar:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .garita-incidencia {
   min-height: 44px;
   border-radius: 12px;
