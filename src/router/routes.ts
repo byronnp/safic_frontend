@@ -48,6 +48,12 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/layouts/AuthLayout.vue'),
     children: [
       {
+        // Sin este hijo, una carga completa de «/» (recarga o URL directa) se resuelve al layout de login solo y queda en blanco:
+        // los dos layouts empatan en «/» y gana el primero. Aquí se manda a «inicio» y la guarda decide si hay sesión.
+        path: '',
+        redirect: { name: 'inicio' },
+      },
+      {
         path: 'login',
         name: 'login',
         component: () => import('@/modules/auth/pages/LoginPage.vue'),
