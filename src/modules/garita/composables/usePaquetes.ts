@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query';
-import { computed } from 'vue';
+import { computed, unref, type Ref } from 'vue';
 
 import type { ApiError } from '@/core/api/errors';
 import { useSessionStore } from '@/stores/session';
@@ -33,13 +33,13 @@ export function usePaquetesGarita() {
   });
 }
 
-export function useMisPaquetes() {
+export function useMisPaquetes(habilitado: Ref<boolean> | boolean = true) {
   const session = useSessionStore();
 
   return useQuery<MisPaquetes, ApiError>({
     queryKey: computed(() => clavesPaquetes.mios(session.condominioId)),
     queryFn: () => paquetesService.mios(),
-    enabled: computed(() => session.condominioId !== null),
+    enabled: computed(() => session.condominioId !== null && unref(habilitado)),
     refetchOnWindowFocus: false,
     gcTime: 0,
   });

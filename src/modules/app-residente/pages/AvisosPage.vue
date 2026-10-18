@@ -5,6 +5,27 @@
     <div class="app-cuerpo avisos__cuerpo">
       <div v-if="errorAccion" class="safic-alerta" role="alert">{{ errorAccion }}</div>
 
+      <section
+        v-if="paquetesEnGarita.length > 0"
+        class="app-tarjeta avisos__paquetes"
+        aria-label="Paquetes en garita"
+      >
+        <h2 class="avisos__titulo">Paquetes en garita</h2>
+        <div v-for="p in paquetesEnGarita" :key="p.id" class="avisos__paquete">
+          <q-icon name="sym_r_inventory_2" size="20px" />
+          <div>
+            {{ tituloMiPaquete(p) }}
+            <span class="avisos__fecha"
+              >· llegó {{ diaMes(p.recibido_en)
+              }}<template v-if="p.dias >= 7"> · {{ haceDias(p.dias) }}</template></span
+            >
+          </div>
+        </div>
+        <div class="avisos__fecha">
+          Retíralo con firma; se entrega a ocupantes de tu unidad o a quien autorices.
+        </div>
+      </section>
+
       <div v-if="consulta.isError.value" class="safic-alerta" role="alert">
         {{ consulta.error.value?.mensaje }}
         <q-btn flat no-caps dense label="Reintentar" @click="consulta.refetch()" />
@@ -80,6 +101,8 @@ import {
   useMisAvisos,
 } from '@/modules/comunicacion/composables/useAnuncios';
 import type { Aviso } from '@/modules/comunicacion/services/anuncios.service';
+import { useMisPaquetes } from '@/modules/garita/composables/usePaquetes';
+import { haceDias, tituloMiPaquete } from '@/modules/garita/paquetes.logica';
 import { useSessionStore } from '@/stores/session';
 
 const session = useSessionStore();
@@ -87,6 +110,8 @@ const consulta = useMisAvisos();
 const leyendo = useLeerAviso();
 const confirmando = useConfirmarAviso();
 
+const paquetes = useMisPaquetes(computed(() => session.tienePermiso('paquetes.propios')));
+const paquetesEnGarita = computed(() => paquetes.data.value?.en_garita ?? []);
 const avisos = computed(() => consulta.data.value?.avisos ?? []);
 const ocupado = computed(() => leyendo.isPending.value || confirmando.isPending.value);
 const errorAccion = ref<string | null>(null);
@@ -117,6 +142,19 @@ function confirmar(a: Aviso): void {
 </script>
 
 <style scoped>
+.avisos__paquetes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.avisos__paquete {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+}
+
 .avisos__cuerpo {
   display: flex;
   flex-direction: column;
