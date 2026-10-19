@@ -562,6 +562,15 @@ export function primeraRuta(items: readonly ItemMenu[]): string | null {
   return null;
 }
 
+/**
+ * Entrada de una app (residente o guardia): la primera pestaña **real** a la que puede entrar el perfil con sus permisos, o
+ * «sin-permiso» si ninguna. Una pestaña en vista previa nunca es la entrada: en producción no existe y en desarrollo la guarda solo
+ * se la deja ver al administrador, así que un residente caería en «sin permiso».
+ */
+export function entradaDeApp(pestanas: ItemMenu[], permisos: readonly string[]): string {
+  return primeraRuta(filtrarMenu(pestanas, permisos)) ?? 'sin-permiso';
+}
+
 export function filtrarMenu(
   items: ItemMenu[],
   permisos: readonly string[],

@@ -1,6 +1,13 @@
 import type { RouteRecordRaw } from 'vue-router';
 
-import { filtrarMenu, MENU_PLATAFORMA, primeraRuta } from '@/core/navigation/menu';
+import {
+  entradaDeApp,
+  filtrarMenu,
+  MENU_APP_GUARDIA,
+  MENU_APP_RESIDENTE,
+  MENU_PLATAFORMA,
+  primeraRuta,
+} from '@/core/navigation/menu';
 import { MOSTRAR_VISTAS_PREVIAS } from '@/core/vista-previa';
 import { useSessionStore } from '@/stores/session';
 
@@ -411,7 +418,14 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/layouts/AppLayout.vue'),
     meta: { app: 'residente' },
     children: [
-      { path: '', redirect: { name: 'app-mi-hogar' } },
+      // Entrada de la app: la primera pestaña real que permite el perfil («Mi hogar» sigue en vista previa y no cuenta)
+      {
+        path: '',
+        name: 'app-residente',
+        redirect: () => ({
+          name: entradaDeApp(MENU_APP_RESIDENTE, useSessionStore().permisos),
+        }),
+      },
       previa(
         'mi-hogar',
         'app-mi-hogar',
@@ -502,7 +516,13 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/layouts/AppLayout.vue'),
     meta: { app: 'guardia' },
     children: [
-      { path: '', redirect: { name: 'guardia-garita' } },
+      {
+        path: '',
+        name: 'app-guardia',
+        redirect: () => ({
+          name: entradaDeApp(MENU_APP_GUARDIA, useSessionStore().permisos),
+        }),
+      },
       {
         path: 'garita',
         name: 'guardia-garita',
