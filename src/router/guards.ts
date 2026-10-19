@@ -39,6 +39,17 @@ export function destinoSinCondominio(
     : { name: 'seleccionar-condominio' };
 }
 
+/**
+ * Dónde empieza quien solo tiene perfil de app: el residente en su app y el guardia en la suya (no en la pantalla de la
+ * administración, que para ellos está vacía). Quien tiene además otro rol (administrador, contador…) o ninguno entra por «inicio».
+ */
+export function appDelPerfil(roles: readonly string[]): 'app-residente' | 'app-guardia' | null {
+  if (roles.length === 0) return null;
+  if (roles.every((r) => r === 'residente')) return 'app-residente';
+  if (roles.every((r) => r === 'guardia')) return 'app-guardia';
+  return null;
+}
+
 export interface OpcionesGuarda {
   /** Permite abrir pantallas en vista previa (solo desarrollo). */
   vistasPrevias?: boolean;
@@ -56,6 +67,7 @@ export interface OpcionesGuarda {
  * 7. Sin el permiso de la ruta → página "sin permiso".
  *    Las pantallas en vista previa solo se abren en desarrollo y para el perfil
  *    que las vería (el permiso de su ítem de menú o acceso total), igual que el menú.
+ * 8. «Inicio» para quien solo es residente o guardia → su app (ver `appDelPerfil`).
  */
 export async function guardaDeSesion(
   destino: RouteLocationNormalized,
@@ -135,6 +147,14 @@ export async function guardaDeSesion(
 
   if (destino.meta.permiso && !sesion.tienePermiso(destino.meta.permiso)) {
     return { name: 'sin-permiso' };
+  }
+
+  // El residente y el guardia no empiezan en la pantalla de la administración (vacía para ellos): van a su app
+  if (destino.name === 'inicio') {
+    const app = appDelPerfil(sesion.roles);
+    if (app) {
+      return { name: app };
+    }
   }
 
   return true;

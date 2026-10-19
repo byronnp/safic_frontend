@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { RouteLocationNormalized, RouteMeta } from 'vue-router';
 
-import { guardaDeSesion, redireccionSegura, type SesionParaGuarda } from '../guards';
+import { appDelPerfil, guardaDeSesion, redireccionSegura, type SesionParaGuarda } from '../guards';
 
 function ruta(fullPath: string, meta: RouteMeta = {}, name?: string): RouteLocationNormalized {
   return { fullPath, meta, name } as unknown as RouteLocationNormalized;
@@ -53,6 +53,47 @@ describe('guarda de sesión', () => {
   it('el login con sesión activa lleva al inicio', async () => {
     const destino = await guardaDeSesion(ruta('/login', { publica: true }, 'login'), sesion());
     expect(destino).toEqual({ name: 'inicio' });
+  });
+
+  it('el residente y el guardia entran por su app, no por la pantalla de la administración', async () => {
+    const inicio = ruta('/', {}, 'inicio');
+
+    expect(await guardaDeSesion(inicio, sesion({ roles: ['residente'] }))).toEqual({
+      name: 'app-residente',
+    });
+    expect(await guardaDeSesion(inicio, sesion({ roles: ['guardia'] }))).toEqual({
+      name: 'app-guardia',
+    });
+    // También al iniciar sesión: el login lleva a «inicio» y de ahí a su app
+    expect(
+      await guardaDeSesion(
+        ruta('/login', { publica: true }, 'login'),
+        sesion({ roles: ['residente'] }),
+      ),
+    ).toEqual({ name: 'inicio' });
+  });
+
+  it('quien tiene otro rol, o ninguno, o va a otra pantalla, no se redirige', async () => {
+    const inicio = ruta('/', {}, 'inicio');
+
+    expect(await guardaDeSesion(inicio, sesion({ roles: ['administrador'] }))).toBe(true);
+    expect(await guardaDeSesion(inicio, sesion({ roles: ['residente', 'tesorero'] }))).toBe(true);
+    expect(await guardaDeSesion(inicio, sesion({ roles: [] }))).toBe(true);
+    // Un enlace directo a otra pantalla no se toca
+    expect(
+      await guardaDeSesion(
+        ruta('/app/avisos', { permiso: 'avisos.propios' }, 'app-avisos'),
+        sesion({ roles: ['residente'] }),
+      ),
+    ).toBe(true);
+  });
+
+  it('appDelPerfil: solo residente o solo guardia', () => {
+    expect(appDelPerfil(['residente'])).toBe('app-residente');
+    expect(appDelPerfil(['guardia'])).toBe('app-guardia');
+    expect(appDelPerfil(['residente', 'guardia'])).toBeNull();
+    expect(appDelPerfil(['mantenimiento'])).toBeNull();
+    expect(appDelPerfil([])).toBeNull();
   });
 
   it('un contador sin verificación en dos pasos solo llega a configurarla', async () => {
