@@ -33,7 +33,15 @@ export const reservasHoyService = {
     await api.post(`/garita/reservas/${id}/ingreso`);
   },
 
-  async entrega(id: number, danos: string | null): Promise<void> {
-    await api.post(`/garita/reservas/${id}/entrega`, { danos });
+  /** Con fotos el cuerpo va como formulario (multipart); sin ellas, como JSON. Las fotos solo acompañan a un reporte de daños. */
+  async entrega(id: number, danos: string | null, fotos: readonly File[] = []): Promise<void> {
+    if (fotos.length === 0) {
+      await api.post(`/garita/reservas/${id}/entrega`, { danos });
+      return;
+    }
+    const formulario = new FormData();
+    formulario.append('danos', danos ?? '');
+    fotos.forEach((foto) => formulario.append('fotos[]', foto));
+    await api.post(`/garita/reservas/${id}/entrega`, formulario);
   },
 };

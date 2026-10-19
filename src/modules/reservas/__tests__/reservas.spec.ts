@@ -50,6 +50,9 @@ const reserva = (extra: Partial<MiReserva> = {}): MiReserva => ({
   por_pagar: '0.00',
   pagar_antes_de: null,
   motivo: null,
+  garantia_estado: null,
+  garantia_monto: null,
+  garantia_devuelta_en: null,
   ...extra,
 });
 

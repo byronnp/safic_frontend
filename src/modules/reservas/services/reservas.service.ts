@@ -56,6 +56,11 @@ export interface MiReserva {
   pagar_antes_de: string | null;
   /** Motivo del rechazo o de la cancelación. */
   motivo: string | null;
+  /** Qué pasó con su garantía una vez recibida el área (null si no aplica). */
+  garantia_estado: 'esperando_decision' | 'por_devolver' | 'sin_devolucion' | 'devuelta' | null;
+  /** Lo que se devuelve o ya se devolvió. */
+  garantia_monto: string | null;
+  garantia_devuelta_en: string | null;
 }
 
 export interface NuevaReserva {

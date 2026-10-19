@@ -49,7 +49,7 @@ export function useRegistrarIngreso() {
 }
 
 export function useRecibirArea() {
-  return useMutacionHoy<{ id: number; danos: string | null }>(({ id, danos }) =>
-    reservasHoyService.entrega(id, danos),
+  return useMutacionHoy<{ id: number; danos: string | null; fotos?: readonly File[] }>(
+    ({ id, danos, fotos }) => reservasHoyService.entrega(id, danos, fotos),
   );
 }

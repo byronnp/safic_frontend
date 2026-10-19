@@ -82,6 +82,9 @@
                 <div class="mis-reservas__area">{{ r.area }}</div>
                 <div class="mis-reservas__cuando">{{ cuando(r) }}</div>
                 <div v-if="r.motivo" class="mis-reservas__cuando">{{ r.motivo }}</div>
+                <div v-if="textoGarantiaResidente(r)" class="mis-reservas__cuando">
+                  {{ textoGarantiaResidente(r) }}
+                </div>
               </div>
               <EstadoBadge :tono="estadoDeReserva(r).tono">{{
                 estadoDeReserva(r).texto
@@ -102,6 +105,7 @@ import AppEncabezado from '@/components/app/AppEncabezado.vue';
 import EstadoBadge from '@/components/EstadoBadge.vue';
 import { aApiError } from '@/core/api/errors';
 import { useCancelarReserva, useMisReservas } from '@/modules/reservas/composables/useReservas';
+import { textoGarantiaResidente } from '@/modules/reservas/garantias.logica';
 import {
   cuando,
   debeAlgo,

@@ -36,7 +36,7 @@
           :ocupado="ocupado"
           @ingreso="registrarIngreso(reserva)"
           @abrir="abierta = reserva.id"
-          @entregar="(danos) => confirmarEntrega(reserva, danos)"
+          @entregar="(danos, fotos) => confirmarEntrega(reserva, danos, fotos)"
         />
         <div v-if="!reservas.length" class="reservas-hoy-vacio">No hay reservas para hoy.</div>
       </template>
@@ -112,11 +112,11 @@ function registrarIngreso(r: ReservaHoy): void {
   });
 }
 
-function confirmarEntrega(r: ReservaHoy, danos: string | null): void {
+function confirmarEntrega(r: ReservaHoy, danos: string | null, fotos: File[]): void {
   if (ocupado.value) return;
   errorAccion.value = null;
   entrega.mutate(
-    { id: r.id, danos },
+    { id: r.id, danos, fotos },
     {
       onSuccess: () => {
         abierta.value = null;
