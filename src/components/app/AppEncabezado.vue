@@ -23,6 +23,7 @@
         </div>
       </div>
       <slot name="derecha" />
+      <AppCuentaMenu />
     </div>
     <slot />
   </header>
@@ -30,6 +31,8 @@
 
 <script setup lang="ts">
 import type { RouteLocationRaw } from 'vue-router';
+
+import AppCuentaMenu from './AppCuentaMenu.vue';
 
 defineProps<{
   titulo?: string;

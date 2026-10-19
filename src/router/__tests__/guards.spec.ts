@@ -1,7 +1,35 @@
 import { describe, expect, it } from 'vitest';
 import type { RouteLocationNormalized, RouteMeta } from 'vue-router';
 
-import { appDelPerfil, guardaDeSesion, redireccionSegura, type SesionParaGuarda } from '../guards';
+import { appDelPerfil } from '@/core/navigation/apps';
+
+import { guardaDeSesion, redireccionSegura, type SesionParaGuarda } from '../guards';
+
+// Permisos de cada perfil. Residente y guardia son exactamente los de Rol::permisosPorDefecto() del backend; los de administración
+// son representativos (basta con que sean permisos que no son de app)
+const RESIDENTE = [
+  'cuenta.propia',
+  'reservas.propias',
+  'visitas.propias',
+  'paquetes.propios',
+  'avisos.propios',
+  'incidencias.reportar',
+];
+const GUARDIA = [
+  'unidades.ver',
+  'garita.directorio',
+  'reservas.garita',
+  'garita.registrar',
+  'paquetes.gestionar',
+  'incidencias.reportar',
+];
+const ADMINISTRADOR = [
+  'unidades.ver',
+  'unidades.editar',
+  'finanzas.ver',
+  'cuotas.emitir',
+  'usuarios.gestionar',
+];
 
 function ruta(fullPath: string, meta: RouteMeta = {}, name?: string): RouteLocationNormalized {
   return { fullPath, meta, name } as unknown as RouteLocationNormalized;
@@ -15,6 +43,7 @@ function sesion(parcial: Partial<SesionParaGuarda> = {}): SesionParaGuarda {
     esPlataforma: false,
     dobleFactorPendiente: false,
     roles: ['administrador'],
+    permisos: [],
     rolesPlataforma: [],
     restaurar: () => Promise.resolve(),
     tienePermiso: () => true,
@@ -58,42 +87,78 @@ describe('guarda de sesión', () => {
   it('el residente y el guardia entran por su app, no por la pantalla de la administración', async () => {
     const inicio = ruta('/', {}, 'inicio');
 
-    expect(await guardaDeSesion(inicio, sesion({ roles: ['residente'] }))).toEqual({
+    expect(await guardaDeSesion(inicio, sesion({ permisos: RESIDENTE }))).toEqual({
       name: 'app-residente',
     });
-    expect(await guardaDeSesion(inicio, sesion({ roles: ['guardia'] }))).toEqual({
+    expect(await guardaDeSesion(inicio, sesion({ permisos: GUARDIA }))).toEqual({
       name: 'app-guardia',
     });
     // También al iniciar sesión: el login lleva a «inicio» y de ahí a su app
     expect(
       await guardaDeSesion(
         ruta('/login', { publica: true }, 'login'),
-        sesion({ roles: ['residente'] }),
+        sesion({ permisos: RESIDENTE }),
       ),
     ).toEqual({ name: 'inicio' });
   });
 
-  it('quien tiene otro rol, o ninguno, o va a otra pantalla, no se redirige', async () => {
+  it('quien tiene permisos de administración, o ninguno, o va a otra pantalla, no se redirige', async () => {
     const inicio = ruta('/', {}, 'inicio');
 
-    expect(await guardaDeSesion(inicio, sesion({ roles: ['administrador'] }))).toBe(true);
-    expect(await guardaDeSesion(inicio, sesion({ roles: ['residente', 'tesorero'] }))).toBe(true);
-    expect(await guardaDeSesion(inicio, sesion({ roles: [] }))).toBe(true);
+    expect(await guardaDeSesion(inicio, sesion({ permisos: ADMINISTRADOR }))).toBe(true);
+    expect(await guardaDeSesion(inicio, sesion({ permisos: [...RESIDENTE, 'finanzas.ver'] }))).toBe(
+      true,
+    );
+    expect(await guardaDeSesion(inicio, sesion({ permisos: [] }))).toBe(true);
     // Un enlace directo a otra pantalla no se toca
     expect(
       await guardaDeSesion(
         ruta('/app/avisos', { permiso: 'avisos.propios' }, 'app-avisos'),
-        sesion({ roles: ['residente'] }),
+        sesion({ permisos: RESIDENTE }),
       ),
     ).toBe(true);
   });
 
-  it('appDelPerfil: solo residente o solo guardia', () => {
-    expect(appDelPerfil(['residente'])).toBe('app-residente');
-    expect(appDelPerfil(['guardia'])).toBe('app-guardia');
-    expect(appDelPerfil(['residente', 'guardia'])).toBeNull();
-    expect(appDelPerfil(['mantenimiento'])).toBeNull();
+  it('cada rol del sistema empieza donde le corresponde', () => {
+    // Si cambian los permisos por defecto de residente o guardia en el backend (Rol::permisosPorDefecto), actualizar aquí
+    const porRol: Record<string, [readonly string[], string | null]> = {
+      residente: [RESIDENTE, 'app-residente'],
+      guardia: [GUARDIA, 'app-guardia'],
+      administrador: [ADMINISTRADOR, null],
+      contador: [['finanzas.ver', 'finanzas.exportar'], null],
+      tesorero: [
+        [
+          'unidades.ver',
+          'finanzas.ver',
+          'pagos.aprobar',
+          'gastos.registrar',
+          'caja_chica.registrar',
+        ],
+        null,
+      ],
+      presidente: [['unidades.ver', 'finanzas.ver', 'gastos.aprobar_n2'], null],
+      vicepresidente: [['unidades.ver', 'finanzas.ver', 'gastos.aprobar_n2'], null],
+      secretario: [['unidades.ver'], null],
+      mantenimiento: [['caja_chica.registrar'], null],
+    };
+
+    for (const [rol, [permisos, esperado]] of Object.entries(porRol)) {
+      expect([rol, appDelPerfil(permisos)]).toEqual([rol, esperado]);
+    }
+  });
+
+  it('un rol nuevo que cree el super admin se clasifica por sus permisos, no por su nombre', () => {
+    // «Conserje»: solo permisos de garita
+    expect(appDelPerfil(['garita.registrar', 'paquetes.gestionar'])).toBe('app-guardia');
+    // «Arrendatario»: solo permisos de residente
+    expect(appDelPerfil(['cuenta.propia', 'avisos.propios'])).toBe('app-residente');
+    // Mixto con administración: entra por «inicio» y llega a su app desde el menú de la cuenta
+    expect(appDelPerfil(['garita.registrar', 'finanzas.ver'])).toBeNull();
+    // Solo lectura de unidades o sin permisos de app: no hay app que ofrecer
+    expect(appDelPerfil(['unidades.ver'])).toBeNull();
     expect(appDelPerfil([])).toBeNull();
+    // Guardia que además es residente: su trabajo es la garita
+    expect(appDelPerfil([...RESIDENTE, ...GUARDIA])).toBe('app-guardia');
   });
 
   it('un contador sin verificación en dos pasos solo llega a configurarla', async () => {

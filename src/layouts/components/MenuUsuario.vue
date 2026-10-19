@@ -32,6 +32,23 @@
           </q-item>
         </template>
 
+        <!-- Las apps a las que puede entrar según sus permisos (quien tiene administración y app a la vez) -->
+        <template v-if="apps.length > 0">
+          <q-separator class="q-my-xs" />
+          <q-item
+            v-for="app in apps"
+            :key="app.clave"
+            v-close-popup
+            clickable
+            :to="{ name: app.ruta }"
+          >
+            <q-item-section avatar>
+              <q-icon :name="app.clave === 'guardia' ? ICONOS.garitaApp : ICONOS.miHogar" />
+            </q-item-section>
+            <q-item-section>{{ app.etiqueta }}</q-item-section>
+          </q-item>
+        </template>
+
         <!-- Solo en desarrollo: abrir las otras vistas para revisar los diseños -->
         <template v-if="MOSTRAR_VISTAS_PREVIAS">
           <q-separator class="q-my-xs" />
@@ -68,6 +85,7 @@ import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 
 import { queryClient } from '@/boot/vue-query';
+import { appsDisponibles } from '@/core/navigation/apps';
 import { ICONOS } from '@/core/navigation/icons';
 import { etiquetaRol } from '@/core/navigation/roles';
 import { iniciales } from '@/core/theme/avatar';
@@ -84,6 +102,8 @@ const session = useSessionStore();
 const enPlataforma = computed(() => route.meta.plataforma === true);
 const irAPlataforma = computed(() => session.esPlataforma && !enPlataforma.value);
 const irACondominios = computed(() => enPlataforma.value && session.condominios.length > 0);
+// En el panel de plataforma no se ofrecen: ahí los permisos del condominio no aplican
+const apps = computed(() => (enPlataforma.value ? [] : appsDisponibles(session.permisos)));
 
 const vistas = [
   { etiqueta: 'Administración del condominio', icono: ICONOS.condominio, ruta: 'inicio' },

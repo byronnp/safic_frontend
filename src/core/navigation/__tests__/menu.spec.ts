@@ -7,6 +7,8 @@ import {
   MENU_APP_RESIDENTE,
   MENU_BASE,
   MENU_PLATAFORMA,
+  PERMISOS_APP_GUARDIA,
+  PERMISOS_APP_RESIDENTE,
   type ItemMenu,
 } from '../menu';
 
@@ -85,5 +87,15 @@ describe('entrada de las apps', () => {
       'guardia-paquetes',
     );
     expect(entradaDeApp(MENU_APP_GUARDIA, ['garita.directorio'])).toBe('guardia-directorio');
+  });
+});
+
+describe('permisos de las apps', () => {
+  it('todo permiso de una pestaña de la app está en la lista que decide quién es «de app»', () => {
+    const permisos = (items: ItemMenu[]) =>
+      recorrer(items).flatMap((i) => (i.permiso ? [i.permiso] : []));
+
+    for (const p of permisos(MENU_APP_RESIDENTE)) expect(PERMISOS_APP_RESIDENTE).toContain(p);
+    for (const p of permisos(MENU_APP_GUARDIA)) expect(PERMISOS_APP_GUARDIA).toContain(p);
   });
 });
