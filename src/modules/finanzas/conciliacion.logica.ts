@@ -88,9 +88,9 @@ export type ErroresImportar = Partial<
 export function validarImportar(f: FormularioImportar, archivo: File | null): ErroresImportar {
   const e: ErroresImportar = {};
   if (f.cuentaBancariaId === null) e.cuentaBancariaId = 'Elige la cuenta del banco.';
-  if (archivo === null) e.archivo = 'Elige el estado de cuenta (Excel o CSV).';
-  else if (!/\.(xlsx|csv)$/i.test(archivo.name))
-    e.archivo = 'El archivo debe ser Excel (.xlsx) o CSV.';
+  if (archivo === null) e.archivo = 'Elige el estado de cuenta (Excel, CSV o PDF).';
+  else if (!/\.(xlsx|csv|pdf)$/i.test(archivo.name))
+    e.archivo = 'El archivo debe ser Excel (.xlsx), CSV o el PDF del Banco del Pichincha.';
   else if (archivo.size > 5 * 1024 * 1024) e.archivo = 'El archivo pesa más de 5 MB.';
   for (const [campo, valor] of [
     ['saldoInicial', f.saldoInicial],

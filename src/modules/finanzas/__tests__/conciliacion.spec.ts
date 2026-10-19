@@ -85,6 +85,8 @@ describe('conciliación', () => {
       archivo: expect.any(String),
     });
     expect(validarImportar(f, new File(['x'], 'foto.png')).archivo).toMatch(/Excel/);
+    // El PDF del Banco del Pichincha también se acepta
+    expect(validarImportar(f, new File(['x'], 'Estado de cuenta - Marzo 2026.pdf'))).toEqual({});
     expect(validarImportar({ ...f, saldoFinal: 'abc' }, xlsx).saldoFinal).toBeDefined();
     expect(normalizarSaldo('1.234,5')).toBe('1234.50');
     expect(normalizarSaldo('-12,5')).toBe('-12.50');

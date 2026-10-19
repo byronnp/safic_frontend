@@ -37,7 +37,11 @@
 
           <div class="safic-campo">
             <label for="imp-archivo" class="safic-campo__etiqueta">Archivo</label>
-            <input id="imp-archivo" type="file" accept=".xlsx,.csv" @change="alElegir" />
+            <input id="imp-archivo" type="file" accept=".xlsx,.csv,.pdf" @change="alElegir" />
+            <div class="imp__ayuda">
+              Excel, CSV o el PDF del estado de cuenta del Banco del Pichincha. Del PDF solo se
+              importan los movimientos del mes elegido.
+            </div>
             <div v-if="errores.archivo" class="imp__error" role="alert">{{ errores.archivo }}</div>
           </div>
 
@@ -198,6 +202,11 @@ async function enviar(): Promise<void> {
 </script>
 
 <style scoped>
+.imp__ayuda {
+  font-size: 12px;
+  color: var(--safic-texto-suave);
+}
+
 .imp__error {
   font-size: 12px;
   font-weight: 700;
