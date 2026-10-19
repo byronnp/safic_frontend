@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query';
-import { computed } from 'vue';
+import { computed, unref, type Ref } from 'vue';
 
 import type { ApiError } from '@/core/api/errors';
 import { useSessionStore } from '@/stores/session';
@@ -16,13 +16,13 @@ export const clavesMiCuenta = {
   todas: (condominioId: number | null) => ['mi-cuenta', condominioId] as const,
 };
 
-export function useMiCuenta() {
+export function useMiCuenta(habilitado: Ref<boolean> | boolean = true) {
   const session = useSessionStore();
 
   return useQuery<MiCuenta, ApiError>({
     queryKey: computed(() => clavesMiCuenta.todas(session.condominioId)),
     queryFn: () => miCuentaService.ver(),
-    enabled: computed(() => session.condominioId !== null),
+    enabled: computed(() => session.condominioId !== null && unref(habilitado)),
     refetchOnWindowFocus: false,
   });
 }
