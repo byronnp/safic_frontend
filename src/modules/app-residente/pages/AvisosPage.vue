@@ -5,12 +5,26 @@
     <div class="app-cuerpo avisos__cuerpo">
       <div v-if="errorAccion" class="safic-alerta" role="alert">{{ errorAccion }}</div>
 
+      <!-- Notificaciones: paquetes y cuotas. La convocatoria a asamblea se suma con la API de Asambleas (F5). -->
       <section
-        v-if="paquetesEnGarita.length > 0"
+        v-if="hayNotificaciones"
         class="app-tarjeta avisos__paquetes"
-        aria-label="Paquetes en garita"
+        aria-label="Notificaciones"
       >
-        <h2 class="avisos__titulo">Paquetes en garita</h2>
+        <h2 class="avisos__titulo">Notificaciones</h2>
+        <router-link
+          v-for="n in notificacionesCuotas"
+          :key="n.id"
+          :to="{ name: 'app-mi-cuenta' }"
+          class="avisos__paquete avisos__notificacion"
+          :class="{ 'avisos__notificacion--vencida': n.vencida }"
+        >
+          <q-icon name="sym_r_receipt_long" size="20px" />
+          <div>
+            {{ n.titulo }}
+            <div class="avisos__fecha">{{ n.detalle }}</div>
+          </div>
+        </router-link>
         <div v-for="p in paquetesEnGarita" :key="p.id" class="avisos__paquete">
           <q-icon name="sym_r_inventory_2" size="20px" />
           <div>
@@ -21,7 +35,7 @@
             >
           </div>
         </div>
-        <div class="avisos__fecha">
+        <div v-if="paquetesEnGarita.length > 0" class="avisos__fecha">
           Retíralo con firma; se entrega a ocupantes de tu unidad o a quien autorices.
         </div>
       </section>
@@ -105,6 +119,9 @@ import { useMisPaquetes } from '@/modules/garita/composables/usePaquetes';
 import { haceDias, tituloMiPaquete } from '@/modules/garita/paquetes.logica';
 import { useSessionStore } from '@/stores/session';
 
+import { notificacionesDeCuotas } from '../avisos.logica';
+import { useMiCuenta } from '../composables/useMiCuenta';
+
 const session = useSessionStore();
 const consulta = useMisAvisos();
 const leyendo = useLeerAviso();
@@ -112,6 +129,13 @@ const confirmando = useConfirmarAviso();
 
 const paquetes = useMisPaquetes(computed(() => session.tienePermiso('paquetes.propios')));
 const paquetesEnGarita = computed(() => paquetes.data.value?.en_garita ?? []);
+const cuenta = useMiCuenta(computed(() => session.tienePermiso('cuenta.propia')));
+const notificacionesCuotas = computed(() =>
+  notificacionesDeCuotas(cuenta.data.value?.unidades ?? []),
+);
+const hayNotificaciones = computed(
+  () => paquetesEnGarita.value.length > 0 || notificacionesCuotas.value.length > 0,
+);
 const avisos = computed(() => consulta.data.value?.avisos ?? []);
 const ocupado = computed(() => leyendo.isPending.value || confirmando.isPending.value);
 const errorAccion = ref<string | null>(null);
@@ -153,6 +177,15 @@ function confirmar(a: Aviso): void {
   align-items: center;
   gap: 10px;
   font-weight: 700;
+}
+
+.avisos__notificacion {
+  color: inherit;
+  text-decoration: none;
+}
+
+.avisos__notificacion--vencida {
+  color: var(--q-negative);
 }
 
 .avisos__cuerpo {
