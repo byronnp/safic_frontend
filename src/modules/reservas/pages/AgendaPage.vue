@@ -135,6 +135,63 @@
         <div class="agenda__pie">
           Las solicitudes sin respuesta en 48 horas vencen solas y liberan el horario.
         </div>
+
+        <template v-if="puedeGestionar">
+          <h2 class="agenda__lateral-titulo agenda__danos-titulo">
+            Daños reportados ({{ danos.data.value?.pendientes ?? 0 }} por decidir)
+          </h2>
+          <div v-if="danos.isError.value" class="safic-alerta" role="alert">
+            {{ danos.error.value?.mensaje }}
+            <q-btn flat no-caps dense label="Reintentar" @click="danos.refetch()" />
+          </div>
+          <q-skeleton v-else-if="danos.isPending.value" type="rect" height="80px" />
+          <div v-for="d in listaDanos" :key="d.reserva_id" class="agenda__solicitud">
+            <div class="agenda__sol-cab">
+              <div class="agenda__sol-area">{{ d.area }}</div>
+              <span class="agenda__vence">{{
+                d.decision ? textoDecision(d.decision) : 'Por decidir'
+              }}</span>
+            </div>
+            <div class="agenda__sol-texto">{{ d.unidad }} · {{ fechaCorta(d.fecha) }}</div>
+            <div class="agenda__sol-texto agenda__danos-texto">{{ d.danos }}</div>
+            <div v-if="textoPorDevolver(d.por_devolver)" class="agenda__sol-nota">
+              {{ textoPorDevolver(d.por_devolver) }}
+            </div>
+            <div class="agenda__sol-acciones">
+              <button type="button" class="agenda__aprobar" @click="revisarDanos(d)">
+                {{ d.decision ? 'Ver' : 'Revisar' }}
+              </button>
+            </div>
+          </div>
+          <div v-if="danos.data.value && listaDanos.length === 0" class="agenda__vacio">
+            No hay daños reportados.
+          </div>
+
+          <h2 class="agenda__lateral-titulo agenda__danos-titulo">{{ tituloGarantias }}</h2>
+          <div v-if="garantias.isError.value" class="safic-alerta" role="alert">
+            {{ garantias.error.value?.mensaje }}
+            <q-btn flat no-caps dense label="Reintentar" @click="garantias.refetch()" />
+          </div>
+          <q-skeleton v-else-if="garantias.isPending.value" type="rect" height="80px" />
+          <div v-for="g in listaGarantias" :key="g.reserva_id" class="agenda__solicitud">
+            <div class="agenda__sol-cab">
+              <div class="agenda__sol-area">{{ g.area }}</div>
+              <span class="agenda__vence">{{ g.unidad }}</span>
+            </div>
+            <div class="agenda__sol-texto">{{ fechaCorta(g.fecha) }}</div>
+            <div :class="g.estado === 'por_devolver' ? 'agenda__sol-nota' : 'agenda__sol-texto'">
+              {{ textoEstadoGarantia(g) }}
+            </div>
+            <div v-if="g.estado === 'por_devolver'" class="agenda__sol-acciones">
+              <button type="button" class="agenda__aprobar" @click="devolverGarantia(g)">
+                Registrar devolución
+              </button>
+            </div>
+          </div>
+          <div v-if="garantias.data.value && listaGarantias.length === 0" class="agenda__vacio">
+            No hay garantías por devolver.
+          </div>
+        </template>
       </aside>
     </div>
   </q-page>
@@ -148,6 +205,7 @@ import PaginaEncabezado from '@/components/PaginaEncabezado.vue';
 import { aApiError } from '@/core/api/errors';
 import { useSessionStore } from '@/stores/session';
 import { hoyEcuador, sumarDias } from '@/utils/fecha';
+import { formatoMoneda } from '@/utils/formato';
 
 import {
   armarGrilla,
@@ -160,6 +218,10 @@ import {
   type ItemAgenda,
 } from '../agenda.logica';
 import BloquearAreaDialog from '../components/BloquearAreaDialog.vue';
+import DanosReservaDialog from '../components/DanosReservaDialog.vue';
+import DevolverGarantiaDialog from '../components/DevolverGarantiaDialog.vue';
+import { useListaDanos } from '../composables/useDanos';
+import { useListaGarantias } from '../composables/useGarantias';
 import {
   useAgenda,
   useAprobarReserva,
@@ -168,8 +230,12 @@ import {
   useRechazarReserva,
   useSolicitudes,
 } from '../composables/useAgenda';
+import { textoDecision, textoPorDevolver } from '../danos.logica';
+import { textoEstadoGarantia } from '../garantias.logica';
 import { fechaCorta } from '../reservas.logica';
 import type { AreaAgenda, Solicitud } from '../services/agenda.service';
+import type { ResumenDanos } from '../services/danos.service';
+import type { GarantiaReserva } from '../services/garantias.service';
 
 const $q = useQuasar();
 const session = useSessionStore();
@@ -180,6 +246,16 @@ const puedeGestionar = computed(() => session.tienePermiso('reservas.gestionar')
 const desde = ref(lunesDe(hoyEcuador()));
 const consulta = useAgenda(desde);
 const solicitudes = useSolicitudes();
+const danos = useListaDanos(puedeGestionar);
+const listaDanos = computed(() => danos.data.value?.danos ?? []);
+const garantias = useListaGarantias(puedeGestionar);
+const listaGarantias = computed(() => garantias.data.value?.garantias ?? []);
+const tituloGarantias = computed(() => {
+  const g = garantias.data.value;
+  return g && g.por_devolver > 0
+    ? `Garantías por devolver (${g.por_devolver} · ${formatoMoneda(g.total_por_devolver)})`
+    : 'Garantías por devolver (0)';
+});
 
 const dias = computed(() => diasDeSemana(desde.value));
 const titulo = computed(() => tituloSemana(desde.value));
@@ -317,6 +393,16 @@ function abrirItem(area: AreaAgenda, it: ItemAgenda): void {
         { id: it.id, motivo },
         { onSuccess: () => avisar('Reserva cancelada. Se avisó al residente.'), onError: fallar },
       ),
+  );
+}
+
+function devolverGarantia(g: GarantiaReserva): void {
+  $q.dialog({ component: DevolverGarantiaDialog, componentProps: { garantia: g } }).onOk(avisar);
+}
+
+function revisarDanos(d: ResumenDanos): void {
+  $q.dialog({ component: DanosReservaDialog, componentProps: { reservaId: d.reserva_id } }).onOk(
+    avisar,
   );
 }
 
@@ -559,6 +645,18 @@ button.agenda__item {
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+.agenda__danos-titulo {
+  margin-top: 24px;
+}
+
+.agenda__danos-texto {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .agenda__lateral-titulo {

@@ -24,3 +24,17 @@ export function accionDeReserva(
   if (r.estado === 'en_uso') return 'recibir';
   return null;
 }
+
+/** Fotos de los daños que el guardia puede adjuntar (el backend acepta lo mismo). */
+export const MAX_FOTOS_DANOS = 5;
+export const MAX_FOTO_DANOS = 5 * 1024 * 1024;
+const TIPOS_FOTO_DANOS = ['image/jpeg', 'image/png'];
+
+/** `null` si las fotos sirven; si no, el motivo en español. */
+export function errorFotosDanos(fotos: readonly Pick<File, 'type' | 'size'>[]): string | null {
+  if (fotos.length > MAX_FOTOS_DANOS) return `Máximo ${MAX_FOTOS_DANOS} fotos.`;
+  if (fotos.some((f) => !TIPOS_FOTO_DANOS.includes(f.type)))
+    return 'Las fotos deben ser JPG o PNG.';
+  if (fotos.some((f) => f.size > MAX_FOTO_DANOS)) return 'Una foto pesa más de 5 MB.';
+  return null;
+}

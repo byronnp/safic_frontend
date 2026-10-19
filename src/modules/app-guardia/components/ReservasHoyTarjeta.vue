@@ -64,6 +64,26 @@
           aria-label="Describe el daño"
           class="reserva__descripcion"
         ></textarea>
+        <q-file
+          v-model="fotos"
+          class="reserva__fotos"
+          outlined
+          dense
+          multiple
+          append
+          clearable
+          hide-bottom-space
+          accept="image/jpeg,image/png"
+          :max-files="MAX_FOTOS_DANOS"
+          max-file-size="5242880"
+          :label="`Fotos del daño (hasta ${MAX_FOTOS_DANOS})`"
+          aria-label="Fotos del daño"
+          :error="!!errorFotos"
+          :error-message="errorFotos ?? undefined"
+          @rejected="errorFotos = `Máximo ${MAX_FOTOS_DANOS} fotos JPG o PNG de hasta 5 MB.`"
+        >
+          <template #prepend><q-icon name="sym_r_photo_camera" /></template>
+        </q-file>
         <div class="reserva__nota">La administración decidirá el cargo por daños a la unidad.</div>
       </template>
 
@@ -81,7 +101,13 @@ import { computed, ref } from 'vue';
 import type { TonoEstado } from '@/components/EstadoBadge.vue';
 import EstadoBadge from '@/components/EstadoBadge.vue';
 
-import { accionDeReserva, textoHora, textoPago } from '../reservas-hoy.logica';
+import {
+  accionDeReserva,
+  errorFotosDanos,
+  MAX_FOTOS_DANOS,
+  textoHora,
+  textoPago,
+} from '../reservas-hoy.logica';
 import type { EstadoReservaHoy, ReservaHoy } from '../services/reservas-hoy.service';
 
 const ESTADOS: Record<EstadoReservaHoy, { texto: string; tono: TonoEstado }> = {
@@ -95,8 +121,8 @@ const props = defineProps<{ reserva: ReservaHoy; abierta: boolean; ocupado?: boo
 const emit = defineEmits<{
   ingreso: [];
   abrir: [];
-  /** `null` = sin novedades; texto = descripción del daño */
-  entregar: [danos: string | null];
+  /** `null` = sin novedades; texto = descripción del daño, con sus fotos (opcionales) */
+  entregar: [danos: string | null, fotos: File[]];
 }>();
 
 const $q = useQuasar();
@@ -104,17 +130,21 @@ const $q = useQuasar();
 const accion = computed(() => accionDeReserva(props.reserva));
 const conDanos = ref(false);
 const descripcion = ref('');
+const fotos = ref<File[]>([]);
+const errorFotos = ref<string | null>(null);
 
 function confirmar(): void {
   if (!conDanos.value) {
-    emit('entregar', null);
+    emit('entregar', null, []);
     return;
   }
   if (descripcion.value.trim().length < 3) {
     $q.notify({ type: 'negative', message: 'Describe el daño antes de confirmar.' });
     return;
   }
-  emit('entregar', descripcion.value.trim());
+  errorFotos.value = errorFotosDanos(fotos.value);
+  if (errorFotos.value !== null) return;
+  emit('entregar', descripcion.value.trim(), fotos.value);
 }
 </script>
 
