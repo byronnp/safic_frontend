@@ -344,6 +344,7 @@ export const PERMISOS_APP_RESIDENTE: readonly string[] = [
   'paquetes.propios',
   'avisos.propios',
   'incidencias.reportar',
+  'asambleas.propias',
 ];
 export const PERMISOS_APP_GUARDIA: readonly string[] = [
   'garita.registrar',
@@ -401,11 +402,11 @@ export const MENU_APP_RESIDENTE: ItemMenu[] = [
     permiso: 'visitas.propias',
   },
   {
-    id: 'app.asamblea',
-    etiqueta: 'Asamblea',
+    id: 'app.asambleas',
+    etiqueta: 'Asambleas',
     icono: ICONOS.asamblea,
-    ruta: 'app-asamblea',
-    vistaPrevia: true,
+    ruta: 'app-mis-asambleas',
+    permiso: 'asambleas.propias',
   },
 ];
 

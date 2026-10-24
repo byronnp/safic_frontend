@@ -531,6 +531,12 @@ const routes: RouteRecordRaw[] = [
           menuActivo: 'app-mis-visitas',
         },
       },
+      {
+        path: 'asambleas',
+        name: 'app-mis-asambleas',
+        component: () => import('@/modules/app-residente/pages/MisAsambleasPage.vue'),
+        meta: { permiso: 'asambleas.propias', titulo: 'Asambleas' },
+      },
       previa(
         'asamblea',
         'app-asamblea',
