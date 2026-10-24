@@ -1,5 +1,6 @@
 import type { RouteLocationNormalized, RouteLocationRaw } from 'vue-router';
 
+import { appDelPerfil } from '@/core/navigation/apps';
 import {
   MENU_BASE,
   MENU_PLATAFORMA,
@@ -21,6 +22,8 @@ export interface SesionParaGuarda {
   dobleFactorPendiente: boolean;
   /** Roles en el condominio activo y en la plataforma (para las vistas previas). */
   roles: readonly string[];
+  /** Permisos en el condominio activo. */
+  permisos: readonly string[];
   rolesPlataforma: readonly string[];
   restaurar: () => Promise<void>;
   tienePermiso: (permiso: string) => boolean;
@@ -37,17 +40,6 @@ export function destinoSinCondominio(
   return sesion.esPlataforma && sesion.condominios.length === 0
     ? { name: 'plataforma' }
     : { name: 'seleccionar-condominio' };
-}
-
-/**
- * Dónde empieza quien solo tiene perfil de app: el residente en su app y el guardia en la suya (no en la pantalla de la
- * administración, que para ellos está vacía). Quien tiene además otro rol (administrador, contador…) o ninguno entra por «inicio».
- */
-export function appDelPerfil(roles: readonly string[]): 'app-residente' | 'app-guardia' | null {
-  if (roles.length === 0) return null;
-  if (roles.every((r) => r === 'residente')) return 'app-residente';
-  if (roles.every((r) => r === 'guardia')) return 'app-guardia';
-  return null;
 }
 
 export interface OpcionesGuarda {
@@ -151,7 +143,7 @@ export async function guardaDeSesion(
 
   // El residente y el guardia no empiezan en la pantalla de la administración (vacía para ellos): van a su app
   if (destino.name === 'inicio') {
-    const app = appDelPerfil(sesion.roles);
+    const app = appDelPerfil(sesion.permisos);
     if (app) {
       return { name: app };
     }
