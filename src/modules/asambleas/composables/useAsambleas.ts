@@ -11,11 +11,15 @@ import {
   type AsambleaDetalle,
   type AsambleaResumen,
   type ConfiguracionAsambleas,
+  type CargarPoder,
   type ConvocatoriaAsamblea,
   type EstadoAsamblea,
   type GuardarAsamblea,
   type GuardarPunto,
+  type MiAsamblea,
   type PadronAsamblea,
+  type PoderAsamblea,
+  type PoderesDeAsamblea,
 } from '../services/asambleas.service';
 
 /** Claves de caché: siempre incluyen el condominio activo. */
@@ -27,6 +31,9 @@ export const clavesAsambleas = {
     ['asambleas', condominioId, 'detalle', id] as const,
   convocatoria: (condominioId: number | null, id: number | null) =>
     ['asambleas', condominioId, 'convocatoria', id] as const,
+  poderes: (condominioId: number | null, id: number | null) =>
+    ['asambleas', condominioId, 'poderes', id] as const,
+  mias: (condominioId: number | null) => ['asambleas', condominioId, 'mias'] as const,
   padron: (condominioId: number | null) => ['asambleas', condominioId, 'padron'] as const,
   anticipacion: (condominioId: number | null, fechaHora: string) =>
     ['asambleas', condominioId, 'anticipacion', fechaHora] as const,
@@ -94,6 +101,34 @@ export function useConvocatoria(id: Ref<number | null>, habilitado: Ref<boolean>
     enabled: computed(() => session.condominioId !== null && id.value !== null && habilitado.value),
     refetchInterval: () => intervaloConRespaldo(30_000, 120_000),
     refetchOnWindowFocus: true,
+  });
+}
+
+/** Poderes de la asamblea para validarlos. */
+export function usePoderes(id: Ref<number | null>, habilitado: Ref<boolean>) {
+  const session = useSessionStore();
+
+  return useQuery<PoderesDeAsamblea, ApiError>({
+    queryKey: computed(() => clavesAsambleas.poderes(session.condominioId, id.value)),
+    queryFn: () => asambleasService.poderes(id.value as number),
+    enabled: computed(() => session.condominioId !== null && id.value !== null && habilitado.value),
+    // Trae enlaces temporales a los PDF: no se reusan de la caché
+    gcTime: 0,
+    refetchInterval: () => intervaloConRespaldo(30_000, 120_000),
+    refetchOnWindowFocus: true,
+  });
+}
+
+/** Las asambleas del propietario (próximas) con el poder de cada unidad. */
+export function useMisAsambleas(habilitado: Ref<boolean>) {
+  const session = useSessionStore();
+
+  return useQuery<MiAsamblea[], ApiError>({
+    queryKey: computed(() => clavesAsambleas.mias(session.condominioId)),
+    queryFn: () => asambleasService.misAsambleas(),
+    enabled: computed(() => session.condominioId !== null && habilitado.value),
+    refetchOnWindowFocus: true,
+    refetchInterval: () => intervaloConRespaldo(60_000, 180_000),
   });
 }
 
@@ -186,6 +221,44 @@ export function useReenviarConvocatoria() {
     mutationFn: (id) => asambleasService.reenviarConvocatoria(id),
   });
 }
+
+/**
+ * Los poderes cambian la lista de poderes y «mis asambleas»: se piden de nuevo en el condominio **de la petición**, también en error
+ * (un 409 dice que el estado cambió).
+ */
+function usePoderMutacion<TVariables>(ejecutar: (v: TVariables) => Promise<PoderAsamblea>) {
+  const session = useSessionStore();
+  const queryClient = useQueryClient();
+
+  return useMutation<PoderAsamblea, ApiError, TVariables, { condominioId: number | null }>({
+    mutationFn: ejecutar,
+    onMutate: () => ({ condominioId: session.condominioId }),
+    onSettled: (_d, _e, _v, contexto) => {
+      if (contexto?.condominioId != null) {
+        return queryClient.invalidateQueries({
+          queryKey: clavesAsambleas.todas(contexto.condominioId),
+        });
+      }
+      return undefined;
+    },
+  });
+}
+
+export const useCargarPoder = () =>
+  usePoderMutacion<{ asambleaId: number; datos: CargarPoder }>((v) =>
+    asambleasService.cargarPoder(v.asambleaId, v.datos),
+  );
+
+export const useValidarPoder = () =>
+  usePoderMutacion<number>((poderId) => asambleasService.validarPoder(poderId));
+
+export const useRechazarPoder = () =>
+  usePoderMutacion<{ poderId: number; motivo: string }>((v) =>
+    asambleasService.rechazarPoder(v.poderId, v.motivo),
+  );
+
+export const useRetirarPoder = () =>
+  usePoderMutacion<number>((poderId) => asambleasService.retirarPoder(poderId));
 
 export function useDescartarAsamblea() {
   const session = useSessionStore();

@@ -134,6 +134,79 @@
             </li>
           </ul>
         </div>
+
+        <div class="conv__tabla" aria-labelledby="conv-poderes">
+          <h2 id="conv-poderes" class="conv__titulo">
+            Poderes
+            <span v-if="poderes" class="conv__cuenta">
+              · {{ poderes.pendientes }} por validar · {{ poderes.validados }} validados
+            </span>
+          </h2>
+          <div v-if="consultaPoderes.isError.value" class="safic-alerta" role="alert">
+            {{ consultaPoderes.error.value?.mensaje }}
+            <q-btn flat no-caps dense label="Reintentar" @click="consultaPoderes.refetch()" />
+          </div>
+          <q-skeleton v-else-if="consultaPoderes.isPending.value" type="rect" height="60px" />
+          <div v-else-if="(poderes?.poderes.length ?? 0) === 0" class="conv__vacio">
+            Aún no hay poderes. Los propietarios que no asistan los suben desde la app, hasta que se
+            instale la asamblea.
+          </div>
+          <ul v-else class="conv__lista conv__lista--poderes">
+            <li v-for="p in poderes?.poderes" :key="p.id" class="conv__poder">
+              <div class="conv__poder-cab">
+                <strong>{{ p.unidad_codigo }}</strong>
+                <EstadoBadge
+                  :tono="ESTADOS_PODER[p.estado].tono"
+                  :texto="ESTADOS_PODER[p.estado].nombre"
+                />
+              </div>
+              <div>
+                {{ p.otorgante ?? 'Propietario' }} → <strong>{{ p.representante_nombre }}</strong>
+                <span class="conv__sub"> · {{ p.representante_documento }}</span>
+              </div>
+              <div class="conv__sub">
+                {{ nombreTipoPoder(p.tipo) }} · cargado por {{ p.cargado_por ?? '—' }}
+              </div>
+              <div v-if="p.unidad_en_mora" class="conv__aviso">
+                La unidad está en mora: no vota aunque el poder esté validado.
+              </div>
+              <div v-if="p.estado === 'rechazado'" class="conv__sub">
+                Motivo: {{ p.motivo_rechazo }}
+              </div>
+              <div class="conv__poder-acc">
+                <a
+                  v-if="urlSegura(p.documento_url)"
+                  :href="urlSegura(p.documento_url) ?? undefined"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="conv__enlace"
+                >
+                  <q-icon name="sym_r_picture_as_pdf" size="18px" />{{ p.documento_nombre }}
+                </a>
+                <template v-if="p.estado === 'pendiente' && detalle.puede_cancelar">
+                  <q-btn
+                    unelevated
+                    no-caps
+                    dense
+                    color="primary"
+                    label="Validar"
+                    :disable="ocupado"
+                    @click="validar(p)"
+                  />
+                  <q-btn
+                    flat
+                    no-caps
+                    dense
+                    color="negative"
+                    label="Rechazar"
+                    :disable="ocupado"
+                    @click="rechazar(p)"
+                  />
+                </template>
+              </div>
+            </li>
+          </ul>
+        </div>
       </template>
     </template>
   </q-page>
@@ -148,15 +221,20 @@ import EstadoBadge from '@/components/EstadoBadge.vue';
 import PaginaEncabezado from '@/components/PaginaEncabezado.vue';
 import { guardarArchivo } from '@/core/api/descarga';
 import { aApiError } from '@/core/api/errors';
+import { urlSegura } from '@/modules/comunicacion/anuncios.logica';
 
 import { ESTADOS, fechaHoraLarga, nombreModalidad } from '../asambleas.logica';
 import {
   useAsamblea,
   useCancelarAsamblea,
   useConvocatoria,
+  usePoderes,
+  useRechazarPoder,
   useReenviarConvocatoria,
+  useValidarPoder,
 } from '../composables/useAsambleas';
-import { asambleasService } from '../services/asambleas.service';
+import { ESTADOS_PODER, nombreTipoPoder } from '../poderes.logica';
+import { asambleasService, type PoderAsamblea } from '../services/asambleas.service';
 
 const $q = useQuasar();
 const route = useRoute();
@@ -169,11 +247,20 @@ const convocada = computed(() => detalle.value !== null && detalle.value.estado 
 const consulta = useConvocatoria(id, convocada);
 const c = computed(() => consulta.data.value ?? null);
 
+const consultaPoderes = usePoderes(id, convocada);
+const poderes = computed(() => consultaPoderes.data.value ?? null);
+const validando = useValidarPoder();
+const rechazando = useRechazarPoder();
 const reenviando = useReenviarConvocatoria();
 const cancelando = useCancelarAsamblea();
 const exportando = ref(false);
 const ocupado = computed(
-  () => reenviando.isPending.value || cancelando.isPending.value || exportando.value,
+  () =>
+    reenviando.isPending.value ||
+    cancelando.isPending.value ||
+    validando.isPending.value ||
+    rechazando.isPending.value ||
+    exportando.value,
 );
 const resultado = ref<string | null>(null);
 const errorGeneral = ref<string | null>(null);
@@ -194,6 +281,37 @@ function reenviar(): void {
         n === 0 ? 'No hay unidades pendientes.' : `Convocatoria reenviada a ${n} unidades.`;
     },
     onError: fallar,
+  });
+}
+
+function validar(p: PoderAsamblea): void {
+  errorGeneral.value = null;
+  validando.mutate(p.id, {
+    onSuccess: () => {
+      resultado.value = `Poder de ${p.unidad_codigo} validado.`;
+    },
+    onError: fallar,
+  });
+}
+
+function rechazar(p: PoderAsamblea): void {
+  $q.dialog({
+    title: `Rechazar el poder de ${p.unidad_codigo}`,
+    message: 'El propietario verá el motivo y podrá subir otro (mínimo 3 caracteres).',
+    prompt: { model: '', type: 'text', isValid: (v: string) => v.trim().length >= 3 },
+    cancel: { label: 'Volver', flat: true, noCaps: true },
+    ok: { label: 'Rechazar', color: 'negative', unelevated: true, noCaps: true },
+  }).onOk((motivo: string) => {
+    errorGeneral.value = null;
+    rechazando.mutate(
+      { poderId: p.id, motivo: motivo.trim() },
+      {
+        onSuccess: () => {
+          resultado.value = `Poder de ${p.unidad_codigo} rechazado.`;
+        },
+        onError: fallar,
+      },
+    );
   });
 }
 
@@ -312,6 +430,52 @@ function cancelar(): void {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 8px;
+}
+
+.conv__cuenta {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--safic-texto-2);
+}
+
+.conv__lista--poderes {
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+}
+
+.conv__poder {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+  border: 1px solid var(--safic-borde);
+  border-radius: 10px;
+  font-size: 14px;
+}
+
+.conv__poder-cab,
+.conv__poder-acc {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.conv__sub {
+  font-size: 13px;
+  color: var(--safic-texto-suave);
+}
+
+.conv__aviso {
+  font-size: 13px;
+  color: #7a3808;
+}
+
+.conv__enlace {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 700;
 }
 
 .conv__item {

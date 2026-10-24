@@ -377,11 +377,11 @@ export const MENU_APP_RESIDENTE: ItemMenu[] = [
     permiso: 'visitas.propias',
   },
   {
-    id: 'app.asamblea',
-    etiqueta: 'Asamblea',
+    id: 'app.asambleas',
+    etiqueta: 'Asambleas',
     icono: ICONOS.asamblea,
-    ruta: 'app-asamblea',
-    vistaPrevia: true,
+    ruta: 'app-mis-asambleas',
+    permiso: 'asambleas.propias',
   },
 ];
 

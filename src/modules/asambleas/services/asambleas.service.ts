@@ -94,6 +94,69 @@ export interface ConvocatoriaAsamblea {
   recordatorios: { tres_dias: string | null; dos_horas: string | null };
 }
 
+export type EstadoPoder = 'pendiente' | 'validado' | 'rechazado' | 'revocado';
+export type TipoPoder = 'notarial' | 'carta';
+
+export interface PoderAsamblea {
+  id: number;
+  asamblea_id: number;
+  unidad_id: number;
+  unidad_codigo: string;
+  alicuota: string;
+  otorgante: string | null;
+  tipo: TipoPoder;
+  estado: EstadoPoder;
+  motivo_rechazo: string | null;
+  representante_nombre: string;
+  /** Enmascarado. */
+  representante_documento: string;
+  representante_registrado: boolean;
+  documento_nombre: string;
+  /** Enlace temporal al PDF. */
+  documento_url: string | null;
+  cargado_por: string | null;
+  cargado_en: string;
+  validado_por: string | null;
+  validado_en: string | null;
+  /** La unidad debe cuotas hoy: no vota aunque el poder esté validado. */
+  unidad_en_mora: boolean;
+}
+
+export interface PoderesDeAsamblea {
+  pendientes: number;
+  validados: number;
+  rechazados: number;
+  poderes: PoderAsamblea[];
+}
+
+export interface CargarPoder {
+  unidad_id: number;
+  tipo: TipoPoder;
+  representante_nombre: string;
+  representante_tipo_documento: 'cedula' | 'pasaporte';
+  representante_documento: string;
+  archivo: File;
+}
+
+/** Una asamblea vista por el propietario: sus unidades y el poder que dio por cada una. */
+export interface MiAsamblea extends AsambleaBase {
+  unidades: {
+    unidad_id: number;
+    codigo: string;
+    alicuota: string;
+    poder: {
+      id: number;
+      estado: Exclude<EstadoPoder, 'revocado'>;
+      tipo: TipoPoder;
+      representante_nombre: string;
+      motivo_rechazo: string | null;
+    } | null;
+  }[];
+  /** Unidades que represento por poder validado. */
+  representa: { poder_id: number; unidad_codigo: string }[];
+  puede_dar_poder: boolean;
+}
+
 export interface ConfiguracionAsambleas {
   permite_virtual: boolean;
   mora_cuenta_para_quorum: boolean;
@@ -241,6 +304,48 @@ export const asambleasService = {
 
   async constancia(id: number): Promise<Blob> {
     return pedirArchivo(`/asambleas/${id}/constancia.pdf`);
+  },
+
+  async poderes(id: number): Promise<PoderesDeAsamblea> {
+    const { data } = await api.get<ApiRespuesta<PoderesDeAsamblea>>(`/asambleas/${id}/poderes`);
+    return data.data;
+  },
+
+  async cargarPoder(id: number, d: CargarPoder): Promise<PoderAsamblea> {
+    const formulario = new FormData();
+    formulario.append('unidad_id', String(d.unidad_id));
+    formulario.append('tipo', d.tipo);
+    formulario.append('representante_nombre', d.representante_nombre);
+    formulario.append('representante_tipo_documento', d.representante_tipo_documento);
+    formulario.append('representante_documento', d.representante_documento);
+    formulario.append('archivo', d.archivo);
+    const { data } = await api.post<ApiRespuesta<PoderAsamblea>>(
+      `/asambleas/${id}/poderes`,
+      formulario,
+    );
+    return data.data;
+  },
+
+  async validarPoder(poderId: number): Promise<PoderAsamblea> {
+    const { data } = await api.post<ApiRespuesta<PoderAsamblea>>(`/poderes/${poderId}/validar`);
+    return data.data;
+  },
+
+  async rechazarPoder(poderId: number, motivo: string): Promise<PoderAsamblea> {
+    const { data } = await api.post<ApiRespuesta<PoderAsamblea>>(`/poderes/${poderId}/rechazar`, {
+      motivo,
+    });
+    return data.data;
+  },
+
+  async retirarPoder(poderId: number): Promise<PoderAsamblea> {
+    const { data } = await api.delete<ApiRespuesta<PoderAsamblea>>(`/poderes/${poderId}`);
+    return data.data;
+  },
+
+  async misAsambleas(): Promise<MiAsamblea[]> {
+    const { data } = await api.get<ApiRespuesta<MiAsamblea[]>>('/mis-asambleas');
+    return data.data;
   },
 
   async configuracion(): Promise<ConfiguracionAsambleas> {
