@@ -344,6 +344,7 @@ export const PERMISOS_APP_RESIDENTE: readonly string[] = [
   'paquetes.propios',
   'avisos.propios',
   'incidencias.reportar',
+  'asambleas.propias',
 ];
 export const PERMISOS_APP_GUARDIA: readonly string[] = [
   'garita.registrar',
