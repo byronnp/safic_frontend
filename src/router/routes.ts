@@ -253,12 +253,32 @@ const routes: RouteRecordRaw[] = [
       },
 
       // Fase 5 · Asambleas
-      previa(
-        'asambleas/preparar',
-        'asambleas-preparar',
-        'Preparar asamblea',
-        () => import('@/modules/asambleas/pages/PrepararAsambleaPage.vue'),
-      ),
+      {
+        path: 'asambleas/preparar',
+        name: 'asambleas-preparar',
+        component: () => import('@/modules/asambleas/pages/AsambleasPage.vue'),
+        meta: { permiso: 'asambleas.preparar', titulo: 'Asambleas' },
+      },
+      {
+        path: 'asambleas/preparar/nueva',
+        name: 'asambleas-nueva',
+        component: () => import('@/modules/asambleas/pages/PrepararAsambleaPage.vue'),
+        meta: {
+          permiso: 'asambleas.preparar',
+          titulo: 'Nueva asamblea',
+          menuActivo: 'asambleas-preparar',
+        },
+      },
+      {
+        path: 'asambleas/preparar/:id(\\d+)',
+        name: 'asambleas-editar',
+        component: () => import('@/modules/asambleas/pages/PrepararAsambleaPage.vue'),
+        meta: {
+          permiso: 'asambleas.preparar',
+          titulo: 'Preparar asamblea',
+          menuActivo: 'asambleas-preparar',
+        },
+      },
       previa(
         'asambleas/mesa',
         'asambleas-mesa',

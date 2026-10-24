@@ -204,7 +204,6 @@ export const MENU_BASE: ItemMenu[] = [
         icono: ICONOS.prepararAsamblea,
         ruta: 'asambleas-preparar',
         permiso: 'asambleas.preparar',
-        vistaPrevia: true,
       },
       {
         id: 'asambleas.mesa',
