@@ -53,7 +53,10 @@
       <router-link
         v-for="a in lista"
         :key="a.id"
-        :to="{ name: 'asambleas-editar', params: { id: a.id } }"
+        :to="{
+          name: a.estado === 'convocada' ? 'asambleas-convocatoria' : 'asambleas-editar',
+          params: { id: a.id },
+        }"
         class="asambleas__fila"
       >
         <div class="asambleas__principal">

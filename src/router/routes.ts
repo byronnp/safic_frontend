@@ -279,6 +279,16 @@ const routes: RouteRecordRaw[] = [
           menuActivo: 'asambleas-preparar',
         },
       },
+      {
+        path: 'asambleas/preparar/:id(\\d+)/convocatoria',
+        name: 'asambleas-convocatoria',
+        component: () => import('@/modules/asambleas/pages/ConvocatoriaAsambleaPage.vue'),
+        meta: {
+          permiso: 'asambleas.preparar',
+          titulo: 'Convocatoria',
+          menuActivo: 'asambleas-preparar',
+        },
+      },
       previa(
         'asambleas/mesa',
         'asambleas-mesa',

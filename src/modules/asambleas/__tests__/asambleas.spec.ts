@@ -305,4 +305,30 @@ describe('asamblea: servicio y caché', () => {
     expect(ruta).toBe('/asambleas/4/puntos/9/adjunto');
     expect(cuerpo.get('archivo')).toBe(archivo);
   });
+
+  it('convocar, cancelar, seguimiento y constancia usan las rutas del contrato', async () => {
+    const get = vi.spyOn(api, 'get').mockResolvedValue({ data: { data: {} } });
+    const post = vi
+      .spyOn(api, 'post')
+      .mockResolvedValueOnce({ data: { data: {} } })
+      .mockResolvedValueOnce({ data: { data: {} } })
+      .mockResolvedValueOnce({ data: { data: { unidades: 3 } } });
+
+    await asambleasService.convocar(4);
+    await asambleasService.cancelar(4, 'No hay salón');
+    const avisadas = await asambleasService.reenviarConvocatoria(4);
+    await asambleasService.convocatoria(4);
+    await asambleasService.constancia(4).catch(() => undefined);
+
+    expect(post).toHaveBeenCalledWith('/asambleas/4/convocar');
+    expect(post).toHaveBeenCalledWith('/asambleas/4/cancelar', { motivo: 'No hay salón' });
+    expect(post).toHaveBeenCalledWith('/asambleas/4/convocatoria/reenviar');
+    expect(avisadas).toBe(3);
+    expect(get).toHaveBeenCalledWith('/asambleas/4/convocatoria');
+    expect(get).toHaveBeenCalledWith('/asambleas/4/constancia.pdf', { responseType: 'blob' });
+  });
+
+  it('la clave del seguimiento lleva el condominio', () => {
+    expect(clavesAsambleas.convocatoria(7, 3)).toEqual(['asambleas', 7, 'convocatoria', 3]);
+  });
 });
