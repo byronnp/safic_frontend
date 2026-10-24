@@ -30,6 +30,13 @@
       <div v-if="soloLectura" class="safic-alerta" role="status">
         Esta asamblea ya se convocó: los propietarios fueron notificados y su convocatoria no se
         edita.
+        <router-link
+          v-if="detalle?.estado === 'convocada'"
+          :to="{ name: 'asambleas-convocatoria', params: { id: detalle.id } }"
+          class="preparar__seguimiento"
+        >
+          Ver seguimiento de la convocatoria
+        </router-link>
       </div>
 
       <q-form novalidate class="preparar__datos" @submit="guardar">
@@ -273,6 +280,15 @@
       </div>
       <div class="preparar__relleno" />
       <button
+        v-if="!esNueva && !soloLectura"
+        type="button"
+        class="preparar__convocar"
+        :disabled="ocupado || !detalle?.puede_convocar"
+        @click="convocar"
+      >
+        Convocar asamblea
+      </button>
+      <button
         v-if="!soloLectura"
         type="button"
         class="preparar__guardar"
@@ -325,6 +341,7 @@ import {
   useAnticipacion,
   useAsamblea,
   useConfiguracionAsambleas,
+  useConvocarAsamblea,
   useCrearAsamblea,
   useDescartarAsamblea,
   useMoverPunto,
@@ -400,6 +417,7 @@ const padron = computed(() => detalle.value?.padron ?? padronNuevo.data.value ??
 const creando = useCrearAsamblea();
 const actualizando = useActualizarAsamblea();
 const descartando = useDescartarAsamblea();
+const convocando = useConvocarAsamblea();
 const moviendo = useMoverPunto();
 const quitando = useQuitarPunto();
 const ocupado = computed(
@@ -407,6 +425,7 @@ const ocupado = computed(
     creando.isPending.value ||
     actualizando.isPending.value ||
     descartando.isPending.value ||
+    convocando.isPending.value ||
     moviendo.isPending.value ||
     quitando.isPending.value,
 );
@@ -495,6 +514,31 @@ function quitar(punto: PuntoAsamblea): void {
   });
 }
 
+function convocar(): void {
+  const d = detalle.value;
+  if (id.value === null || d === null || ocupado.value) return;
+  const asambleaId = id.value;
+  $q.dialog({
+    title: 'Convocar asamblea',
+    message: `Se enviará la convocatoria a todos los propietarios y residentes (${d.padron.unidades} unidades con propietario) por la app y por correo, con confirmación de recepción. Después ya no podrás editar la asamblea.`,
+    cancel: { label: 'Cancelar', flat: true, noCaps: true },
+    ok: { label: 'Convocar', color: 'primary', unelevated: true, noCaps: true },
+  }).onOk(() => {
+    convocando.mutate(asambleaId, {
+      onSuccess: () => {
+        $q.notify({ type: 'positive', message: 'Asamblea convocada. Se avisó a los residentes.' });
+        void router.replace({ name: 'asambleas-convocatoria', params: { id: asambleaId } });
+      },
+      onError: (error) => {
+        const e = aApiError(error);
+        // Si el servidor dice que ya no se llega a tiempo, el detalle se vuelve a pedir para que el aviso quede al día
+        if (e.codigo === 'SIN_ANTICIPACION') void consulta.refetch();
+        fallar(error);
+      },
+    });
+  });
+}
+
 function descartar(): void {
   if (id.value === null) return;
   const asambleaId = id.value;
@@ -529,6 +573,11 @@ function descartar(): void {
   flex-direction: column;
   gap: 16px;
   min-width: 0;
+}
+
+.preparar__seguimiento {
+  margin-left: 8px;
+  font-weight: 700;
 }
 
 .preparar__estado {
@@ -745,12 +794,27 @@ function descartar(): void {
   flex-grow: 1;
 }
 
+.preparar__convocar,
 .preparar__guardar,
 .preparar__descartar {
   border-radius: 10px;
   font-weight: 700;
   cursor: pointer;
   font-family: inherit;
+}
+
+.preparar__convocar {
+  height: 46px;
+  border: none;
+  background: var(--q-primary);
+  color: #ffffff;
+  font-size: 14px;
+}
+
+.preparar__convocar:disabled,
+.preparar__guardar:disabled {
+  opacity: 0.6;
+  cursor: default;
 }
 
 .preparar__guardar {
