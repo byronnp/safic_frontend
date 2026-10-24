@@ -378,6 +378,20 @@ a {
   position: relative;
 }
 
+/* App del residente/guardia dentro del marco web (pantalla grande): sin el solape ni el relleno del celular */
+.app-web .app-cuerpo {
+  padding: 0;
+}
+
+/* Decorativo: en el marco web el avatar ya está en el encabezado de la página */
+.app-web .directorio-avatar {
+  display: none;
+}
+
+.app-web .app-tarjeta-solapada {
+  margin: 0;
+}
+
 .app-seccion-titulo {
   font-size: 15px;
   font-weight: 800;
