@@ -1,11 +1,20 @@
 <template>
   <!--
-    App móvil (residente y guardia). En el celular ocupa toda la pantalla; en
-    una pantalla grande se muestra como una columna de 430px al centro.
-    Cada página pinta su propio encabezado de color (ver components/app).
+    Apps del residente y del guardia. En el celular ocupan toda la pantalla con las pestañas abajo. En una pantalla grande (desde
+    1024px) usan el mismo marco web que el resto de los perfiles: encabezado con el condominio y la cuenta, y las pantallas del
+    perfil en el menú lateral.
+    Cada página pinta su propio encabezado (ver components/app).
     Las páginas NO usan q-page: su raíz es <div class="app-pagina">.
   -->
-  <div class="app">
+  <MarcoWeb v-if="modoWeb" :menu="menuLateral">
+    <div class="app-web">
+      <router-view :key="session.condominioId ?? 0" />
+    </div>
+    <!-- «Alguien está en la garita»: se muestra sobre cualquier pantalla del residente -->
+    <AlertaVisita />
+  </MarcoWeb>
+
+  <div v-else class="app">
     <div class="app__marco">
       <main class="app__contenido">
         <router-view />
@@ -41,24 +50,48 @@
 </template>
 
 <script setup lang="ts">
+import { useQuasar } from 'quasar';
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';
 
 import VistaPreviaAviso from '@/components/VistaPreviaAviso.vue';
+import MarcoWeb from '@/layouts/components/MarcoWeb.vue';
 import AlertaVisita from '@/modules/garita/components/AlertaVisita.vue';
-import { filtrarMenu, MENU_APP_GUARDIA, MENU_APP_RESIDENTE } from '@/core/navigation/menu';
+import {
+  filtrarMenu,
+  MENU_APP_GUARDIA,
+  MENU_APP_RESIDENTE,
+  ROL_ACCESO_TOTAL_CONDOMINIO,
+} from '@/core/navigation/menu';
 import { MOSTRAR_VISTAS_PREVIAS } from '@/core/vista-previa';
 import { useSessionStore } from '@/stores/session';
 
+const $q = useQuasar();
 const route = useRoute();
 const session = useSessionStore();
+
+/** Pantalla grande: marco web con menú lateral. En el celular: columna con pestañas abajo. */
+const modoWeb = computed(() => $q.screen.gt.sm);
+
+const menuApp = computed(() =>
+  route.meta.app === 'guardia' ? MENU_APP_GUARDIA : MENU_APP_RESIDENTE,
+);
+
+/**
+ * Las pantallas del perfil en el menú lateral (siempre, aunque la pantalla pida ocultar las pestañas). Las vistas previas solo las ve
+ * el administrador en desarrollo: es lo que la guarda le permite abrir; a un residente le llevarían a «sin permiso».
+ */
+const menuLateral = computed(() =>
+  filtrarMenu(menuApp.value, session.permisos, {
+    vistasPrevias: MOSTRAR_VISTAS_PREVIAS && session.roles.includes(ROL_ACCESO_TOTAL_CONDOMINIO),
+  }),
+);
 
 const pestanas = computed(() => {
   if (route.meta.sinPestanas) {
     return [];
   }
-  const menu = route.meta.app === 'guardia' ? MENU_APP_GUARDIA : MENU_APP_RESIDENTE;
-  return filtrarMenu(menu, session.permisos, { vistasPrevias: MOSTRAR_VISTAS_PREVIAS });
+  return menuLateral.value;
 });
 
 function esActual(ruta: string | undefined): boolean {
@@ -67,6 +100,15 @@ function esActual(ruta: string | undefined): boolean {
 </script>
 
 <style scoped>
+/* Contenido en el marco web: alineado a la izquierda como las pantallas de administración, con un ancho cómodo de leer */
+.app-web {
+  max-width: 960px;
+  padding: 28px 32px 48px;
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 68px);
+}
+
 .app {
   min-height: 100vh;
   background: #e9e7e0;

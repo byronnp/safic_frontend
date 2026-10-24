@@ -332,6 +332,30 @@ export const MENU_PLATAFORMA: ItemMenu[] = [
   },
 ];
 
+/**
+ * Permisos que hacen a alguien «perfil de app». Con ellos se decide dónde empieza una sesión (ver `appDelPerfil` en el router) y qué
+ * apps ofrece su menú, sin depender del nombre del rol: sirve igual para los roles que el super admin cree después.
+ * Cada permiso de una pestaña de MENU_APP_* debe estar aquí (lo comprueba una prueba).
+ */
+export const PERMISOS_APP_RESIDENTE: readonly string[] = [
+  'cuenta.propia',
+  'reservas.propias',
+  'visitas.propias',
+  'paquetes.propios',
+  'avisos.propios',
+  'incidencias.reportar',
+];
+export const PERMISOS_APP_GUARDIA: readonly string[] = [
+  'garita.registrar',
+  'garita.directorio',
+  'paquetes.gestionar',
+  'reservas.garita',
+];
+/** Permisos que comparten las dos apps: tenerlos no hace a nadie «residente» ni «guardia» por sí solo (el guardia reporta incidencias). */
+export const PERMISOS_COMPARTIDOS_DE_APP: readonly string[] = ['incidencias.reportar'];
+/** Permisos de lectura que el rol de guardia trae por defecto pero que no lo hacen «de administración». */
+export const PERMISOS_NEUTROS_DE_APP: readonly string[] = ['unidades.ver'];
+
 /** Pestañas inferiores de la app del residente. */
 export const MENU_APP_RESIDENTE: ItemMenu[] = [
   {

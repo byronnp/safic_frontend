@@ -13,6 +13,13 @@ import { api } from '@/core/api/client';
  * - condominio.{id}.garita: lo que necesita el equipo de garita.
  */
 
+/**
+ * Prefijo del WebSocket en el origen de la app. NO puede ser `/app` (el que usa Reverb por defecto): las pantallas del residente
+ * viven en `/app/...` y al recargar una de ellas el proxy se la mandaba a Reverb («Internal server error»). El proxy quita el
+ * prefijo antes de llegar a Reverb, así que el servidor no cambia.
+ */
+export const RUTA_WS = '/ws';
+
 /** Evento que publica el backend (`ActualizacionEnVivo::broadcastAs`). */
 export const EVENTO = 'actualizacion';
 
@@ -64,7 +71,7 @@ export function intervaloConRespaldo(sinTiempoReal: number, conTiempoReal: numbe
 }
 
 /**
- * Mismo origen que la app: en desarrollo lo reenvía el proxy de Vite (/app) y en producción el balanceador o nginx. Sin clave
+ * Mismo origen que la app: en desarrollo lo reenvía el proxy de Vite (/ws) y en producción el balanceador o nginx. Sin clave
  * configurada no hay tiempo real (devuelve null) y todo sigue con consulta periódica.
  */
 export function configDesdeEntorno(): ConfigTiempoReal | null {
@@ -87,6 +94,7 @@ function opcionesPusher(config: ConfigTiempoReal): Options {
   return {
     cluster: 'mt1', // pusher-js lo exige; con wsHost no se usa
     wsHost: config.host,
+    wsPath: RUTA_WS,
     wsPort: config.puerto,
     wssPort: config.puerto,
     forceTLS: config.seguro,

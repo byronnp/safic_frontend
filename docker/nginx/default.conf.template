@@ -25,9 +25,10 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 
-    # Tiempo real (Reverb): WebSocket en el mismo dominio.
-    location /app {
-        proxy_pass ${REVERB_UPSTREAM};
+    # Tiempo real (Reverb): WebSocket en el mismo dominio, bajo /ws (no /app: ahí viven las pantallas del residente).
+    # La barra final de proxy_pass quita el prefijo /ws antes de llegar a Reverb.
+    location /ws/ {
+        proxy_pass ${REVERB_UPSTREAM}/;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
