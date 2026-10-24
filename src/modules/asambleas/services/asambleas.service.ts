@@ -1,4 +1,5 @@
 import { api } from '@/core/api/client';
+import { pedirArchivo } from '@/core/api/descarga';
 import type { ApiRespuesta } from '@/core/api/types';
 
 /** Tipos del contrato (safic_backend/docs/openapi.yaml · Asambleas). Las alícuotas son texto decimal (porcentaje). */
@@ -74,6 +75,23 @@ export interface AsambleaDetalle extends AsambleaBase {
   padron: PadronAsamblea;
   falta_para_convocar: string[];
   puede_convocar: boolean;
+  /** Convocada y todavía sin instalar. */
+  puede_cancelar: boolean;
+  convocada_en: string | null;
+  motivo_cancelacion: string | null;
+}
+
+/** Seguimiento de la convocatoria: lo que dice la constancia de lectura del anuncio con que se convocó. */
+export interface ConvocatoriaAsamblea {
+  anuncio_id: number;
+  publicada_en: string;
+  unidades: number;
+  leyeron: number;
+  confirmaron: number;
+  /** 0–100 */
+  porcentaje_confirmaron: number;
+  pendientes: { unidad_id: number; codigo: string; leyo: boolean }[];
+  recordatorios: { tres_dias: string | null; dos_horas: string | null };
 }
 
 export interface ConfiguracionAsambleas {
@@ -192,6 +210,37 @@ export const asambleasService = {
       `/asambleas/${id}/puntos/${puntoId}/adjunto`,
     );
     return data.data;
+  },
+
+  async convocar(id: number): Promise<AsambleaDetalle> {
+    const { data } = await api.post<ApiRespuesta<AsambleaDetalle>>(`/asambleas/${id}/convocar`);
+    return data.data;
+  },
+
+  async cancelar(id: number, motivo: string): Promise<AsambleaDetalle> {
+    const { data } = await api.post<ApiRespuesta<AsambleaDetalle>>(`/asambleas/${id}/cancelar`, {
+      motivo,
+    });
+    return data.data;
+  },
+
+  async convocatoria(id: number): Promise<ConvocatoriaAsamblea> {
+    const { data } = await api.get<ApiRespuesta<ConvocatoriaAsamblea>>(
+      `/asambleas/${id}/convocatoria`,
+    );
+    return data.data;
+  },
+
+  /** Devuelve a cuántas unidades se les avisó. */
+  async reenviarConvocatoria(id: number): Promise<number> {
+    const { data } = await api.post<ApiRespuesta<{ unidades: number }>>(
+      `/asambleas/${id}/convocatoria/reenviar`,
+    );
+    return data.data.unidades;
+  },
+
+  async constancia(id: number): Promise<Blob> {
+    return pedirArchivo(`/asambleas/${id}/constancia.pdf`);
   },
 
   async configuracion(): Promise<ConfiguracionAsambleas> {

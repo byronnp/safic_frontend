@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query';
 import { computed, type Ref } from 'vue';
 
 import type { ApiError } from '@/core/api/errors';
+import { intervaloConRespaldo } from '@/core/realtime/tiempo-real';
 import { useSessionStore } from '@/stores/session';
 
 import {
@@ -10,6 +11,7 @@ import {
   type AsambleaDetalle,
   type AsambleaResumen,
   type ConfiguracionAsambleas,
+  type ConvocatoriaAsamblea,
   type EstadoAsamblea,
   type GuardarAsamblea,
   type GuardarPunto,
@@ -23,6 +25,8 @@ export const clavesAsambleas = {
     ['asambleas', condominioId, 'lista', estado] as const,
   detalle: (condominioId: number | null, id: number | null) =>
     ['asambleas', condominioId, 'detalle', id] as const,
+  convocatoria: (condominioId: number | null, id: number | null) =>
+    ['asambleas', condominioId, 'convocatoria', id] as const,
   padron: (condominioId: number | null) => ['asambleas', condominioId, 'padron'] as const,
   anticipacion: (condominioId: number | null, fechaHora: string) =>
     ['asambleas', condominioId, 'anticipacion', fechaHora] as const,
@@ -77,6 +81,19 @@ export function useAnticipacion(fechaHora: Ref<string | null>) {
     enabled: computed(() => session.condominioId !== null && fechaHora.value !== null),
     refetchOnWindowFocus: false,
     staleTime: 60_000,
+  });
+}
+
+/** Seguimiento de la convocatoria; se refresca solo mientras la gente confirma. */
+export function useConvocatoria(id: Ref<number | null>, habilitado: Ref<boolean>) {
+  const session = useSessionStore();
+
+  return useQuery<ConvocatoriaAsamblea, ApiError>({
+    queryKey: computed(() => clavesAsambleas.convocatoria(session.condominioId, id.value)),
+    queryFn: () => asambleasService.convocatoria(id.value as number),
+    enabled: computed(() => session.condominioId !== null && id.value !== null && habilitado.value),
+    refetchInterval: () => intervaloConRespaldo(30_000, 120_000),
+    refetchOnWindowFocus: true,
   });
 }
 
@@ -158,6 +175,17 @@ export const useQuitarInforme = () =>
   useMutacion<{ id: number; puntoId: number }>(({ id, puntoId }) =>
     asambleasService.quitarInforme(id, puntoId),
   );
+
+export const useConvocarAsamblea = () => useMutacion<number>((id) => asambleasService.convocar(id));
+
+export const useCancelarAsamblea = () =>
+  useMutacion<{ id: number; motivo: string }>((v) => asambleasService.cancelar(v.id, v.motivo));
+
+export function useReenviarConvocatoria() {
+  return useMutation<number, ApiError, number>({
+    mutationFn: (id) => asambleasService.reenviarConvocatoria(id),
+  });
+}
 
 export function useDescartarAsamblea() {
   const session = useSessionStore();
