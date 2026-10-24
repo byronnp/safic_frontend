@@ -30,7 +30,7 @@ RUN npm ci --no-audit --no-fund && npm run build
 FROM nginx:1.29-alpine AS prod
 # Backend al que se reenvía /api (en ECS se cambia por la URL interna del servicio).
 ENV API_UPSTREAM=http://api:8080
-# Servidor Reverb (WebSocket) al que se reenvía /app.
+# Servidor Reverb (WebSocket) al que se reenvía /ws.
 ENV REVERB_UPSTREAM=http://reverb:8080
 COPY docker/nginx/default.conf.template /etc/nginx/templates/default.conf.template
 COPY --from=build /app/dist/spa /usr/share/nginx/html

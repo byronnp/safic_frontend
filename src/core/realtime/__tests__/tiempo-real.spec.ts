@@ -6,6 +6,7 @@ import {
   desconectar,
   estadoTiempoReal,
   intervaloConRespaldo,
+  RUTA_WS,
   type ClientePusher,
   type ConfigTiempoReal,
   type OpcionesConexion,
@@ -121,6 +122,19 @@ describe('tiempo real', () => {
     desconectar();
     expect(dos.cliente.disconnect).toHaveBeenCalledTimes(1);
     expect(estadoTiempoReal.value).toBe('apagado');
+  });
+
+  it('el WebSocket va por /ws, no por /app (que es de las pantallas del residente)', () => {
+    const falso = crearFalso();
+    let recibidas: Record<string, unknown> = {};
+    conectar(config, opciones(), (_config, o) => {
+      recibidas = { ...o };
+      return falso.cliente;
+    });
+
+    expect(recibidas.wsPath).toBe(RUTA_WS);
+    expect(RUTA_WS).toBe('/ws');
+    expect(RUTA_WS.startsWith('/app')).toBe(false);
   });
 
   it('sin configuración no abre ninguna conexión', () => {
