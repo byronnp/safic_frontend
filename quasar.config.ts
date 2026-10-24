@@ -24,7 +24,8 @@ function variable(
 //  - dentro de Docker (red "safic"): http://api:8080
 //  - sin Docker: http://localhost:8000
 const apiProxyTarget = variable('API_PROXY_TARGET') ?? 'http://localhost:8000';
-// Tiempo real (Reverb): el navegador se conecta al mismo origen en /app y Vite lo reenvía por WebSocket
+// Tiempo real (Reverb): el navegador se conecta al mismo origen en /ws y Vite lo reenvía por WebSocket (quitando el prefijo).
+// No se usa /app: las pantallas del residente viven en /app/... y chocarían con el proxy.
 //  - dentro de Docker (red "safic"): http://reverb:8080
 //  - sin Docker: http://localhost:8080
 const reverbProxyTarget = variable('REVERB_PROXY_TARGET') ?? 'http://localhost:8080';
@@ -99,9 +100,10 @@ export default defineConfig((ctx) => {
           target: apiProxyTarget,
           changeOrigin: true,
         },
-        '/app': {
+        '/ws': {
           target: reverbProxyTarget,
           ws: true,
+          rewrite: (ruta: string) => ruta.replace(/^\/ws/, ''),
         },
       },
     },
